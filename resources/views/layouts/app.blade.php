@@ -29,7 +29,7 @@
 
             <!-- Page Content -->
             <main>
-                 <div id="app"></div>
+                 
             </main>
         </div>
     </body>
