@@ -14,9 +14,12 @@ return new class extends Migration
         Schema::create('reservas', function (Blueprint $table) {
             $table->id();
             $table->date('fecha');
-            // referencia a la tabla clientes
+            $table->enum('estado', ['Pendiente', 'Confirmada', 'Cancelada']);
+            // llave foraneea a la tabla clientes y empleados
             $table->unsignedBigInteger('cliente_id');
-            $table->foreign('cliente_id')->references('id')->on('clientes');
+            $table->unsignedBigInteger('empleado_id');
+            $table->foreign('cliente_id')->references('id')->on('clientes')->onDelete('cascade');
+            $table->foreign('empleado_id')->references('id')->on('empleados')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -14,6 +14,10 @@ return new class extends Migration
         Schema::create('empleados', function (Blueprint $table) {
             $table->id();
             $table->string('cargo', 25);
+            $table->char('telefono', 8);
+            // llave foranea a tabla user
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
