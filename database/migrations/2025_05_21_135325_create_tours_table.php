@@ -12,20 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tours', function (Blueprint $table) {
-                $table->id();
-                $table->string('nombre', 50);
-                $table->string('descripcion', 100);
-                $table->string('punto_salida', 50);
-                $table->string('destino', 60);
-                $table->date('fecha_inicio');
-                $table->date('fecha_final');
-                $table->decimal('precio', 6, 2);
-                $table->string('duracion', 10);
-                $table->string('cupo_maximo', 20);
-                $table->string('itinerario', 100);
-                $table->string('transporte', 20);
-                $table->string('idioma', 20);
-                $table->timestamps();
+            $table->id();
+            $table->string('nombre', 50);
+            $table->string('descripcion', 100);
+            $table->string('punto_salida', 60);
+            $table->dateTime('fecha');
+            $table->decimal('precio', 5, 2);
+            $table->time('hora_regreso');
+            // llavee foraneea a categorias_tours y transportes
+            $table->unsignedBigInteger('categoria_tour_id');
+            $table->unsignedBigInteger('transporte_id');
+            $table->foreign('categoria_tour_id')->references('id')->on('categorias_tours')->onDelete('cascade');
+            $table->foreign('transporte_id')->references('id')->on('transportes')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

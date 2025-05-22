@@ -15,11 +15,13 @@ return new class extends Migration
         Schema::create('detalles_ventas', function (Blueprint $table) {
             $table->id();
             $table->integer('cantidad');
-            $table->decimal('precio_unitario', 3, 2);
+            $table->decimal('precio_unitario', 6, 2);
             $table->decimal('subtotal', 8, 2);
-            // Foreign key to the ventas table
+            // llave foranea a ventas y productos
             $table->unsignedBigInteger('venta_id');
-            $table->foreign('venta_id')->references('id')->on('ventas');
+            $table->unsignedBigInteger('producto_id');
+            $table->foreign('venta_id')->references('id')->on('ventas')->onDelete('cascade');
+            $table->foreign('producto_id')->references('id')->on('productos')->onDelete('cascade');
             $table->timestamps();
         });
     }
