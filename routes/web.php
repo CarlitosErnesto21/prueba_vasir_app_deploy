@@ -10,7 +10,6 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
-    /*return view('welcome');*/
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -22,5 +21,11 @@ Route::middleware('auth')->group(function () {
 Route::get('admin/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])
     ->middleware('auth')
     ->name('admin.dashboard');
+
+Route::get('/catalogos/MetodosPago', function () {
+    return Inertia::render('catalogos/MetodosPago');
+})->middleware(['auth', 'verified']);
+
+
 
 require __DIR__.'/auth.php';
