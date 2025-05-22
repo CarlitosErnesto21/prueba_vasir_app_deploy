@@ -274,5 +274,4 @@
             <div class="h-14.5 hidden lg:block"></div>
         @endif
     </body>
-    <span class="bg-red-100 min-h-48">eeeeeeeeeeeeeeeeeeeee</span>
 </html>
