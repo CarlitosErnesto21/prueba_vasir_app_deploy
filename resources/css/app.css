@@ -1,8 +1,8 @@
-/*@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
-*/
 
+/*
 @layer tailwind-base, primevue, tailwind-utilities;
 
 @layer tailwind-base{
@@ -10,8 +10,8 @@
 }
 
 @layer primevue{
-   /* @import 'primevue/resources/themes'; */
-    @import 'primeicons/primeicons.css';
+   //@import 'primevue/resources/themes';
+    @import 'primeicons/primeicons.css
     @import 'primevue/resources/themes';
 
 
@@ -21,3 +21,4 @@
     @tailwind components;
     @tailwind utilities;
 }
+*/

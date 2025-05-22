@@ -7,6 +7,7 @@
       </div>
       <div class="mt-6">
         <p class="text-gray-700">Este es el panel principal de tu aplicación. Puedes personalizarlo como desees.</p>
+        <span class="text-white min-h-48">AÑLKJFDÑALKeeeeeeeeeeeeeeeeeeeee</span>
       </div>
     </div>
   </div>
