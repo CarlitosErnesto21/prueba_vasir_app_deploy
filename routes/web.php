@@ -4,9 +4,13 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
+/*Route::get('/', function () {
     return view('welcome');
-});
+});*/
+
+Route::get('/', function(){
+    return Inertia::render('Catalogo');
+})->name('Catalogo');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
