@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('productos', function (Blueprint $table) {
             $table->id();
             $table->string('nombre', 80);
-            $table->string('descripcion', 255);+
+            $table->string('descripcion', 255);
             $table->decimal('precio', 8, 2);
             // llave foranea a categorias_productos e inventario
             $table->unsignedBigInteger('inventario_id');
