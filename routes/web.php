@@ -23,4 +23,13 @@ Route::get('admin/dashboard', [App\Http\Controllers\Admin\DashboardController::c
     ->middleware('auth')
     ->name('admin.dashboard');
 
+
+
+
+Route::get('catalogos/Productos', function () {
+    return Inertia::render('catalogos/Productos');
+})->middleware(['auth', 'verified'])->name('productos');
+
+
+
 require __DIR__.'/auth.php';

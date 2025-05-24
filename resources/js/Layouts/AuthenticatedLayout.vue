@@ -1,19 +1,19 @@
 <script setup>
 import { ref } from 'vue';
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-import Dropdown from '@/Components/Dropdown.vue';
-import DropdownLink from '@/Components/DropdownLink.vue';
-import NavLink from '@/Components/NavLink.vue';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
+//import ApplicationLogo from '@/Components/ApplicationLogo.vue';
+//import Dropdown from '@/Components/Dropdown.vue';
+//import DropdownLink from '@/Components/DropdownLink.vue';
+//import NavLink from '@/Components/NavLink.vue';
+//import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { usePage, Link } from '@inertiajs/vue3'; //link para que no recargue toda la pagina
 import Toast from 'primevue/toast';
-import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
-import { faList, faTags, faDoorOpen, faFileAlt, faLayerGroup, faCircleXmark, faUserCircle, 
-    faChevronDown, faHouseChimney, faTableList, faStoreAlt, faReceipt } from "@fortawesome/free-solid-svg-icons";
+//import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
+//import { faList, faTags, faDoorOpen, faFileAlt, faLayerGroup, faCircleXmark, faUserCircle, 
+  //  faChevronDown, faHouseChimney, faTableList, faStoreAlt, faReceipt } from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
 
 const page = usePage();
-const user = page.props.auth.user;
+//const user = page.props.auth.user;
 const isSidebarOpen = ref(false);
 const anioActual = ref(new Date().getFullYear());
 const isOpen = ref(false);
