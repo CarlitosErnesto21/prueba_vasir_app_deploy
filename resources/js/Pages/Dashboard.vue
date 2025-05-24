@@ -1,20 +1,31 @@
-<template>
-  <div class="min-h-screen bg-gray-100 flex flex-col items-center justify-center py-12 px-4">
-    <div class="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
-      <h2 class="text-3xl font-extrabold text-gray-900 mb-4">¡Bienvenido!</h2>
-      <div class="mb-4 text-sm">
-        <span class="text-blue-500">Estás autenticado en el dashboard usando</span> <span class="font-semibold text-indigo-600">Vue</span> e <span class="font-semibold text-indigo-600">Inertia</span>.
-      </div>
-      <div class="mt-6">
-        <p class="text-gray-700">Este es el panel principal de tu aplicación. Puedes personalizarlo como desees.</p>
-        <span class="text-white min-h-48">AÑLKJFDÑALKeeeeeeeeeeeeeeeeeeeee</span>
-      </div>
-    </div>
-  </div>
-</template>
-
-<script>
-export default {
-  name: 'Dashboard',
-}
+<script setup>
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Head } from '@inertiajs/vue3';
 </script>
+
+<template>
+    <Head title="Dashboard" />
+
+    <AuthenticatedLayout>
+       <template #header>
+            <h2
+                class="text-xl font-semibold leading-tight text-gray-800"
+            >
+                Dashboard
+            </h2>
+        </template>
+
+        <div class="py-12">
+            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                <div
+                    class="overflow-hidden bg-red-200 shadow-sm sm:rounded-lg"
+                >
+                    <div class="p-6 text-gray-900">
+                        ¡Bienvenido a Agencia de Viajes VASIR!
+                        <img src="../../../imagenes/logovasir.png" alt="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </AuthenticatedLayout>
+</template>

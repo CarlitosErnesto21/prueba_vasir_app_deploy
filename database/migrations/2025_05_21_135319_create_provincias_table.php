@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('nombre', 50);
             $table->unsignedBigInteger('pais_id');
-            // Referencia foránea a la tabla paises
-            $table->foreign('pais_id')->references('id')->on('paises');
+            // llavee foranea a la tabla paises
+            $table->foreign('pais_id')->references('id')->on('paises')->onDelete('cascade');
             $table->timestamps();
         });
     }
