@@ -72,7 +72,7 @@ onMounted(() => {
                 <Chart type="pie" :data="chartDataBar" :options="chartOptions" class="w-full aspect-square" />
             </div>
             <div class="w-full max-w-lg rounded-lg shadow-lg bg-white overflow-hidden flex flex-col items-center p-4">
-                <Chart type="doughnut" :data="chartDataDoughnut" :options="chartOptions" class="w-full aspect-square" />
+                <Chart type="pie" :data="chartDataDoughnut" :options="chartOptions" class="w-full aspect-square" />
             </div>
             <div class="w-full max-w-lg rounded-lg shadow-lg bg-white overflow-hidden flex flex-col items-center p-4">
                 <Chart type="pie" :data="chartDataPie" :options="chartOptions" class="w-full aspect-square" />
@@ -81,7 +81,7 @@ onMounted(() => {
                 <Chart type="pie" :data="chartDataBar" :options="chartOptions" class="w-full aspect-square" />
             </div>
             <div class="w-full max-w-lg rounded-lg shadow-lg bg-white overflow-hidden flex flex-col items-center p-4">
-                <Chart type="doughnut" :data="chartDataDoughnut" :options="chartOptions" class="w-full aspect-square" />
+                <Chart type="pie" :data="chartDataDoughnut" :options="chartOptions" class="w-full aspect-square" />
             </div>
         </div>
     </AuthenticatedLayout>
