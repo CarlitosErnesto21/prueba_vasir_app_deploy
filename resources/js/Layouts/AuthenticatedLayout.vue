@@ -94,16 +94,12 @@ onBeforeUnmount(() => {
             :class="[
                 isSidebarCollapsed ? 'w-16' : 'w-36',
                 'fixed top-12 left-0 h-[calc(100vh-64px)] bg-gradient-to-b from-red-500 to-red-400 text-black transition-all duration-300 ease-in-out shadow-lg z-40 pt-8 flex flex-col',
-                isSidebarOpen ? 'block' : 'hidden',
-                'md:flex'
-            ]"
-        >
+                isSidebarOpen ? 'block' : 'hidden','md:flex']">
             <!-- Botón colapsar/expandir SOLO en desktop -->
             <button
                 @click="toggleSidebar"
                 class="mx-auto mb-6 p-2 rounded-full bg-white text-red-500 hover:bg-red-100 transition hidden md:flex items-center justify-center"
-                :title="isSidebarCollapsed ? 'Expandir menú' : 'Colapsar menú'"
-            >
+                :title="isSidebarCollapsed ? 'Expandir menú' : 'Colapsar menú'">
                 <FontAwesomeIcon :icon="faChevronDown" :class="isSidebarCollapsed ? 'rotate-90' : '-rotate-90'" />
             </button>
             <div class="px-4 text-xl font-bold text-white flex justify-center items-center" v-if="!isSidebarCollapsed">
@@ -194,12 +190,11 @@ onBeforeUnmount(() => {
         <!-- Contenedor para header secundario y contenido -->
         <div :class="[isSidebarCollapsed ? 'md:ml-16' : 'md:ml-36', 'flex-1 flex flex-col']">
             <!-- Header secundario -->
-            <header
-    class="bg-gradient-to-r from-red-500 to-red-300 shadow px-4 py-2 flex items-center z-30 relative md:fixed top-14 md:top-12 lg:14 md:right-0 md:px-8"
-    :class="isSidebarCollapsed ? 'md:left-16' : 'md:left-36'"
->
-    <h2 class="text-lg font-semibold text-white">Dashboard</h2>
-</header>
+            <header class="bg-gradient-to-r from-red-500 to-red-300 shadow px-4 py-2 flex items-center 
+                z-30 relative md:fixed top-14 md:top-12 lg:14 md:right-0 md:px-8"
+                :class="isSidebarCollapsed ? 'md:left-16' : 'md:left-36'">
+                <h2 class="text-lg font-semibold text-white">Dashboard</h2>
+            </header>
             <!-- Contenido principal con padding para no quedar debajo de los headers -->
             <main class="flex-1 p-4 pt-16 md:p-10 md:pt-20 overflow-auto bg-white">
                 <slot />
