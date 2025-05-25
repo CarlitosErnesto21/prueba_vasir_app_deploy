@@ -145,11 +145,11 @@ onBeforeUnmount(() => {
                                 </li>
                                 <li class="flex items-center px-5 py-2 hover:bg-orange-600"
                                     :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                                    <Link href="route('marcas')"
+                                    <Link :href="route('tours')"
                                         class="flex items-center"
                                         :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
                                         <FontAwesomeIcon :icon="faTags" :class="isSidebarCollapsed ? '' : 'mr-3'" />
-                                        <span v-if="!isSidebarCollapsed">Marcas</span>
+                                        <span v-if="!isSidebarCollapsed">Tours</span>
                                     </Link>
                                 </li>
                             </ul>
