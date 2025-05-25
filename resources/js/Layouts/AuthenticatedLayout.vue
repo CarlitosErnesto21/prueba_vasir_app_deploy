@@ -9,7 +9,8 @@ import { usePage, Link } from '@inertiajs/vue3'; //link para que no recargue tod
 import Toast from 'primevue/toast';
 import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
 import { faList, faTags, faDoorOpen, faFileAlt, faLayerGroup, faCircleXmark, faUserCircle, 
-    faChevronDown, faHouseChimney, faTableList, faStoreAlt, faReceipt } from "@fortawesome/free-solid-svg-icons";
+    faChevronDown, faHouseChimney, faTableList, faStoreAlt, faReceipt, 
+    faUser} from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
 import Avatar from 'primevue/avatar';
 
@@ -18,7 +19,7 @@ const page = usePage();
 const user = page.props.auth.user;
 const isSidebarOpen = ref(false);
 const isSidebarCollapsed = ref(true); // Colapsado por defecto
-const anioActual = ref(new Date().getFullYear());
+const anioCurrent = ref(new Date().getFullYear());
 const isOpen = ref(false);
 const toggleDropdown = () => { isOpen.value = !isOpen.value; };
 const toggleSidebar = () => { isSidebarCollapsed.value = !isSidebarCollapsed.value; };
@@ -64,26 +65,14 @@ onBeforeUnmount(() => {
             <!--Datos de la sesion-->
             <div class="flex items-center space-x-4">
                 <div class="relative group">
-                            <Avatar image="/images/vasir.ico" class="!w-5 !h-5" size="small" shape="circle" />
-                    <!-- Tooltip -->
-                    <div class="absolute mt-5 w-80 bg-white text-black text-sm rounded-xl shadow-lg 
-                        p-3 justify-center text-center opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-300"
-                        style="margin-left: -215px;">
-                        <p><strong>Usuario:</strong>&nbsp;{{ user.name }}</p>
-                        <p><strong>Correo:</strong>&nbsp;{{ user.email }}</p>
-                    </div>
+                    <button @click="login" class="text-black text-xl" title="Usuario">
+                        <FontAwesomeIcon :icon="faUser"/>
+                    </button>
                 </div>
                 <div class="relative group">
-                        <button @click="logout" class="text-black text-xl">
-                            <FontAwesomeIcon :icon="faDoorOpen"/>
-                        </button>
-                    <!-- Tooltip -->
-                    <div class="absolute left-1/2 transform -translate-x-1/2 
-                        mt-5 w-36 bg-white text-center text-black text-sm rounded-lg shadow-lg 
-                        p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible 
-                        transition-opacity duration-300" style="margin-left: -35px;">
-                        <p><strong>Cerrar Sesión</strong></p>
-                    </div>
+                    <button @click="logout" class="text-black text-xl" title="Cerrar sesión">
+                        <FontAwesomeIcon :icon="faDoorOpen"/>
+                    </button>
                 </div>
             </div>
         </div>
@@ -112,40 +101,51 @@ onBeforeUnmount(() => {
                         <Link
                             :href="route('dashboard')"
                             class="flex items-center"
-                            :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
+                            :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'" title="Inicio">
                             <FontAwesomeIcon :icon="faHouseChimney" :class="isSidebarCollapsed ? '' : 'mr-3'" />
                             <span v-if="!isSidebarCollapsed">Inicio</span>
                         </Link>
                     </li>
-                    <li class="px-0 py-3 flex flex-col">
+                    <li class="px-0 py-3 flex flex-col relative">
                         <!-- Botón Catálogos alineado -->
                         <button @click="toggleDropdown"
-                            class="flex items-center px-4 py-2 hover:bg-orange-600 focus:outline-none w-full justify-start"
-                            :class="isSidebarCollapsed ? 'justify-center w-auto mx-auto' : 'w-full justify-start'">
-                            <FontAwesomeIcon :icon="faTableList" :class="isSidebarCollapsed ? '' : 'mr-3'" />
+                            class="flex items-center px-4 py-2 hover:bg-orange-600 focus:outline-none w-full"
+                            :class="isSidebarCollapsed ? 'justify-center w-auto mx-auto' : 'w-full justify-start'" title="Catálogos">
+                            <FontAwesomeIcon :icon="faTableList" :class="isSidebarCollapsed ? '' : 'mr-3'"/>
                             <span v-if="!isSidebarCollapsed">Catálogos</span>
                             <FontAwesomeIcon v-if="!isSidebarCollapsed" :icon="faChevronDown"
                                 class="ml-2 transition-transform" :class="{'rotate-90': isOpen}" />
                         </button>
-                        <!-- Menú desplegable alineado -->
-                        <transition name="expand">
-                            <ul v-if="isOpen && !isSidebarCollapsed" class="w-full rounded-md shadow-lg overflow-hidden">
-                                <li class="flex items-center px-5 py-2 hover:bg-orange-600"
-                                    :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                                    <Link href="route('welcome')"
-                                        class="flex items-center"
-                                        :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
-                                        <FontAwesomeIcon :icon="faLayerGroup" :class="isSidebarCollapsed ? '' : 'mr-3'" />
-                                        <span v-if="!isSidebarCollapsed">Categorías</span>
+                        <!-- Menú desplegable como burbujas fuera del aside -->
+                        <transition name="fade">
+                            <div
+                                v-if="isOpen && isSidebarCollapsed"
+                                class="absolute left-full top-1/2 -translate-y-1/2 flex flex-col space-y-2 z-50"
+                            >
+                                <Link href="route('welcome')" title="Categorías"
+                                    class="bg-white text-red-500 rounded-full shadow-lg w-12 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
+                                    <FontAwesomeIcon :icon="faLayerGroup" size="lg" />
+                                </Link>
+                                <Link :href="route('dashboard')" title="Tours"
+                                    class="bg-white text-red-500 rounded-full shadow-lg w-12 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
+                                    <FontAwesomeIcon :icon="faTags" size="lg" />
+                                </Link>
+                            </div>
+                            <!-- Menú normal cuando el aside está expandido -->
+                            <ul
+                                v-else-if="isOpen"
+                                class="w-full rounded-md shadow-lg overflow-hidden"
+                            >
+                                <li class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start">
+                                    <Link href="route('welcome')" class="flex items-center" title="Categorías">
+                                        <FontAwesomeIcon :icon="faLayerGroup" />
+                                        <span class="ml-3">Categorías</span>
                                     </Link>
                                 </li>
-                                <li class="flex items-center px-5 py-2 hover:bg-orange-600"
-                                    :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                                    <Link :href="route('tours')"
-                                        class="flex items-center"
-                                        :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
-                                        <FontAwesomeIcon :icon="faTags" :class="isSidebarCollapsed ? '' : 'mr-3'" />
-                                        <span v-if="!isSidebarCollapsed">Tours</span>
+                                <li class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start">
+                                    <Link :href="route('tours')" class="flex items-center" title="Tours">
+                                        <FontAwesomeIcon :icon="faTags" />
+                                        <span class="ml-3">Tours</span>
                                     </Link>
                                 </li>
                             </ul>
@@ -154,7 +154,7 @@ onBeforeUnmount(() => {
                     <li class="px-4 py-3 hover:bg-orange-600 flex items-center"
                         :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
                         <Link href="route('productos')"
-                            class="flex items-center"
+                            class="flex items-center" title="Productos"
                             :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
                             <FontAwesomeIcon :icon="faStoreAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" />
                             <span v-if="!isSidebarCollapsed">Productos</span>
@@ -163,7 +163,7 @@ onBeforeUnmount(() => {
                     <li class="px-5 py-3 hover:bg-orange-600 flex items-center"
                         :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
                         <Link href="route('reservas')"
-                            class="flex items-center"
+                            class="flex items-center" title="Reservas"
                             :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
                             <FontAwesomeIcon :icon="faReceipt" :class="isSidebarCollapsed ? '' : 'mr-3'" />
                             <span v-if="!isSidebarCollapsed">Reservas</span>
@@ -172,7 +172,7 @@ onBeforeUnmount(() => {
                     <li class="px-5 py-3 hover:bg-orange-600 flex items-center"
                         :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
                         <Link href="route('reservas.rango')"
-                            class="flex items-center"
+                            class="flex items-center" title="Reportes"
                             :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
                             <FontAwesomeIcon :icon="faFileAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" />
                             <span v-if="!isSidebarCollapsed">Reportes</span>
