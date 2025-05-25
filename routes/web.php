@@ -23,5 +23,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+Route::get('catalogos/Tours', function () {
+    return Inertia::render('catalogos/Tours');
+})->middleware(['auth', 'verified'])->name('tours');
+
 
 require __DIR__.'/auth.php';
