@@ -60,7 +60,11 @@ onBeforeUnmount(() => {
                 <FontAwesomeIcon :icon="faList"/>
             </button>
             <div class="text-xl font-semibold text-black">
-                VAS<img src="../../../imagenes/logovasir.png" class="w-5 h-5 inline-block align-middle">R
+                <Link :href="route('dashboard')" class="text-xl font-semibold text-black flex items-center cursor-pointer select-none">
+                    VAS
+                    <img src="../../../imagenes/logovasir.png" class="w-5 h-5 inline-block align-middle" />
+                    R
+                </Link>
             </div>
             <!--Datos de la sesion-->
             <div class="flex items-center space-x-4">
@@ -110,7 +114,11 @@ onBeforeUnmount(() => {
                         <!-- Botón Catálogos alineado -->
                         <button @click="toggleDropdown"
                             class="flex items-center px-4 py-2 hover:bg-orange-600 focus:outline-none w-full"
-                            :class="isSidebarCollapsed ? 'justify-center w-auto mx-auto' : 'w-full justify-start'" title="Catálogos">
+                            :class="[
+                                isSidebarCollapsed ? 'justify-center w-auto mx-auto' : 'w-full justify-start',
+                                (isOpen && isSidebarCollapsed) ? 'bg-orange-700 text-white' : ''
+                            ]"
+                            title="Catálogos">
                             <FontAwesomeIcon :icon="faTableList" :class="isSidebarCollapsed ? '' : 'mr-3'"/>
                             <span v-if="!isSidebarCollapsed">Catálogos</span>
                             <FontAwesomeIcon v-if="!isSidebarCollapsed" :icon="faChevronDown"
@@ -120,11 +128,14 @@ onBeforeUnmount(() => {
                         <transition name="fade">
                             <div
                                 v-if="isOpen && isSidebarCollapsed"
-                                class="absolute left-full top-1/2 -translate-y-1/2 flex flex-col space-y-2 z-50"
-                            >
-                                <Link href="route('welcome')" title="Categorías"
+                                class="absolute left-full top-1/2 -translate-y-1/2 flex flex-col space-y-2 z-50">
+                                <Link :href="route('dashboard')" title="Categorías"
                                     class="bg-white text-red-500 rounded-full shadow-lg w-12 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
                                     <FontAwesomeIcon :icon="faLayerGroup" size="lg" />
+                                </Link>
+                                <Link :href="route('dashboard')" title="Tours"
+                                    class="bg-white text-red-500 rounded-full shadow-lg w-12 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
+                                    <FontAwesomeIcon :icon="faTags" size="lg" />
                                 </Link>
                                 <Link :href="route('dashboard')" title="Tours"
                                     class="bg-white text-red-500 rounded-full shadow-lg w-12 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
@@ -137,15 +148,21 @@ onBeforeUnmount(() => {
                                 class="w-full rounded-md shadow-lg overflow-hidden"
                             >
                                 <li class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start">
-                                    <Link href="route('welcome')" class="flex items-center" title="Categorías">
+                                    <Link :href="route('dashboard')" class="flex items-center" title="Categorías">
                                         <FontAwesomeIcon :icon="faLayerGroup" />
                                         <span class="ml-3">Categorías</span>
                                     </Link>
                                 </li>
                                 <li class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start">
-                                    <Link :href="route('tours')" class="flex items-center" title="Tours">
+                                    <Link :href="route('dashboard')" class="flex items-center" title="Tours">
                                         <FontAwesomeIcon :icon="faTags" />
                                         <span class="ml-3">Tours</span>
+                                    </Link>
+                                </li>
+                                <li class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start">
+                                    <Link :href="route('dashboard')" class="flex items-center" title="Tours">
+                                        <FontAwesomeIcon :icon="faTags" />
+                                        <span class="ml-3">Otros</span>
                                     </Link>
                                 </li>
                             </ul>
@@ -153,7 +170,7 @@ onBeforeUnmount(() => {
                     </li>
                     <li class="px-4 py-3 hover:bg-orange-600 flex items-center"
                         :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                        <Link href="route('productos')"
+                        <Link :href="route('dashboard')"
                             class="flex items-center" title="Productos"
                             :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
                             <FontAwesomeIcon :icon="faStoreAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" />
@@ -162,7 +179,7 @@ onBeforeUnmount(() => {
                     </li>
                     <li class="px-5 py-3 hover:bg-orange-600 flex items-center"
                         :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                        <Link href="route('reservas')"
+                        <Link :href="route('dashboard')"
                             class="flex items-center" title="Reservas"
                             :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
                             <FontAwesomeIcon :icon="faReceipt" :class="isSidebarCollapsed ? '' : 'mr-3'" />
