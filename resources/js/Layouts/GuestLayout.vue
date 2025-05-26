@@ -1,22 +1,17 @@
-<script setup>
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-import { Link } from '@inertiajs/vue3';
-</script>
-
 <template>
-    <div
-        class="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0"
-    >
-        <div>
-            <Link href="/">
-                <ApplicationLogo class="h-20 w-20 fill-current text-gray-500" />
-            </Link>
-        </div>
-
-        <div
-            class="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg"
-        >
-            <slot />
+    <div class="flex min-h-screen items-center justify-center bg-white p-4 sm:p-6 md:p-12">
+        <!-- Contenedor principal con imagen y formulario -->
+        <div class="relative flex flex-col md:flex-row w-full max-w-3xl bg-orange-100 shadow-2xl rounded-2xl overflow-hidden">
+            
+            <!-- Imagen al lado izquierdo (visible solo en md y lg) -->
+            <div class="hidden md:flex w-2/4 items-center justify-center p-6">
+                    <!--<img src="../../../imagenes/logo.akc.png" class="max-h-[600px] w-full object-contain" alt="Logo"
+                        style="margin-left: 30px;"/>-->
+            </div>
+            <!-- Contenedor del formulario -->
+            <div class="w-full md:w-2/3 p-6 sm:p-8 md:p-10 shadow-2xl bg-orange-50 rounded-2xl" style="border-radius: 50px; border: solid #9e9e9e 1px;">
+                <slot />
+            </div>
         </div>
     </div>
 </template>
