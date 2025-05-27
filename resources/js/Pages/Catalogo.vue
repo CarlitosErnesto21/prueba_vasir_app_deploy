@@ -1,4 +1,5 @@
 <template>
+    <Head title="Catálogo" />
     <header class="bg-gradient-to-r from-white to-white text-black shadow-md fixed top-0 left-0 w-full z-50">
         <div class="px-6 py-3 flex justify-between items-center">
             <!-- Botón menú hamburguesa SOLO en móvil -->
@@ -16,17 +17,27 @@
             </div>
             <!--Datos de la sesion-->
             <div class="flex items-center space-x-4">
-                <div class="relative group">
-                    <button @click="login" class="text-black text-xl" title="Usuario">
-                        <FontAwesomeIcon :icon="faUser"/>
-                    </button>
-                </div>
-                <div class="relative group">
-                    <button @click="logout" class="text-black text-xl" title="Cerrar sesión">
-                        <FontAwesomeIcon :icon="faDoorOpen"/>
-                    </button>
-                </div>
+                <!-- Botón Login -->
+                <Link :href="route('login')" class="px-4 py-2 rounded bg-indigo-500 text-white hover:bg-indigo-600 transition">
+                    Iniciar Sesión
+                </Link>
+                <!-- Botón Register -->
+                <Link :href="route('register')" class="px-4 py-2 rounded bg-pink-500 text-white hover:bg-pink-600 transition">
+                    Registrarse
+                </Link>
             </div>
         </div>
     </header>
 </template>
+
+<script setup>
+import { Head, Link, router } from '@inertiajs/vue3'
+import { ref } from 'vue'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { faList, faUser, faDoorOpen } from '@fortawesome/free-solid-svg-icons'
+
+// Ejemplo de funciones para los botones (ajusta según tu lógica real)
+const isSidebarOpen = ref(false)
+const login = () => router.visit(route('login'))
+const logout = () => router.post(route('logout'))
+</script>
