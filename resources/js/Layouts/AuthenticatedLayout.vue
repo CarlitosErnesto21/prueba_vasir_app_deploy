@@ -170,7 +170,7 @@ onBeforeUnmount(() => {
                     </li>
                     <li class="px-4 py-3 hover:bg-orange-600 flex items-center"
                         :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                        <Link :href="route('dashboard')"
+                        <Link :href="route('productos')"
                             class="flex items-center" title="Productos"
                             :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
                             <FontAwesomeIcon :icon="faStoreAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" />
