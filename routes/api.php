@@ -11,6 +11,3 @@ Route::get('/user', function (Request $request) {
 // routes/api.php
 Route::apiResource('productos', ProductoController::class);
 
-Route::get('/prueba', function () {
-    return 'API funcionando';
-});
