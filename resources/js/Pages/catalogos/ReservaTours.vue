@@ -88,7 +88,6 @@
       <!-- Tabla de detalles de reserva -->
       <div class="overflow-x-auto">
         <DataTable :value="detalles" class="mb-4 min-w-[600px] w-full" v-if="detalles.length">
-          
           <Column field="id" header="N° Reserva"></Column>
           <Column field="tour" header="Tour"></Column>
           <Column field="fecha" header="Fecha"></Column>
