@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('tipos_transportes', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre', 20);
+            $table->enum('nombre', ['Microbus', 'Carro']);
             $table->timestamps();
         });
     }

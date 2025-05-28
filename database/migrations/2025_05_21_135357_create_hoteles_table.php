@@ -14,7 +14,12 @@ return new class extends Migration
         Schema::create('hoteles', function (Blueprint $table) {
             $table->id();
             $table->string('nombre', 50);
-            $table->string('numero_habitacion');
+            $table->string('direccion', 200);
+            // llave foraneas a categorias_hoteles y provincias
+            $table->unsignedBigInteger('provincia_id');
+            $table->foreign('provincia_id')->references('id')->on('provincias')->onDelete('cascade');
+            $table->unsignedBigInteger('categori_id');
+            $table->foreign('categoria_id')->references('id')->on('categorias_hoteles')->onDelete('cascade');
             $table->timestamps();
         });
     }

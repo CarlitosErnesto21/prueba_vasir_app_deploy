@@ -1,19 +1,88 @@
-<template>
-  <div class="min-h-screen bg-gray-100 flex flex-col items-center justify-center py-12 px-4">
-    <div class="max-w-md w-full bg-white shadow-lg rounded-lg p-8">
-      <h2 class="text-3xl font-extrabold text-gray-900 mb-4">¡Bienvenido!</h2>
-      <div class="mb-4 text-sm">
-        <span class="text-blue-500">Estás autenticado en el dashboard usando</span> <span class="font-semibold text-indigo-600">Vue</span> e <span class="font-semibold text-indigo-600">Inertia</span>.
-      </div>
-      <div class="mt-6">
-        <p class="text-gray-700">Este es el panel principal de tu aplicación. Puedes personalizarlo como desees.</p>
-      </div>
-    </div>
-  </div>
-</template>
+<script setup>
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import { Head } from '@inertiajs/vue3';
+import Chart from 'primevue/chart';
+import { ref, onMounted } from "vue";
 
-<script>
-export default {
-  name: 'Dashboard',
-}
+const chartDataPie = ref();
+const chartDataBar = ref();
+const chartDataDoughnut = ref();
+const chartOptions = ref();
+
+const setChartDataPie = () => ({
+    labels: ['A', 'B', 'C'],
+    datasets: [
+        {
+            data: [540, 325, 702],
+            backgroundColor: ['#06b6d4', '#22d3ee', '#0e7490'], // cyan
+            hoverBackgroundColor: ['#67e8f9', '#38bdf8', '#0ea5e9']
+        }
+    ]
+});
+
+const setChartDataBar = () => ({
+    labels: ['A', 'B', 'C'],
+    datasets: [
+        {
+            data: [540, 325, 702],
+            backgroundColor: ['#f59e42', '#fbbf24', '#f97316'], // orange
+            hoverBackgroundColor: ['#fdba74', '#fcd34d', '#fb923c']
+        }
+    ]
+});
+
+const setChartDataDoughnut = () => ({
+    labels: ['A', 'B', 'C'],
+    datasets: [
+        {
+            data: [540, 325, 702],
+            backgroundColor: ['#6b7280', '#9ca3af', '#d1d5db'], // gray
+            hoverBackgroundColor: ['#a1a1aa', '#d4d4d8', '#e5e7eb']
+        }
+    ]
+});
+
+const setChartOptions = () => ({
+    plugins: {
+        legend: {
+            labels: {
+                usePointStyle: true,
+                color: '#374151'
+            }
+        }
+    }
+});
+
+onMounted(() => {
+    chartDataPie.value = setChartDataPie();
+    chartDataBar.value = setChartDataBar();
+    chartDataDoughnut.value = setChartDataDoughnut();
+    chartOptions.value = setChartOptions();
+});
 </script>
+
+<template>
+    <Head title="Dashboard" />
+    <AuthenticatedLayout>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center pt-10">
+            <div class="w-full max-w-lg rounded-lg shadow-lg bg-white overflow-hidden flex flex-col items-center p-4">
+                <Chart type="pie" :data="chartDataPie" :options="chartOptions" class="w-full aspect-square" />
+            </div>
+            <div class="w-full max-w-lg rounded-lg shadow-lg bg-white overflow-hidden flex flex-col items-center p-4">
+                <Chart type="pie" :data="chartDataBar" :options="chartOptions" class="w-full aspect-square" />
+            </div>
+            <div class="w-full max-w-lg rounded-lg shadow-lg bg-white overflow-hidden flex flex-col items-center p-4">
+                <Chart type="pie" :data="chartDataDoughnut" :options="chartOptions" class="w-full aspect-square" />
+            </div>
+            <div class="w-full max-w-lg rounded-lg shadow-lg bg-white overflow-hidden flex flex-col items-center p-4">
+                <Chart type="pie" :data="chartDataPie" :options="chartOptions" class="w-full aspect-square" />
+            </div>
+            <div class="w-full max-w-lg rounded-lg shadow-lg bg-white overflow-hidden flex flex-col items-center p-4">
+                <Chart type="pie" :data="chartDataBar" :options="chartOptions" class="w-full aspect-square" />
+            </div>
+            <div class="w-full max-w-lg rounded-lg shadow-lg bg-white overflow-hidden flex flex-col items-center p-4">
+                <Chart type="pie" :data="chartDataDoughnut" :options="chartOptions" class="w-full aspect-square" />
+            </div>
+        </div>
+    </AuthenticatedLayout>
+</template>

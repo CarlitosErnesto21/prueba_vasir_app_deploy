@@ -13,10 +13,17 @@ return new class extends Migration
     {
         Schema::create('clientes', function (Blueprint $table) {
             $table->id();
-            $table->string('numero_identificacion',25)->unique();
+            $table->string('numero_identificacion', 25);
             $table->date('fecha_nacimiento');
-            $table->enum('genero', ['Masculino', 'Femenino' ])->default('Masculino');
-            $table->string('direccion',150);
+            $table->enum('genero', ['Masculino', 'Femenino']);
+            $table->string('direccion', 150);
+            $table->string('telefono', 20);
+            // Llave foranea a la tablausers
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            // Llave foranea a la tabla tipos_documentos
+            $table->unsignedBigInteger('tipo_documento_id');
+            $table->foreign('tipo_documento_id')->references('id')->on('tipos_documentos')->onDelete('cascade');
             $table->timestamps();
         });
     }
