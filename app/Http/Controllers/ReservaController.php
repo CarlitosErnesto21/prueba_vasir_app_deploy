@@ -12,7 +12,9 @@ class ReservaController extends Controller
      */
     public function index()
     {
-        //
+        // Obtener todas las reservas con sus relaciones
+        $reservas = Reserva::with(['cliente', 'empleado'])->get();
+        return response()->json($reservas);
     }
 
     /**
@@ -28,7 +30,21 @@ class ReservaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validar los datos del formulario
+        $validated = $request->validate([
+            'fecha' => 'required|date',
+            'estado' => 'required|in:Pendiente,Confirmada,Cancelada',
+            'cliente_id' => 'required|exists:clientes,id',
+            'empleado_id' => 'required|exists:empleados,id',
+        ]);
+
+        // Crear una nueva reserva
+        $reserva = Reserva::create($validated);
+
+        return response()->json([
+            'message' => 'Reserva creada exitosamente',
+            'reserva' => $reserva,
+        ]);
     }
 
     /**
@@ -36,7 +52,9 @@ class ReservaController extends Controller
      */
     public function show(Reserva $reserva)
     {
-        //
+        // Mostrar los detalles de una reserva específica con sus relaciones
+        $reserva->load(['cliente', 'empleado']);
+        return response()->json($reserva);
     }
 
     /**
@@ -52,7 +70,21 @@ class ReservaController extends Controller
      */
     public function update(Request $request, Reserva $reserva)
     {
-        //
+        // Validar los datos del formulario
+        $validated = $request->validate([
+            'fecha' => 'required|date',
+            'estado' => 'required|in:Pendiente,Confirmada,Cancelada',
+            'cliente_id' => 'required|exists:clientes,id',
+            'empleado_id' => 'required|exists:empleados,id',
+        ]);
+
+        // Actualizar la reserva
+        $reserva->update($validated);
+
+        return response()->json([
+            'message' => 'Reserva actualizada exitosamente',
+            'reserva' => $reserva,
+        ]);
     }
 
     /**
@@ -60,6 +92,11 @@ class ReservaController extends Controller
      */
     public function destroy(Reserva $reserva)
     {
-        //
+        // Eliminar la reserva
+        $reserva->delete();
+
+        return response()->json([
+            'message' => 'Reserva eliminada exitosamente',
+        ]);
     }
 }

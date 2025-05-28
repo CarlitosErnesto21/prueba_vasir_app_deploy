@@ -12,7 +12,9 @@ class MetodoPagoController extends Controller
      */
     public function index()
     {
-        //
+        // Obtener todos los métodos de pago
+        $metodosPago = MetodoPago::all();
+        return response()->json($metodosPago);
     }
 
     /**
@@ -28,7 +30,18 @@ class MetodoPagoController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validar los datos del formulario
+        $validated = $request->validate([
+            'metodo_pago' => 'required|string|max:50',
+        ]);
+
+        // Crear un nuevo método de pago
+        $metodoPago = MetodoPago::create($validated);
+
+        return response()->json([
+            'message' => 'Método de pago creado exitosamente',
+            'metodo_pago' => $metodoPago,
+        ]);
     }
 
     /**
@@ -36,8 +49,9 @@ class MetodoPagoController extends Controller
      */
     public function show(MetodoPago $metodoPago)
     {
-        //
+        return response()->json($metodoPago);
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -52,14 +66,34 @@ class MetodoPagoController extends Controller
      */
     public function update(Request $request, MetodoPago $metodoPago)
     {
-        //
+        // Validar los datos del formulario
+        $validated = $request->validate([
+            'metodo_pago' => 'required|string|max:50',
+        ]);
+
+        // Actualizar el método de pago
+        $metodoPago->update($validated);
+
+        // Recargar el modelo actualizado
+        $metodoPago = $metodoPago->fresh();
+
+        return response()->json([
+            'message' => 'Método de pago actualizado exitosamente',
+            'metodo_pago' => $metodoPago,
+        ]);
     }
+
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(MetodoPago $metodoPago)
     {
-        //
+        // Eliminar el método de pago
+        $metodoPago->delete();
+
+        return response()->json([
+            'message' => 'Método de pago eliminado exitosamente',
+        ]);
     }
 }

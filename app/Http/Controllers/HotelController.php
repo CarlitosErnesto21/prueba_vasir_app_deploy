@@ -12,7 +12,9 @@ class HotelController extends Controller
      */
     public function index()
     {
-        //
+        // Obtener todos los hoteles con sus relaciones
+        $hoteles = Hotel::with(['provincia', 'categoriaHotel'])->get();
+        return response()->json($hoteles);
     }
 
     /**
@@ -28,7 +30,21 @@ class HotelController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validar los datos del formulario
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:50',
+            'direccion' => 'required|string|max:200',
+            'provincia_id' => 'required|exists:provincias,id',
+            'categoria_id' => 'required|exists:categorias_hoteles,id',
+        ]);
+
+        // Crear un nuevo hotel
+        $hotel = Hotel::create($validated);
+
+        return response()->json([
+            'message' => 'Hotel creado exitosamente',
+            'hotel' => $hotel,
+        ]);
     }
 
     /**
@@ -36,7 +52,9 @@ class HotelController extends Controller
      */
     public function show(Hotel $hotel)
     {
-        //
+        // Mostrar los detalles de un hotel específico con sus relaciones
+        $hotel->load(['provincia', 'categoriaHotel']);
+        return response()->json($hotel);
     }
 
     /**
@@ -52,7 +70,21 @@ class HotelController extends Controller
      */
     public function update(Request $request, Hotel $hotel)
     {
-        //
+        // Validar los datos del formulario
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:50',
+            'direccion' => 'required|string|max:200',
+            'provincia_id' => 'required|exists:provincias,id',
+            'categoria_id' => 'required|exists:categorias_hoteles,id',
+        ]);
+
+        // Actualizar el hotel
+        $hotel->update($validated);
+
+        return response()->json([
+            'message' => 'Hotel actualizado exitosamente',
+            'hotel' => $hotel,
+        ]);
     }
 
     /**
@@ -60,6 +92,11 @@ class HotelController extends Controller
      */
     public function destroy(Hotel $hotel)
     {
-        //
+        // Eliminar el hotel
+        $hotel->delete();
+
+        return response()->json([
+            'message' => 'Hotel eliminado exitosamente',
+        ]);
     }
 }

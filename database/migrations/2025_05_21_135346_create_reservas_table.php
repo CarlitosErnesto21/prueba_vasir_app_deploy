@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->date('fecha');
             $table->enum('estado', ['Pendiente', 'Confirmada', 'Cancelada']);
-            // llave foraneea a la tabla clientes y empleados
+            // llave foraneea a la tabla clientes y empleadosa
             $table->unsignedBigInteger('cliente_id');
             $table->unsignedBigInteger('empleado_id');
             $table->foreign('cliente_id')->references('id')->on('clientes')->onDelete('cascade');
