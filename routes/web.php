@@ -6,14 +6,18 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
+/*Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
-});
+});*/
+
+Route::get('/', function(){
+    return Inertia::render('Catalogo');
+})->name('Catalogo');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -27,7 +31,11 @@ Route::middleware('auth')->group(function () {
 
 Route::get('catalogos/Productos', function () {
     return Inertia::render('catalogos/Productos');
-})->middleware(['auth', 'verified'])->name('productos');
+    })->middleware(['auth', 'verified'])->name('productos');
 });
+
+Route::get('catalogos/ReservaTours', function () {
+    return Inertia::render('catalogos/ReservaTours');
+    })->middleware(['auth', 'verified'])->name('reservatours');
 
 require __DIR__.'/auth.php';
