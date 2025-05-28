@@ -4,8 +4,6 @@ import { Head } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { FilterMatchMode } from '@primevue/core/api';
-
-
 import FileUpload from 'primevue/fileupload';
 
 const toast = useToast();
@@ -115,7 +113,7 @@ const onImageClear = () => {
     <Head title="Productos" />
     <AuthenticatedLayout>
 
-            <div class="py-6 px-6 mt-10 mx-auto bg-red-100 shadow-md rounded-lg">
+        <div class="py-6 px-6 mt-10 mx-auto bg-red-100 shadow-md rounded-lg">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold">Catálogo productos</h3>
                 <Button label="Agregar producto" icon="pi pi-plus" class="p-button-sm p-button-danger" @click="openNew" />

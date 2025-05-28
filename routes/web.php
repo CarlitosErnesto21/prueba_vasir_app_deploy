@@ -28,9 +28,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('catalogos/Productos', function () {
-        return Inertia::render('catalogos/Productos');
+Route::get('catalogos/Productos', function () {
+    return Inertia::render('catalogos/Productos');
     })->middleware(['auth', 'verified'])->name('productos');
 });
+
+Route::get('catalogos/ReservaTours', function () {
+    return Inertia::render('catalogos/ReservaTours');
+    })->middleware(['auth', 'verified'])->name('reservatours');
 
 require __DIR__.'/auth.php';
