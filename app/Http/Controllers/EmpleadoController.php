@@ -12,7 +12,9 @@ class EmpleadoController extends Controller
      */
     public function index()
     {
-        //
+        // Obtener todos los empleados con sus relaciones
+        $empleados = Empleado::with(['reservas', 'ventas'])->get();
+        return response()->json($empleados);
     }
 
     /**
@@ -28,7 +30,21 @@ class EmpleadoController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validar los datos del formulario
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:50',
+            'cargo' => 'required|string|max:25',
+            'telefono' => 'required|string|size:8',
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        // Crear un nuevo empleado
+        $empleado = Empleado::create($validated);
+
+        return response()->json([
+            'message' => 'Empleado creado exitosamente',
+            'empleado' => $empleado,
+        ]);
     }
 
     /**
@@ -36,7 +52,9 @@ class EmpleadoController extends Controller
      */
     public function show(Empleado $empleado)
     {
-        //
+        // Mostrar los detalles de un empleado específico con sus relaciones
+        $empleado->load(['reservas', 'ventas']);
+        return response()->json($empleado);
     }
 
     /**
@@ -52,7 +70,21 @@ class EmpleadoController extends Controller
      */
     public function update(Request $request, Empleado $empleado)
     {
-        //
+        // Validar los datos del formulario
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:50',
+            'cargo' => 'required|string|max:25',
+            'telefono' => 'required|string|size:8',
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        // Actualizar el empleado
+        $empleado->update($validated);
+
+        return response()->json([
+            'message' => 'Empleado actualizado exitosamente',
+            'empleado' => $empleado,
+        ]);
     }
 
     /**
@@ -60,6 +92,11 @@ class EmpleadoController extends Controller
      */
     public function destroy(Empleado $empleado)
     {
-        //
+        // Eliminar el empleado
+        $empleado->delete();
+
+        return response()->json([
+            'message' => 'Empleado eliminado exitosamente',
+        ]);
     }
 }
