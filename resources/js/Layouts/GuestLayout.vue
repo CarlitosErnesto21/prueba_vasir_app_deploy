@@ -4,7 +4,7 @@
       <!-- Panel lateral animado -->
       <div
         class="absolute top-0 left-0 h-full w-1/2 flex flex-col items-center justify-center transition-all duration-700 z-20"
-        :class="isRegister ? 'translate-x-full bg-gradient-to-br from-pink-400 to-red-400' : 'bg-gradient-to-br from-indigo-400 to-purple-400'"
+        :class="isRegister ? 'translate-x-full bg-gradient-to-br from-pink-400 to-red-400' : 'bg-gradient-to-br from-pink-400 to-red-400'"
       >
         <div class="text-white text-center px-8">
           <h2 class="text-3xl font-bold mb-2">

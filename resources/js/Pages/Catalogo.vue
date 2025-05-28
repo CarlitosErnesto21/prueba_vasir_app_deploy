@@ -9,21 +9,19 @@
                 <FontAwesomeIcon :icon="faList"/>
             </button>
             <div class="text-xl font-semibold text-black">
-                <Link :href="route('dashboard')" class="text-xl font-semibold text-black flex items-center cursor-pointer select-none">
-                    VAS
-                    <img src="../../../imagenes/logovasir.png" class="w-5 h-5 inline-block align-middle" />
-                    R
+                <Link :href="route('Catalogo')" class="text-xl font-semibold text-black flex items-center cursor-pointer select-none">
+                    <img src="../../../imagenes/logo.jpg" class="w-22 h-7 inline-block align-middle" />
                 </Link>
             </div>
             <!--Datos de la sesion-->
             <div class="flex items-center space-x-4">
                 <!-- Botón Login -->
-                <Link :href="route('login')" class="px-4 py-2 rounded bg-indigo-500 text-white hover:bg-indigo-600 transition">
+                <Link :href="route('login')" class="px-4 py-2 rounded  bg-black text-white hover:bg-red-600  transition">
                     Iniciar Sesión
                 </Link>
                 <!-- Botón Register -->
-                <Link :href="route('register')" class="px-4 py-2 rounded bg-pink-500 text-white hover:bg-pink-600 transition">
-                    Registrarse
+                <Link :href="route('register')" class="px-4 py-2 rounded bg-indigo-500 text-white hover:bg-indigo-600 transition">
+                    Registrarse 
                 </Link>
             </div>
         </div>

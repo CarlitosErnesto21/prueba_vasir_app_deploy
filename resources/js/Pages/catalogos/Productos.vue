@@ -30,7 +30,15 @@ const fetchProductos = async () => {
     // Simular datos de ejemplo
     productos.value = [
         { id: 1, nombre: 'Producto A', precio: 10.99 },
-        { id: 2, nombre: 'Producto B', precio: 20.5 }
+        { id: 2, nombre: 'Producto B', precio: 20.5 },
+        { id: 3, nombre: 'Producto C', precio: 32.99 },
+        { id: 4, nombre: 'Producto D', precio: 60.25 },
+        { id: 5, nombre: 'Producto E', precio: 15.75 },
+        { id: 6, nombre: 'Producto F', precio: 45.0 },
+        { id: 7, nombre: 'Producto G', precio: 22.5 },
+        { id: 8, nombre: 'Producto H', precio: 18.99 },
+        { id: 9, nombre: 'Producto I', precio: 30.0 },
+        { id: 10, nombre: 'Producto J', precio: 25.5 }
     ];
 };
 
@@ -107,13 +115,13 @@ const onImageClear = () => {
     <Head title="Productos" />
     <AuthenticatedLayout>
 
-            <div class="py-14 mt-10 px-6  mx-auto bg-red-100 shadow-md rounded-lg">
+            <div class="py-6 px-6 mt-10 mx-auto bg-red-100 shadow-md rounded-lg">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold">Productos</h3>
+                <h3 class="text-xl font-bold">Catálogo productos</h3>
                 <Button label="Agregar producto" icon="pi pi-plus" class="p-button-sm p-button-danger" @click="openNew" />
             </div>
 
-            <DataTable :value="productos" v-model:selection="selectedProducts" dataKey="id" :filters="filters" :paginator="true" :rows="5">
+            <DataTable :value="productos" v-model:selection="selectedProducts" dataKey="id" :filters="filters" :paginator="true" :rows="4">
                 <template #header>
                     <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
                 </template>
@@ -129,20 +137,21 @@ const onImageClear = () => {
                         <img v-if="slotProps.data.imagen" :src="slotProps.data.imagen" alt="Imagen" class="w-16 h-16 object-cover rounded" />
                         <span v-else class="text-gray-400">Sin imagen</span>
                     </template>
-                </Column>
-                <Column header="Acciones" :exportable="false">
-                    <template #body="slotProps">
-    <Button
-        icon="pi pi-pencil"
-        class="p-button-rounded p-button-warn p-button-md mr-2"
-        @click="editProduct(slotProps.data)"
-    />
-    <Button
-        icon="pi pi-trash"
-        class="p-button-rounded p-button-danger p-button-md"
-        @click="confirmDeleteProduct(slotProps.data)"
-    />
-</template>
+                        </Column>
+                        <Column header="Acciones" :exportable="false">
+                            <template #body="slotProps">
+                        <Button
+                            icon="pi pi-pencil"
+                            class="p-button-rounded p-button-warn p-button-md mr-2"
+                            @click="editProduct(slotProps.data)"
+                        />
+                        <Button
+                            icon="pi pi-trash"
+                            class="p-button-rounded p-button-danger p-button-md"
+                            @click="confirmDeleteProduct(slotProps.data)"
+                        />
+
+                    </template>
                 </Column>
             </DataTable>
 

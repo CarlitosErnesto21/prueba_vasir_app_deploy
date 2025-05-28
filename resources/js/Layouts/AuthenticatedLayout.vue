@@ -61,9 +61,7 @@ onBeforeUnmount(() => {
             </button>
             <div class="text-xl font-semibold text-black">
                 <Link :href="route('dashboard')" class="text-xl font-semibold text-black flex items-center cursor-pointer select-none">
-                    
                     <img src="../../../imagenes/logo.jpg" class="w-22 h-7 inline-block align-middle" />
-                    
                 </Link>
             </div>
             <!--Datos de la sesion-->
