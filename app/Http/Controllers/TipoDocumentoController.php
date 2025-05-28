@@ -12,7 +12,9 @@ class TipoDocumentoController extends Controller
      */
     public function index()
     {
-        //
+        // Obtener todos los tipos de documentos
+        $tiposDocumentos = TipoDocumento::all();
+        return response()->json($tiposDocumentos);
     }
 
     /**
@@ -28,7 +30,18 @@ class TipoDocumentoController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validar los datos del formulario
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:20',
+        ]);
+
+        // Crear un nuevo tipo de documento
+        $tipoDocumento = TipoDocumento::create($validated);
+
+        return response()->json([
+            'message' => 'Tipo de documento creado exitosamente',
+            'tipo_documento' => $tipoDocumento,
+        ]);
     }
 
     /**
@@ -36,7 +49,8 @@ class TipoDocumentoController extends Controller
      */
     public function show(TipoDocumento $tipoDocumento)
     {
-        //
+        // Mostrar los detalles de un tipo de documento específico
+        return response()->json($tipoDocumento);
     }
 
     /**
@@ -52,7 +66,18 @@ class TipoDocumentoController extends Controller
      */
     public function update(Request $request, TipoDocumento $tipoDocumento)
     {
-        //
+        // Validar los datos del formulario
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:20',
+        ]);
+
+        // Actualizar el tipo de documento
+        $tipoDocumento->update($validated);
+
+        return response()->json([
+            'message' => 'Tipo de documento actualizado exitosamente',
+            'tipo_documento' => $tipoDocumento,
+        ]);
     }
 
     /**
@@ -60,6 +85,11 @@ class TipoDocumentoController extends Controller
      */
     public function destroy(TipoDocumento $tipoDocumento)
     {
-        //
+        // Eliminar el tipo de documento
+        $tipoDocumento->delete();
+
+        return response()->json([
+            'message' => 'Tipo de documento eliminado exitosamente',
+        ]);
     }
 }
