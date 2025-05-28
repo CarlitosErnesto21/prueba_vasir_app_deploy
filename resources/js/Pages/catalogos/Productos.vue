@@ -154,48 +154,56 @@ const onImageClear = () => {
             </DataTable>
 
             <!-- Modal Producto -->
-            <Dialog v-model:visible="dialog" :header="btnTitle + ' Producto'" :modal="true" :style="{ width: '400px' }">
-                <div class="p-fluid space-y-4">
-                    <div>
-                        <label for="nombre">Nombre</label>
-                        <InputText v-model.trim="producto.nombre" id="nombre" required :class="{ 'p-invalid': submitted && !producto.nombre }" />
-                        <small class="text-red-500" v-if="submitted && !producto.nombre">Nombre requerido.</small>
-                    </div>
-                    <div>
-                        <label for="descripcion">Descripción</label>
-                        <InputText v-model.trim="producto.descripcion" id="descripcion" required :class="{ 'p-invalid': submitted && !producto.descripcion }" />
-                        <small class="text-red-500" v-if="submitted && !producto.descripcion">Descripción requerida.</small>
-                    </div>
-                    <div>
-                        <label for="precio">Precio</label>
-                        <InputNumber v-model="producto.precio" id="precio" mode="currency" currency="USD" :locale="'en-US'" :class="{ 'p-invalid': submitted && producto.precio == null }" />
-                        <small class="text-red-500" v-if="submitted && producto.precio == null">Precio requerido.</small>
-                    </div>
-                </div>
-                <!-- ...dentro de tu Dialog, después del campo de precio... -->
-                <div>
-                    <label for="imagen">Imagen</label>
-                    <FileUpload
-                        mode="basic"
-                        name="imagen"
-                        accept="image/*"
-                        :auto="true"
-                        chooseLabel="Seleccionar imagen"
-                        @select="onImageSelect"
-                        @clear="onImageClear"
-                        :customUpload="true"
-                        class="w-full"
-                    />
-                    <div v-if="imagenPreview" class="mt-2">
-                        <img :src="imagenPreview" alt="Vista previa" class="w-32 h-32 object-cover rounded border" />
-                    </div>
-                    <small class="text-red-500" v-if="submitted && !producto.imagen">Imagen requerida.</small>
-                </div>
-                <template #footer>
-                    <Button label="Cancelar" icon="pi pi-times" text @click="hideDialog" />
-                    <Button :label="btnTitle" icon="pi pi-check" @click="saveOrUpdate" />
-                </template>
-            </Dialog>
+          <Dialog v-model:visible="dialog" :header="btnTitle + ' Producto'" :modal="true" :style="{ width: '500px' }">
+    <div class="space-y-4">
+        <div class="w-full flex items-center gap-4">
+            <label for="nombre" class="w-24">Nombre:</label>
+            <InputText v-model.trim="producto.nombre" id="nombre"
+                required :class="{ 'p-invalid': submitted && !producto.nombre }"
+                class="flex-1" />
+        </div>
+        <div class="w-full flex items-center gap-4">
+            <label for="descripcion" class="w-24">Descripción:</label>
+            <InputText v-model.trim="producto.descripcion" id="descripcion"
+                required :class="{ 'p-invalid': submitted && !producto.descripcion }"
+                class="flex-1" />
+        </div>
+        <div class="w-full flex items-center gap-4">
+            <label for="precio" class="w-24">Precio:</label>
+            <InputNumber v-model="producto.precio" id="precio"
+                mode="currency" currency="USD" :locale="'en-US'"
+                :class="{ 'p-invalid': submitted && producto.precio == null }"
+                class="flex-1" />
+        </div>
+        <div class="w-full flex items-center gap-4">
+    <label for="imagen" class="w-24">Imagen:</label>
+    <FileUpload
+        mode="basic"
+        name="imagen"
+        accept="image/*"
+        :auto="true"
+        chooseLabel="Seleccionar imagen"
+        @select="onImageSelect"
+        :customUpload="true"
+        class="flex-1"
+    />
+</div>
+
+<div v-if="imagenPreview" class="flex flex-col items-center mt-2 space-y-2">
+    <img :src="imagenPreview" alt="Vista previa" class="w-32 h-32 object-cover rounded border" />
+    <Button label="Quitar imagen" icon="pi pi-times" class="p-button-outlined p-button-danger p-button-sm" @click="onImageClear" />
+</div>
+
+    </div>
+
+    <template #footer>
+        <div class="flex justify-center gap-4 w-full">
+            <Button label="Cancelar" icon="pi pi-times" text @click="hideDialog" />
+            <Button :label="btnTitle" icon="pi pi-check" @click="saveOrUpdate" />
+        </div>
+    </template>
+</Dialog>
+
 
             <!-- Confirmación de eliminación -->
             <Dialog v-model:visible="deleteDialog" header="Confirmar" :modal="true" :style="{ width: '350px' }">
