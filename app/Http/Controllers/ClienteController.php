@@ -12,7 +12,9 @@ class ClienteController extends Controller
      */
     public function index()
     {
-        //
+        // Obtener todos los clientes
+        $clientes = Cliente::with(['user', 'tipoDocumento'])->get();
+        return response()->json($clientes);
     }
 
     /**
@@ -28,7 +30,24 @@ class ClienteController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validar los datos del formulario
+        $validated = $request->validate([
+            'numero_identificacion' => 'required|string|max:25',
+            'fecha_nacimiento' => 'required|date',
+            'genero' => 'required|in:Masculino,Femenino',
+            'direccion' => 'required|string|max:150',
+            'telefono' => 'required|string|max:20',
+            'user_id' => 'required|exists:users,id',
+            'tipo_documento_id' => 'required|exists:tipos_documentos,id',
+        ]);
+
+        // Crear un nuevo cliente
+        $cliente = Cliente::create($validated);
+
+        return response()->json([
+            'message' => 'Cliente creado exitosamente',
+            'cliente' => $cliente,
+        ]);
     }
 
     /**
@@ -36,7 +55,9 @@ class ClienteController extends Controller
      */
     public function show(Cliente $cliente)
     {
-        //
+        // Mostrar los detalles de un cliente específico
+        $cliente->load(['user', 'tipoDocumento']);
+        return response()->json($cliente);
     }
 
     /**
@@ -52,7 +73,24 @@ class ClienteController extends Controller
      */
     public function update(Request $request, Cliente $cliente)
     {
-        //
+        // Validar los datos del formulario
+        $validated = $request->validate([
+            'numero_identificacion' => 'required|string|max:25',
+            'fecha_nacimiento' => 'required|date',
+            'genero' => 'required|in:Masculino,Femenino',
+            'direccion' => 'required|string|max:150',
+            'telefono' => 'required|string|max:20',
+            'user_id' => 'required|exists:users,id',
+            'tipo_documento_id' => 'required|exists:tipos_documentos,id',
+        ]);
+
+        // Actualizar el cliente
+        $cliente->update($validated);
+
+        return response()->json([
+            'message' => 'Cliente actualizado exitosamente',
+            'cliente' => $cliente,
+        ]);
     }
 
     /**
@@ -60,6 +98,11 @@ class ClienteController extends Controller
      */
     public function destroy(Cliente $cliente)
     {
-        //
+        // Eliminar el cliente
+        $cliente->delete();
+
+        return response()->json([
+            'message' => 'Cliente eliminado exitosamente',
+        ]);
     }
 }
