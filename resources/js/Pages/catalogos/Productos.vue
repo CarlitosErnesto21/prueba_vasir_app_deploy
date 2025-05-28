@@ -10,7 +10,7 @@ import FileUpload from 'primevue/fileupload';
 
 const toast = useToast();
 
-const productos = ref([]);
+const productos = ref([]);  
 const producto = ref({ id: null, nombre: '', precio: null, imagen: null });
 const imagenPreview = ref(null);
 const selectedProducts = ref();

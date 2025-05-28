@@ -24,15 +24,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+
 Route::get('catalogos/Productos', function () {
     return Inertia::render('catalogos/Productos');
 })->middleware(['auth', 'verified'])->name('productos');
-
-
-
-    
-    // Rutas para productos
-    Route::resource('productos', ProductoController::class);
 });
 
 require __DIR__.'/auth.php';
