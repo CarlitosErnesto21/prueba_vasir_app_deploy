@@ -9,11 +9,8 @@ import { usePage, Link } from '@inertiajs/vue3'; //link para que no recargue tod
 import Toast from 'primevue/toast';
 import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
 import { faList, faTags, faDoorOpen, faFileAlt, faLayerGroup, faCircleXmark, faUserCircle, 
-    faChevronDown, faHouseChimney, faTableList, faStoreAlt, faReceipt, 
-    faUser} from "@fortawesome/free-solid-svg-icons";
+    faChevronCircleDown, faHouseChimney, faTableList, faStoreAlt, faReceipt, faUser, faHome} from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
-import Avatar from 'primevue/avatar';
-
 
 const page = usePage();
 //const user = page.props.auth.user;
@@ -61,9 +58,7 @@ onBeforeUnmount(() => {
             </button>
             <div class="text-xl font-semibold text-black">
                 <Link :href="route('dashboard')" class="text-xl font-semibold text-black flex items-center cursor-pointer select-none">
-                    VAS
-                    <img src="../../../imagenes/logovasir.png" class="w-5 h-5 inline-block align-middle" />
-                    R
+                    <img src="../../../imagenes/logo.jpg" class="w-22 h-7 inline-block align-middle" />
                 </Link>
             </div>
             <!--Datos de la sesion-->
@@ -85,15 +80,15 @@ onBeforeUnmount(() => {
         <!-- Sidebar -->
         <aside
             :class="[
-                isSidebarCollapsed ? 'w-16' : 'w-36',
+                isSidebarCollapsed ? 'w-16' : 'w-40',
                 'fixed top-12 left-0 h-[calc(100vh-64px)] bg-gradient-to-b from-red-500 to-red-400 text-black transition-all duration-300 ease-in-out shadow-lg z-40 pt-8 flex flex-col',
                 isSidebarOpen ? 'block' : 'hidden','md:flex']">
             <!-- Botón colapsar/expandir SOLO en desktop -->
             <button
                 @click="toggleSidebar"
                 class="mx-auto mb-6 p-2 rounded-full bg-white text-red-500 hover:bg-red-100 transition hidden md:flex items-center justify-center"
-                :title="isSidebarCollapsed ? 'Expandir menú' : 'Colapsar menú'">
-                <FontAwesomeIcon :icon="faChevronDown" :class="isSidebarCollapsed ? 'rotate-90' : '-rotate-90'" />
+                :title="isSidebarCollapsed ? 'Expandir Menú' : 'Reducir Menú'">
+                <FontAwesomeIcon :icon="faTableList" :class="isSidebarCollapsed" class="h-5"/>
             </button>
             <div class="px-4 text-xl font-bold text-white flex justify-center items-center" v-if="!isSidebarCollapsed">
                 <span>MENÚ</span>
@@ -106,7 +101,7 @@ onBeforeUnmount(() => {
                             :href="route('dashboard')"
                             class="flex items-center"
                             :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'" title="Inicio">
-                            <FontAwesomeIcon :icon="faHouseChimney" :class="isSidebarCollapsed ? '' : 'mr-3'" />
+                            <FontAwesomeIcon :icon="faHome" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6" />
                             <span v-if="!isSidebarCollapsed">Inicio</span>
                         </Link>
                     </li>
@@ -119,10 +114,10 @@ onBeforeUnmount(() => {
                                 (isOpen && isSidebarCollapsed) ? 'bg-orange-700 text-white' : ''
                             ]"
                             title="Catálogos">
-                            <FontAwesomeIcon :icon="faTableList" :class="isSidebarCollapsed ? '' : 'mr-3'"/>
+                            <FontAwesomeIcon :icon="faList" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Catálogos</span>
-                            <FontAwesomeIcon v-if="!isSidebarCollapsed" :icon="faChevronDown"
-                                class="ml-2 transition-transform" :class="{'rotate-90': isOpen}" />
+                            <FontAwesomeIcon v-if="!isSidebarCollapsed" :icon="faChevronCircleDown"
+                                class="ml-2 transition-transform h-5" :class="{'rotate-90': isOpen}"/>
                         </button>
                         <!-- Menú desplegable como burbujas fuera del aside -->
                         <transition name="fade">
@@ -130,23 +125,25 @@ onBeforeUnmount(() => {
                                 v-if="isOpen && isSidebarCollapsed"
                                 class="absolute left-full top-1/2 -translate-y-1/2 flex flex-col space-y-2 z-50">
                                 <Link :href="route('dashboard')" title="Categorías"
-                                    class="bg-white text-red-500 rounded-full shadow-lg w-12 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
-                                    <FontAwesomeIcon :icon="faLayerGroup" size="lg" />
+                                    class="bg-white text-red-500 rounded-full shadow-lg w-20 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
+                                    <FontAwesomeIcon :icon="faLayerGroup" size="lg"/>
+                                    <h1>&nbsp;Tours</h1>
                                 </Link>
                                 <Link :href="route('dashboard')" title="Tours"
-                                    class="bg-white text-red-500 rounded-full shadow-lg w-12 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
-                                    <FontAwesomeIcon :icon="faTags" size="lg" />
+                                    class="bg-white text-red-500 rounded-full shadow-lg w-20 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
+                                    <FontAwesomeIcon :icon="faTags" size="lg"/>
+                                    <h1>&nbsp;Tours</h1>
                                 </Link>
                                 <Link :href="route('dashboard')" title="Tours"
-                                    class="bg-white text-red-500 rounded-full shadow-lg w-12 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
-                                    <FontAwesomeIcon :icon="faTags" size="lg" />
+                                    class="bg-white text-red-500 rounded-full shadow-lg w-20 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
+                                    <FontAwesomeIcon :icon="faTags" size="lg"/>
+                                    <h1>&nbsp;Tours</h1>
                                 </Link>
                             </div>
                             <!-- Menú normal cuando el aside está expandido -->
                             <ul
                                 v-else-if="isOpen"
-                                class="w-full rounded-md shadow-lg overflow-hidden"
-                            >
+                                class="w-full rounded-md shadow-lg overflow-hidden">
                                 <li class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start">
                                     <Link :href="route('dashboard')" class="flex items-center" title="Categorías">
                                         <FontAwesomeIcon :icon="faLayerGroup" />
@@ -173,25 +170,26 @@ onBeforeUnmount(() => {
                         <Link :href="route('productos')"
                             class="flex items-center" title="Productos"
                             :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
-                            <FontAwesomeIcon :icon="faStoreAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" />
+                            <FontAwesomeIcon :icon="faStoreAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Productos</span>
                         </Link>
                     </li>
                     <li class="px-5 py-3 hover:bg-orange-600 flex items-center"
                         :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                        <Link :href="route('dashboard')"
+                        <Link :href="route('reservatours')"
                             class="flex items-center" title="Reservas"
                             :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
-                            <FontAwesomeIcon :icon="faReceipt" :class="isSidebarCollapsed ? '' : 'mr-3'" />
+                            <FontAwesomeIcon :icon="faReceipt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Reservas</span>
                         </Link>
                     </li>
                     <li class="px-5 py-3 hover:bg-orange-600 flex items-center"
                         :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                        <Link href="route('reservas.rango')"
+                        <!--<Link :href="route('reservas.rango')"-->
+                        <Link :href="route('dashboard')"
                             class="flex items-center" title="Reportes"
                             :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
-                            <FontAwesomeIcon :icon="faFileAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" />
+                            <FontAwesomeIcon :icon="faFileAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Reportes</span>
                         </Link>
                     </li>
@@ -202,14 +200,14 @@ onBeforeUnmount(() => {
         <div
             v-if="isSidebarOpen"
             class="fixed inset-0 bg-black bg-opacity-40 z-30 md:hidden"
-            @click="isSidebarOpen = false"
-        ></div>
+            @click="isSidebarOpen = false">
+        </div>
         <!-- Contenedor para header secundario y contenido -->
-        <div :class="[isSidebarCollapsed ? 'md:ml-16' : 'md:ml-36', 'flex-1 flex flex-col']">
+        <div class="md:ml-16 flex-1 flex flex-col">
             <!-- Header secundario -->
             <header class="bg-gradient-to-r from-red-500 to-red-300 shadow px-4 py-2 flex items-center 
-                z-30 relative md:fixed top-14 md:top-12 lg:14 md:right-0 md:px-8"
-                :class="isSidebarCollapsed ? 'md:left-16' : 'md:left-36'">
+                z-30 relative md:fixed top-14 md:top-12 lg:14 md:right-0 md:px-8
+                md:left-16">
                 <h2 class="text-lg font-semibold text-white">Dashboard</h2>
             </header>
             <!-- Contenido principal con padding para no quedar debajo de los headers -->

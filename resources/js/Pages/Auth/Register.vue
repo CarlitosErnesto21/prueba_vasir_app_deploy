@@ -1,10 +1,13 @@
 <script setup>
-import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+
+const props = defineProps({
+    isRegister: Boolean
+});
 
 const form = useForm({
     name: '',
@@ -21,71 +24,63 @@ const submit = () => {
 </script>
 
 <template>
-    <GuestLayout>
+    <div>
         <Head title="Register" />
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="name" value="Name" />
-
+                <InputLabel for="register-name" value="Name" />
                 <TextInput
-                    id="name"
+                    id="register-name"
                     type="text"
                     class="mt-1 block w-full"
                     v-model="form.name"
                     required
-                    autofocus
+                    :autofocus="isRegister"
                     autocomplete="name"
                 />
-
                 <InputError class="mt-2" :message="form.errors.name" />
             </div>
 
             <div class="mt-4">
-                <InputLabel for="email" value="Email" />
-
+                <InputLabel for="register-email" value="Email" />
                 <TextInput
-                    id="email"
+                    id="register-email"
                     type="email"
                     class="mt-1 block w-full"
                     v-model="form.email"
                     required
                     autocomplete="username"
                 />
-
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
             <div class="mt-4">
-                <InputLabel for="password" value="Password" />
-
+                <InputLabel for="register-password" value="Password" />
                 <TextInput
-                    id="password"
+                    id="register-password"
                     type="password"
                     class="mt-1 block w-full"
                     v-model="form.password"
                     required
                     autocomplete="new-password"
                 />
-
                 <InputError class="mt-2" :message="form.errors.password" />
             </div>
 
             <div class="mt-4">
                 <InputLabel
-                    for="password_confirmation"
+                    for="register-password_confirmation"
                     value="Confirm Password"
                 />
-
                 <TextInput
-                    id="password_confirmation"
+                    id="register-password_confirmation"
                     type="password"
                     class="mt-1 block w-full"
                     v-model="form.password_confirmation"
                     required
                     autocomplete="new-password"
                 />
-
                 <InputError
                     class="mt-2"
                     :message="form.errors.password_confirmation"
@@ -109,5 +104,5 @@ const submit = () => {
                 </PrimaryButton>
             </div>
         </form>
-    </GuestLayout>
+    </div>
 </template>
