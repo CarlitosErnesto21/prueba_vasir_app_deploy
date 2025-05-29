@@ -27,9 +27,15 @@ const submit = () => {
     <div>
         <Head title="Register" />
 
+        <div class="flex justify-center mb-6">
+            <Link href="/">
+                <img src="../../../../imagenes/logo.jpg" alt="Logo" class="h-10 w-auto cursor-pointer" title="Ir a catálogo"/>
+            </Link>
+        </div>
+
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="register-name" value="Name" />
+                <InputLabel for="register-name" value="Nombre Completo:" class="font-bold"/>
                 <TextInput
                     id="register-name"
                     type="text"
@@ -43,7 +49,7 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <InputLabel for="register-email" value="Email" />
+                <InputLabel for="register-email" value="Correo Electrónico:" class="font-bold"/>
                 <TextInput
                     id="register-email"
                     type="email"
@@ -56,7 +62,7 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <InputLabel for="register-password" value="Password" />
+                <InputLabel for="register-password" value="Contraseña:" class="font-bold"/>
                 <TextInput
                     id="register-password"
                     type="password"
@@ -71,7 +77,8 @@ const submit = () => {
             <div class="mt-4">
                 <InputLabel
                     for="register-password_confirmation"
-                    value="Confirm Password"
+                    value="Confirmar Contraseña:"
+                    class="font-bold"
                 />
                 <TextInput
                     id="register-password_confirmation"
@@ -88,14 +95,8 @@ const submit = () => {
             </div>
 
             <div class="mt-4 flex items-center justify-end">
-                <Link
-                    :href="route('login')"
-                    class="rounded-md text-sm text-red-600 underline hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                    ¿Ya estás registrado?
-                </Link>
-
                 <PrimaryButton
-                    class="ms-4"
+                    class="ms-4 bg-red-500 hover:bg-red-600 focus:bg-red-700 text-white"
                     :class="{ 'opacity-25': form.processing }"
                     :disabled="form.processing"
                 >
