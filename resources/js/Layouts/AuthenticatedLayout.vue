@@ -145,7 +145,7 @@ onBeforeUnmount(() => {
                                 v-else-if="isOpen"
                                 class="w-full rounded-md shadow-lg overflow-hidden">
                                 <li class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start">
-                                    <Link :href="route('productos')" class="flex items-center" title="Categorías">
+                                    <Link :href="route('productos')" class="flex items-center" title="Productos">
                                         <FontAwesomeIcon :icon="faLayerGroup" />
                                         <span class="ml-3">Productos</span>
                                     </Link>
