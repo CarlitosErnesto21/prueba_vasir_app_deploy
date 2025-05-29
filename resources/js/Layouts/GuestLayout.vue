@@ -1,23 +1,23 @@
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <div class="relative w-[800px] h-[500px] bg-white rounded-xl shadow-lg overflow-hidden flex">
+    <div class="relative w-[800px] h-[500px] bg-gray-100 rounded-xl shadow-lg overflow-hidden flex">
       <!-- Panel lateral animado -->
       <div
         class="absolute top-0 left-0 h-full w-1/2 flex flex-col items-center justify-center transition-all duration-700 z-20"
-        :class="isRegister ? 'translate-x-full bg-gradient-to-br from-red-300 to-red-500' : 'bg-gradient-to-br from-pink-400 to-red-400'"
+        :class="isRegister ? 'translate-x-full bg-gradient-to-br from-red-300 to-red-500' : 'bg-gradient-to-br from-red-300 to-red-500'"
       >
         <div class="text-white text-center px-8">
           <h2 class="text-3xl font-bold mb-2">
-            {{ isRegister ? '¡Bienvenido!' : 'Hola!!!' }}
+            {{ isRegister ? '¡Bienvenido!' : '¡Hola de nuevo!' }}
           </h2>
           <p class="mb-8">
-            {{ isRegister ? 'Inicia sesión con tu cuenta' : 'Crear tu cuenta' }}
+            {{ isRegister ? '¿Ya tienes una cuenta?' : '¿No tienes una cuenta?' }}
           </p>
           <button
             @click="props.toggleForm"
             class="border-2 border-white px-8 py-2 rounded-full text-white font-semibold hover:bg-white hover:text-pink-500 transition"
           >
-            {{ props.isRegister ? 'INICIAR SESIÓN' : 'REGISTRAR' }}
+            {{ props.isRegister ? 'INICIA SESIÓN' : 'REGÍSTRATE' }}
           </button>
         </div>
       </div>

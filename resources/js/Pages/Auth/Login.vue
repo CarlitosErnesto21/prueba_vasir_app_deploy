@@ -57,10 +57,15 @@ const toggleForm = () => {
             <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
                 {{ status }}
             </div>
+            <div class="flex justify-center mb-6">
+                <Link href="/">
+                    <img src="../../../../imagenes/logo.jpg" alt="Logo" class="h-10 w-auto cursor-pointer" title="Ir a catálogo"/>
+                </Link>
+            </div>
 
             <form @submit.prevent="submit">
                 <div>
-                    <InputLabel for="login-email" value="Correo" />
+                    <InputLabel for="login-email" value="Correo Electrónico:" />
                     <TextInput
                         id="login-email"
                         type="email"
@@ -89,11 +94,11 @@ const toggleForm = () => {
                 <div class="mt-4 block">
                     <label class="flex items-center">
                         <Checkbox name="remember" v-model:checked="form.remember" />
-                        <span class="ms-2 text-sm text-gray-600">Acuérdate de mí.</span>
+                        <span class="ms-2 text-sm text-red-600">Acuérdate de mí.</span>
                     </label>
                 </div>
 
-                <div class="mt-4 flex items-center justify-end">
+                <div class="mt-4 flex items-center justify-center">
                     <Link
                         v-if="canResetPassword"
                         :href="route('password.request')"
@@ -102,10 +107,10 @@ const toggleForm = () => {
                     </Link>
 
                     <PrimaryButton
-                        class="ms-4"
+                        class="ms-4 bg-red-500 hover:bg-red-600 focus:bg-red-700 text-white"
                         :class="{ 'opacity-25': form.processing }"
                         :disabled="form.processing">
-                        Log in
+                        Iniciar Sesión
                     </PrimaryButton>
                 </div>
             </form>
