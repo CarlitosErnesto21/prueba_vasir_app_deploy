@@ -1,174 +1,651 @@
 <template>
   <Head title="Reservas de Tours" />
   <AuthenticatedLayout>
-    <div class="py-6 px-6 mt-10 mx-auto bg-red-100 shadow-md rounded-lg">
-      <!-- Datos del cliente y reserva -->
-      <div class="bg-white p-4 rounded shadow mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label class="block font-semibold mb-1">Cliente:</label>
-          <Dropdown v-model="cliente" :options="clientes" optionLabel="nombre" placeholder="Seleccione un cliente" class="w-full" />
-        </div>
-        <div>
-          <label class="block font-semibold mb-1">Dirección:</label>
-          <InputText v-model="direccion" class="w-full" placeholder="Dirección" readonly/>
-        </div>
-        <div>
-          <label class="block font-semibold mb-1">Teléfono:</label>
-          <InputText v-model="telefono" class="w-full" placeholder="Teléfono" readonly/>
-        </div>
-        <div>
-          <label class="block font-semibold mb-1">Fecha de reserva:</label>
-          <Calendar
-            v-model="fechaReserva"
-            dateFormat="dd/mm/yy"
-            class="w-full"
-            :showIcon="false"
-            :disabled="true"
-          />
-        </div>
-        <div>
-          <label class="block font-semibold mb-1">Factura No.:</label>
-          <InputText v-model="facturaNo" class="w-full" readonly />
+    <Toast />
+    <div class="py-6 px-2 sm:px-4 md:px-6 mt-10 mx-auto bg-red-100 shadow-md rounded-lg max-w-full">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">Catálogo de reservas de tours</h3>
+      </div>
+      <!-- Filtros superiores con títulos alineados -->
+      <div class="bg-white p-4 rounded shadow mb-4 border border-blue-300">
+        <div class="flex flex-col md:flex-row md:items-end md:gap-8">
+          <div class="flex flex-col mb-4 md:mb-0 md:mr-8">
+            <span class="font-semibold text-base text-gray-700 mb-2">Filtrar por tipo de reserva</span>
+            <div class="flex flex-col md:flex-row gap-2 md:gap-4">
+              <label class="inline-flex items-center" for="radio-tours">
+                <input id="radio-tours" type="radio" v-model="filtroTipo" value="tours" class="mr-2" name="tipo-reserva" />
+                Tours
+              </label>
+              <label class="inline-flex items-center" for="radio-hoteles">
+                <input id="radio-hoteles" type="radio" v-model="filtroTipo" value="hoteles" class="mr-2" name="tipo-reserva" />
+                Hoteles
+              </label>
+              <label class="inline-flex items-center" for="radio-aerolineas">
+                <input id="radio-aerolineas" type="radio" v-model="filtroTipo" value="aerolineas" class="mr-2" name="tipo-reserva" />
+                Aerolíneas
+              </label>
+            </div>
+          </div>
+          <div class="flex-1 flex flex-col">
+            <span class="font-semibold text-base text-gray-700 mb-1">Filtrar por rango de fechas</span>
+            <div class="flex flex-col md:flex-row gap-2">
+              <div>
+                <label for="filtro-desde" class="block font-semibold mb-1">Desde:</label>
+                <DatePicker id="filtro-desde" name="filtro-desde" v-model="filtroDesde" dateFormat="dd/mm/yy" class="w-full" showIcon />
+              </div>
+              <div>
+                <label for="filtro-hasta" class="block font-semibold mb-1">Hasta:</label>
+                <DatePicker id="filtro-hasta" name="filtro-hasta" v-model="filtroHasta" dateFormat="dd/mm/yy" class="w-full" showIcon />
+              </div>
+              <div class="flex items-end">
+                <Button label="Limpiar Fechas" icon="pi pi-times" class="p-button-sm p-button-secondary" @click="limpiarFechas" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <!-- Sección para agregar tour -->
-      <div class="bg-white p-4 rounded shadow mb-4 flex flex-col md:flex-row md:items-end gap-4 border border-blue-300">
-        <Button label="Buscar tour" icon="pi pi-search" class="p-button-outlined p-button-primary mb-2 md:mb-0" />
-        <div>
-          <label class="block font-semibold mb-1">Tour:</label>
-          <Dropdown v-model="tourSeleccionado" :options="tours" optionLabel="nombre" placeholder="Seleccione un tour" class="w-full" />
-        </div>
-        <div>
-          <label class="block font-semibold mb-1">Fecha del tour:</label>
-          <Calendar v-model="fechaTour" dateFormat="dd/mm/yy" class="w-full" showIcon />
-        </div>
-        <div>
-          <label class="block font-semibold mb-1">Personas:</label>
-          <InputNumber v-model="cantidad" :min="1" class="w-full" />
-        </div>
-        <div>
-          <label class="block font-semibold mb-1">Precio:</label>
-          <InputNumber v-model="precio" :min="0" mode="currency" currency="USD" locale="en-US" class="w-full" :readonly="true" />
-        </div>
-        <div>
-          <Button label="Agregar" icon="pi pi-plus" class="p-button-success mt-6 w-full" @click="agregarReserva" />
-        </div>
+      <!-- Selector de tipo de reservas -->
+      <div class="flex flex-col md:flex-row items-center gap-4 mt-10 mb-2">
+        <label for="tipo-estado" class="font-semibold mb-0">Ver reservas:</label>
+        <select
+          id="tipo-estado"
+          v-model="tipoEstadoSeleccionado"
+          class="p-2 rounded border border-gray-300 appearance-none w-36"
+          style="background-position: right 1rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em;"
+        >
+          <option value="confirmadas">Confirmadas</option>
+          <option value="canceladas">Canceladas</option>
+          <option value="pendientes">Pendientes</option>
+        </select>
+        <!-- Buscador global por nombre de tour/hotel/aerolínea -->
+        <InputText
+          v-model="busquedaNombreGeneral"
+          placeholder="Buscar por nombre..."
+          class="w-64"
+        />
       </div>
-
-      <!-- Tabla de reservas -->
-      <DataTable :value="reservas" class="mb-4" v-if="reservas.length">
-        <Column field="tour" header="Tour"></Column>
-        <Column field="fecha" header="Fecha"></Column>
-        <Column field="cantidad" header="Personas"></Column>
-        <Column field="precio" header="Precio Unitario" :body="precioBody"></Column>
-        <Column field="total" header="Total" :body="totalBody"></Column>
-        <Column header="Borrar">
-          <template #body="slotProps">
-            <Button icon="pi pi-trash" class="p-button-danger p-button-sm" @click="borrarReserva(slotProps.rowIndex)" />
+      <div class="overflow-x-auto" style="max-height: 340px; min-height: 340px; overflow-y: auto;">
+        <template v-if="['pendientes','confirmadas','canceladas'].includes(tipoEstadoSeleccionado)">
+          <h4 class="text-lg font-semibold mb-2">
+            Reservas
+            <span v-if="tipoEstadoSeleccionado === 'pendientes'">pendientes por confirmar</span>
+            <span v-else-if="tipoEstadoSeleccionado === 'confirmadas'">confirmadas</span>
+            <span v-else-if="tipoEstadoSeleccionado === 'canceladas'">canceladas</span>
+          </h4>
+          <template v-if="tipoEstadoSeleccionado === 'pendientes'">
+            <DataTable
+              :value="filtroTipo === 'tours' ? toursResumenFiltrado : otrosResumenFiltrado"
+              class="mb-4 min-w-[400px] w-full"
+              :rows="5"
+              :paginator="(filtroTipo === 'tours' ? toursResumenFiltrado.length : otrosResumenFiltrado.length) > 5"
+              :rowsPerPageOptions="[5, 10]"
+              scrollable
+              scrollHeight="240px"
+              v-if="(filtroTipo === 'tours' ? toursResumenFiltrado.length : otrosResumenFiltrado.length)"
+            >
+              <Column
+                v-if="filtroTipo === 'tours'"
+                field="nombre"
+                header="Nombre del Tour"
+              />
+              <Column
+                v-else
+                field="nombre"
+                :header="filtroTipo === 'hoteles' ? 'Nombre del Hotel' : 'Nombre de la Aerolínea'"
+              />
+              <Column header="Cantidad de Reservas">
+                <template #body="slotProps">
+                  {{ slotProps.data.cantidad }}
+                </template>
+              </Column>
+              <Column header="Acciones">
+                <template #body="slotProps">
+                  <Button
+                    label="Ver reservas"
+                    icon="pi pi-eye"
+                    class="p-button-sm p-button-info"
+                    @click="() => abrirModalReservas(filtroTipo, slotProps.data.nombre)"
+                  />
+                </template>
+              </Column>
+            </DataTable>
+            <div v-else class="text-gray-500 text-center" style="height: 240px; display: flex; align-items: center; justify-content: center;">
+              No hay reservas en este rango.
+            </div>
           </template>
-        </Column>
-      </DataTable>
-      <div class="text-right font-bold text-lg mt-2" v-if="reservas.length">
-        Total a pagar: ${{ totalGeneral.toFixed(2) }}
+          <template v-else>
+            <DataTable
+              :value="reservasPorEstado"
+              class="mb-4 min-w-[400px] w-full"
+              :rows="5"
+              :paginator="reservasPorEstado.length > 5"
+              :rowsPerPageOptions="[5, 10]"
+              scrollable
+              scrollHeight="240px"
+              v-if="reservasPorEstado.length"
+            >
+              <Column field="tipo" header="Tipo"></Column>
+              <Column field="nombreTour" header="Tour" v-if="filtroTipo === 'tours'"></Column>
+              <Column field="nombreTipo" :header="filtroTipo === 'hoteles' ? 'Hotel' : 'Aerolínea'" v-if="filtroTipo !== 'tours'"></Column>
+              <Column field="cliente" header="Cliente"></Column>
+              <Column field="fecha" header="Fecha"></Column>
+              <Column field="monto" header="Monto">
+                <template #body="slotProps">
+                  ${{ slotProps.data.monto }}
+                </template>
+              </Column>
+              <Column header="Acciones">
+                <template #body="slotProps">
+                  <Button
+                    v-if="tipoEstadoSeleccionado === 'confirmadas'"
+                    label="Pendiente"
+                    icon="pi pi-undo"
+                    class="p-button-xs p-button-warning mr-2"
+                    @click="cambiarEstado(slotProps.data, 'Pendiente')"
+                  />
+                  <Button
+                    v-if="tipoEstadoSeleccionado === 'confirmadas'"
+                    label="Cancelar"
+                    icon="pi pi-times"
+                    class="p-button-xs p-button-danger"
+                    @click="cambiarEstado(slotProps.data, 'Cancelada')"
+                  />
+                  <Button
+                    v-if="tipoEstadoSeleccionado === 'canceladas'"
+                    label="Pendiente"
+                    icon="pi pi-undo"
+                    class="p-button-xs p-button-warning"
+                    @click="cambiarEstado(slotProps.data, 'Pendiente')"
+                  />
+                </template>
+              </Column>
+            </DataTable>
+            <div v-else class="text-gray-500 text-center" style="height: 240px; display: flex; align-items: center; justify-content: center;">
+              No hay reservas en este rango.
+            </div>
+          </template>
+        </template>
       </div>
-
-      <!-- Botones de acción -->
-      <div class="flex flex-wrap gap-4 mt-6">
-        <Button label="Guardar" icon="pi pi-save" class="p-button-success" />
-        <Button label="Anular" icon="pi pi-times" class="p-button-warning" />
-        <Button label="Validar" icon="pi pi-check" class="p-button-info" />
-        <Button label="Imprimir" icon="pi pi-print" class="p-button-secondary" />
-      </div>
+      <!-- Modal único para reservas por tour/hotel/aerolínea -->
+      <Dialog v-model:visible="mostrarModalReservasTour" modal header="Reservas" :style="{ width: '98vw', maxWidth: '900px' }">
+        <div>
+          <!-- Buscador en el modal -->
+          <div class="flex flex-col md:flex-row gap-2 mb-3">
+            <InputText
+              v-model="busquedaModalCliente"
+              placeholder="Buscar por cliente"
+              class="w-full md:w-1/2"
+            />
+            <InputText
+              v-model="busquedaModalFecha"
+              placeholder="Buscar por fecha (YYYY-MM-DD)"
+              class="w-full md:w-1/2"
+            />
+          </div>
+          <div class="overflow-y-auto" style="max-height: 350px;">
+            <DataTable
+              :value="reservasFiltradasModal"
+              class="min-w-[350px] w-full"
+              :rows="5"
+              :paginator="reservasFiltradasModal.length > 5"
+              :rowsPerPageOptions="[5, 10]"
+              scrollable
+              scrollHeight="320px"
+              v-if="reservasFiltradasModal.length"
+            >
+              <Column field="cliente" header="Cliente"></Column>
+              <Column field="fecha" header="Fecha"></Column>
+              <Column field="monto" header="Monto">
+                <template #body="slotProps">
+                  ${{ slotProps.data.monto }}
+                </template>
+              </Column>
+              <Column field="estado" header="Estado">
+                <template #body="slotProps">
+                  <span class="ml-2 px-2 py-1 rounded text-xs"
+                    :class="slotProps.data.estado === 'Pendiente' ? 'bg-yellow-200 text-yellow-800' : slotProps.data.estado === 'Confirmado' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'">
+                    {{ slotProps.data.estado }}
+                  </span>
+                </template>
+              </Column>
+              <Column header="Acción">
+                <template #body="slotProps">
+                  <Button
+                    v-if="slotProps.data.estado === 'Pendiente'"
+                    label="Confirmar"
+                    icon="pi pi-check"
+                    class="p-button-xs p-button-success ml-2"
+                    @click="confirmarReserva(slotProps.data)"
+                  />
+                  <Button
+                    v-if="slotProps.data.estado === 'Pendiente'"
+                    label="Cancelar"
+                    icon="pi pi-times"
+                    class="p-button-xs p-button-danger ml-2"
+                    @click="cambiarEstado(slotProps.data, 'Cancelada')"
+                  />
+                </template>
+              </Column>
+            </DataTable>
+            <div v-else class="text-gray-500 text-center py-4">No hay reservas para este elemento.</div>
+          </div>
+          <div class="flex justify-end mt-4">
+            <Button label="Cerrar" icon="pi pi-times" class="p-button-secondary" @click="mostrarModalReservasTour = false" />
+          </div>
+        </div>
+      </Dialog>
     </div>
   </AuthenticatedLayout>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-
-// PrimeVue components
-import InputText from 'primevue/inputtext'
-import InputNumber from 'primevue/inputnumber'
-import Dropdown from 'primevue/dropdown'
-import Calendar from 'primevue/calendar'
+import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import DatePicker from 'primevue/datepicker'
+import InputText from 'primevue/inputtext'
 
-const clientes = [
-  { nombre: 'Juan Diaz', direccion: 'Av. # 1, C. Principal, Casa # 4B, Col. San Juan', telefono: '77558899' },
-  { nombre: 'Ana Perez', direccion: 'Col. Escalón, Calle 5', telefono: '22223333' }
-]
-const cliente = ref(null)
-const direccion = ref('')
-const telefono = ref('')
-const fechaReserva = ref(new Date()) // ← Esto inicializa con la fecha regional
-const facturaNo = ref('452125')
+// Filtros
+const filtroDesde = ref(null)
+const filtroHasta = ref(null)
+const filtroTipo = ref('tours')
 
-watch(cliente, (val) => {
-  if (val) {
-    direccion.value = val.direccion
-    telefono.value = val.telefono
-  } else {
-    direccion.value = ''
-    telefono.value = ''
+// Variables para el modal de reservas
+const mostrarModalReservasTour = ref(false)
+const reservasTourSeleccionado = ref([])
+
+// Variables para búsqueda en el modal
+const busquedaModalCliente = ref('')
+const busquedaModalFecha = ref('')
+
+// Computed para filtrar las reservas del modal según búsqueda
+const reservasFiltradasModal = computed(() => {
+  let lista = reservasTourSeleccionado.value || []
+  if (busquedaModalCliente.value) {
+    lista = lista.filter(r =>
+      r.cliente.toLowerCase().includes(busquedaModalCliente.value.toLowerCase())
+    )
   }
+  if (busquedaModalFecha.value) {
+    lista = lista.filter(r =>
+      r.fecha.includes(busquedaModalFecha.value)
+    )
+  }
+  return lista
 })
 
-const tours = [
-  { nombre: 'Ruta Maya', precio: 45 },
-  { nombre: 'Playa El Tunco', precio: 35 },
-  { nombre: 'Cascada de Don Juan', precio: 40 }
-]
-const tourSeleccionado = ref(null)
-const fechaTour = ref(null)
-const cantidad = ref(1)
-const precio = ref(0)
-const reservas = ref([])
+// Simulación de reservas de distintos tipos y tours
+const reservas = ref([
+  // Tours
+  { id: 1, tipo: 'tours', nombreTour: 'Ruta Maya', cliente: 'Julio Deras', fecha: '2025-05-02', estado: 'Pendiente', monto: 120 },
+  { id: 2, tipo: 'tours', nombreTour: 'Ruta Maya', cliente: 'Vanesa Cruz', fecha: '2025-05-07', estado: 'Confirmado', monto: 80 },
+  { id: 3, tipo: 'tours', nombreTour: 'Ruta Maya', cliente: 'Luis Flores', fecha: '2025-05-10', estado: 'Pendiente', monto: 90 },
+  { id: 4, tipo: 'tours', nombreTour: 'Playa El Tunco', cliente: 'Ana Pérez', fecha: '2025-05-03', estado: 'Pendiente', monto: 200 },
+  { id: 5, tipo: 'tours', nombreTour: 'Playa El Tunco', cliente: 'Carlos López', fecha: '2025-05-08', estado: 'Pendiente', monto: 150 },
+  { id: 6, tipo: 'tours', nombreTour: 'Cascada de Don Juan', cliente: 'María González', fecha: '2025-05-04', estado: 'Pendiente', monto: 300 },
+  { id: 13, tipo: 'tours', nombreTour: 'Ruta de las Flores', cliente: 'Andrea Molina', fecha: '2025-05-12', estado: 'Pendiente', monto: 180 },
+  { id: 14, tipo: 'tours', nombreTour: 'Ruta de las Flores', cliente: 'Roberto Salazar', fecha: '2025-05-13', estado: 'Pendiente', monto: 185 },
+  { id: 15, tipo: 'tours', nombreTour: 'Suchitoto Colonial', cliente: 'Patricia Ramos', fecha: '2025-05-14', estado: 'Pendiente', monto: 210 },
+  { id: 16, tipo: 'tours', nombreTour: 'Suchitoto Colonial', cliente: 'Miguel Torres', fecha: '2025-05-15', estado: 'Pendiente', monto: 220 },
+  { id: 17, tipo: 'tours', nombreTour: 'Volcán de Izalco', cliente: 'Sofía Herrera', fecha: '2025-05-16', estado: 'Pendiente', monto: 250 },
+  { id: 18, tipo: 'tours', nombreTour: 'Volcán de Izalco', cliente: 'Gabriela Díaz', fecha: '2025-05-17', estado: 'Pendiente', monto: 260 },
+  // Hoteles
+  { id: 7, tipo: 'hoteles', nombreTipo: 'Hotel Real', cliente: 'Pedro Martínez', fecha: '2025-05-09', estado: 'Pendiente', monto: 250 },
+  { id: 8, tipo: 'hoteles', nombreTipo: 'Hotel Real', cliente: 'Lucía Ramírez', fecha: '2025-05-12', estado: 'Pendiente', monto: 180 },
+  { id: 9, tipo: 'hoteles', nombreTipo: 'Hotel Plaza', cliente: 'Ana López', fecha: '2025-05-13', estado: 'Pendiente', monto: 210 },
+  { id: 19, tipo: 'hoteles', nombreTipo: 'Hotel Plaza', cliente: 'Jorge Castillo', fecha: '2025-05-14', estado: 'Pendiente', monto: 215 },
+  { id: 20, tipo: 'hoteles', nombreTipo: 'Hotel Boutique', cliente: 'Carmen Figueroa', fecha: '2025-05-15', estado: 'Pendiente', monto: 300 },
+  { id: 21, tipo: 'hoteles', nombreTipo: 'Hotel Boutique', cliente: 'Ricardo Méndez', fecha: '2025-05-16', estado: 'Pendiente', monto: 320 },
+  { id: 22, tipo: 'hoteles', nombreTipo: 'Hotel San Benito', cliente: 'Estela Morales', fecha: '2025-05-17', estado: 'Pendiente', monto: 180 },
+  // Aerolíneas
+  { id: 10, tipo: 'aerolineas', nombreTipo: 'AeroExpress', cliente: 'Sofía Herrera', fecha: '2025-05-11', estado: 'Pendiente', monto: 400 },
+  { id: 11, tipo: 'aerolineas', nombreTipo: 'AeroExpress', cliente: 'Carlos Méndez', fecha: '2025-05-14', estado: 'Pendiente', monto: 350 },
+  { id: 12, tipo: 'aerolineas', nombreTipo: 'VuelaYa', cliente: 'Luis Pérez', fecha: '2025-05-15', estado: 'Pendiente', monto: 420 },
+  { id: 23, tipo: 'aerolineas', nombreTipo: 'VuelaYa', cliente: 'Marina López', fecha: '2025-05-16', estado: 'Pendiente', monto: 430 },
+  { id: 24, tipo: 'aerolineas', nombreTipo: 'SkyTravel', cliente: 'Oscar Rivera', fecha: '2025-05-17', estado: 'Pendiente', monto: 390 },
+  { id: 25, tipo: 'aerolineas', nombreTipo: 'SkyTravel', cliente: 'Daniela Cruz', fecha: '2025-05-18', estado: 'Pendiente', monto: 410 },
+  { id: 26, tipo: 'aerolineas', nombreTipo: 'FlyNow', cliente: 'Felipe Gómez', fecha: '2025-05-19', estado: 'Pendiente', monto: 370 },
+  { id: 27, tipo: 'aerolineas', nombreTipo: 'FlyNow', cliente: 'Paola Martínez', fecha: '2025-05-20', estado: 'Pendiente', monto: 395 },
+])
 
-watch(tourSeleccionado, (val) => {
-  precio.value = val ? val.precio : 0
-})
-
-const totalGeneral = computed(() =>
-  reservas.value.reduce((acc, item) => acc + item.total, 0)
-)
-
-function agregarReserva() {
-  if (!tourSeleccionado.value || !fechaTour.value || cantidad.value < 1) return
-
-  reservas.value.push({
-    tour: tourSeleccionado.value.nombre,
-    precio: tourSeleccionado.value.precio,
-    cantidad: cantidad.value,
-    fecha: fechaTour.value ? fechaTour.value.toLocaleDateString() : '',
-    total: tourSeleccionado.value.precio * cantidad.value
+const toursResumen = computed(() => {
+  if (filtroTipo.value !== 'tours') return []
+  let filtradas = reservas.value.filter(r => r.tipo === 'tours' && r.estado === 'Pendiente')
+  if (filtroDesde.value) {
+    const desde = normalizaFecha(filtroDesde.value)
+    filtradas = filtradas.filter(r => normalizaFecha(r.fecha) >= desde)
+  }
+  if (filtroHasta.value) {
+    const hasta = normalizaFecha(filtroHasta.value)
+    filtradas = filtradas.filter(r => normalizaFecha(r.fecha) <= hasta)
+  }
+  const resumen = []
+  const toursMap = {}
+  filtradas.forEach(r => {
+    if (!toursMap[r.nombreTour]) {
+      toursMap[r.nombreTour] = { nombre: r.nombreTour, cantidad: 0 }
+      resumen.push(toursMap[r.nombreTour])
+    }
+    toursMap[r.nombreTour].cantidad++
   })
+  return resumen
+})
 
-  // Limpiar campos de tour
-  tourSeleccionado.value = null
-  fechaTour.value = null
-  cantidad.value = 1
-  precio.value = 0
+const otrosResumen = computed(() => {
+  if (filtroTipo.value === 'tours') return []
+  let filtradas = reservas.value.filter(r => r.tipo === filtroTipo.value && r.estado === 'Pendiente')
+  if (filtroDesde.value) {
+    const desde = normalizaFecha(filtroDesde.value)
+    filtradas = filtradas.filter(r => normalizaFecha(r.fecha) >= desde)
+  }
+  if (filtroHasta.value) {
+    const hasta = normalizaFecha(filtroHasta.value)
+    filtradas = filtradas.filter(r => normalizaFecha(r.fecha) <= hasta)
+  }
+  const resumen = []
+  const map = {}
+  filtradas.forEach(r => {
+    const nombre = r.nombreTipo
+    if (!map[nombre]) {
+      map[nombre] = { nombre, cantidad: 0 }
+      resumen.push(map[nombre])
+    }
+    map[nombre].cantidad++
+  })
+  return resumen
+})
+
+function abrirModalReservas(tipo, nombre) {
+  let filtradas = []
+  if (tipo === 'tours') {
+    filtradas = reservas.value.filter(r => r.tipo === 'tours' && r.estado === 'Pendiente' && r.nombreTour === nombre)
+  } else {
+    filtradas = reservas.value.filter(r => r.tipo === tipo && r.estado === 'Pendiente' && r.nombreTipo === nombre)
+  }
+  if (filtroDesde.value) {
+    const desde = normalizaFecha(filtroDesde.value)
+    filtradas = filtradas.filter(r => normalizaFecha(r.fecha) >= desde)
+  }
+  if (filtroHasta.value) {
+    const hasta = normalizaFecha(filtroHasta.value)
+    filtradas = filtradas.filter(r => normalizaFecha(r.fecha) <= hasta)
+  }
+  reservasTourSeleccionado.value = filtradas
+  mostrarModalReservasTour.value = true
 }
 
-function borrarReserva(index) {
-  reservas.value.splice(index, 1)
+function confirmarReserva(reserva) {
+  reserva.estado = 'Confirmado'
+  // Opcional: cerrar el modal después de confirmar
+  // mostrarModalReservasTour.value = false
 }
 
-function precioBody(row) {
-  return `$${row.precio.toFixed(2)}`
+function cambiarEstado(reserva, nuevoEstado) {
+  reserva.estado = nuevoEstado
 }
-function totalBody(row) {
-  return `$${row.total.toFixed(2)}`
+
+const reservasConfirmadas = computed(() => {
+  let filtradas = reservas.value.filter(r => r.estado === 'Confirmado' && r.tipo === filtroTipo.value)
+  if (filtroDesde.value) {
+    const desde = normalizaFecha(filtroDesde.value)
+    filtradas = filtradas.filter(r => normalizaFecha(r.fecha) >= desde)
+  }
+  if (filtroHasta.value) {
+    const hasta = normalizaFecha(filtroHasta.value)
+    filtradas = filtradas.filter(r => normalizaFecha(r.fecha) <= hasta)
+  }
+  return filtradas
+})
+
+const reservasCanceladas = computed(() => {
+  let filtradas = reservas.value.filter(r => r.estado === 'Cancelada' && r.tipo === filtroTipo.value)
+  if (filtroDesde.value) {
+    const desde = normalizaFecha(filtroDesde.value)
+    filtradas = filtradas.filter(r => normalizaFecha(r.fecha) >= desde)
+  }
+  if (filtroHasta.value) {
+    const hasta = normalizaFecha(filtroHasta.value)
+    filtradas = filtradas.filter(r => normalizaFecha(r.fecha) <= hasta)
+  }
+  return filtradas
+})
+
+const reservasPendientes = computed(() => {
+  let filtradas = reservas.value.filter(r => r.estado === 'Pendiente' && r.tipo === filtroTipo.value)
+  if (filtroDesde.value) {
+    const desde = normalizaFecha(filtroDesde.value)
+    filtradas = filtradas.filter(r => normalizaFecha(r.fecha) >= desde)
+  }
+  if (filtroHasta.value) {
+    const hasta = normalizaFecha(filtroHasta.value)
+    filtradas = filtradas.filter(r => normalizaFecha(r.fecha) <= hasta)
+  }
+  return filtradas
+})
+
+// Utilidad para normalizar fechas a Date (acepta Date o string 'YYYY-MM-DD')
+function normalizaFecha(fecha) {
+  if (!fecha) return null
+  if (fecha instanceof Date) {
+    // Solo la parte de año, mes, día
+    return new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate())
+  }
+  if (typeof fecha === 'string') {
+    // Si es 'YYYY-MM-DD'
+    const partes = fecha.split('-')
+    if (partes.length === 3) {
+      return new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]))
+    }
+    // Si es 'DD/MM/YYYY'
+    const partesSlash = fecha.split('/')
+    if (partesSlash.length === 3) {
+      return new Date(Number(partesSlash[2]), Number(partesSlash[1]) - 1, Number(partesSlash[0]))
+    }
+  }
+  return new Date(fecha)
 }
+
+// Mostrar siempre registros recientes aunque no haya filtro, ordenados por fecha descendente
+
+const toursResumenRecientes = computed(() => {
+  let resumen = toursResumen.value
+  // Ordenar por la fecha más reciente de cada grupo
+  resumen = resumen
+    .map(grupo => {
+      // Buscar la fecha más reciente de las reservas de ese tour
+      const fechas = reservas.value
+        .filter(r => r.tipo === 'tours' && r.estado === 'Pendiente' && r.nombreTour === grupo.nombre)
+        .map(r => normalizaFecha(r.fecha));
+      return { ...grupo, fechaReciente: fechas.length ? Math.max(...fechas.map(f => f.getTime())) : 0 };
+    })
+    .sort((a, b) => b.fechaReciente - a.fechaReciente);
+  return resumen;
+});
+
+const otrosResumenRecientes = computed(() => {
+  let resumen = otrosResumen.value
+  resumen = resumen
+    .map(grupo => {
+      const fechas = reservas.value
+        .filter(r => r.tipo === filtroTipo.value && r.estado === 'Pendiente' && r.nombreTipo === grupo.nombre)
+        .map(r => normalizaFecha(r.fecha));
+      return { ...grupo, fechaReciente: fechas.length ? Math.max(...fechas.map(f => f.getTime())) : 0 };
+    })
+    .sort((a, b) => b.fechaReciente - a.fechaReciente);
+  return resumen;
+});
+
+const reservasConfirmadasRecientes = computed(() => {
+  return reservasConfirmadas.value
+    .slice()
+    .sort((a, b) => normalizaFecha(b.fecha) - normalizaFecha(a.fecha));
+});
+
+const reservasCanceladasRecientes = computed(() => {
+  return reservasCanceladas.value
+    .slice()
+    .sort((a, b) => normalizaFecha(b.fecha) - normalizaFecha(a.fecha));
+});
+
+// Asegúrate de definir las siguientes variables y funciones con "const" o "let"
+const limpiarFechas = () => {
+  filtroDesde.value = null
+  filtroHasta.value = null
+}
+
+const tipoEstadoSeleccionado = ref('pendientes')
+
+// Buscador global por nombre de tour/hotel/aerolínea
+const busquedaNombreGeneral = ref('')
+
+// Computed para filtrar los resúmenes por nombre y estado seleccionado
+const toursResumenFiltrado = computed(() => {
+  // Filtra las reservas según el estado y fechas
+  let reservasFiltradas = reservas.value.filter(r => r.tipo === 'tours')
+  if (tipoEstadoSeleccionado.value === 'confirmadas') {
+    reservasFiltradas = reservasFiltradas.filter(r => r.estado === 'Confirmado')
+  } else if (tipoEstadoSeleccionado.value === 'canceladas') {
+    reservasFiltradas = reservasFiltradas.filter(r => r.estado === 'Cancelada')
+  } else if (tipoEstadoSeleccionado.value === 'pendientes') {
+    reservasFiltradas = reservasFiltradas.filter(r => r.estado === 'Pendiente')
+  }
+  // Filtra por fechas
+  if (filtroDesde.value) {
+    const desde = normalizaFecha(filtroDesde.value)
+    reservasFiltradas = reservasFiltradas.filter(r => normalizaFecha(r.fecha) >= desde)
+  }
+  if (filtroHasta.value) {
+    const hasta = normalizaFecha(filtroHasta.value)
+    reservasFiltradas = reservasFiltradas.filter(r => normalizaFecha(r.fecha) <= hasta)
+  }
+  // Agrupa por nombreTour y cuenta
+  const resumen = []
+  const toursMap = {}
+  reservasFiltradas.forEach(r => {
+    if (!toursMap[r.nombreTour]) {
+      toursMap[r.nombreTour] = { nombre: r.nombreTour, cantidad: 0 }
+      resumen.push(toursMap[r.nombreTour])
+    }
+    toursMap[r.nombreTour].cantidad++
+  })
+  // Aplica el filtro de búsqueda
+  if (!busquedaNombreGeneral.value) return resumen
+  const search = busquedaNombreGeneral.value.toLowerCase()
+  return resumen.filter(t =>
+    t.nombre.toLowerCase().includes(search)
+  )
+})
+
+const otrosResumenFiltrado = computed(() => {
+  // Filtra las reservas según el estado y fechas
+  let reservasFiltradas = reservas.value.filter(r => r.tipo === filtroTipo.value)
+  if (tipoEstadoSeleccionado.value === 'confirmadas') {
+    reservasFiltradas = reservasFiltradas.filter(r => r.estado === 'Confirmado')
+  } else if (tipoEstadoSeleccionado.value === 'canceladas') {
+    reservasFiltradas = reservasFiltradas.filter(r => r.estado === 'Cancelada')
+  } else if (tipoEstadoSeleccionado.value === 'pendientes') {
+    reservasFiltradas = reservasFiltradas.filter(r => r.estado === 'Pendiente')
+  }
+  // Filtra por fechas
+  if (filtroDesde.value) {
+    const desde = normalizaFecha(filtroDesde.value)
+    reservasFiltradas = reservasFiltradas.filter(r => normalizaFecha(r.fecha) >= desde)
+  }
+  if (filtroHasta.value) {
+    const hasta = normalizaFecha(filtroHasta.value)
+    reservasFiltradas = reservasFiltradas.filter(r => normalizaFecha(r.fecha) <= hasta)
+  }
+  // Agrupa por nombreTipo y cuenta
+  const resumen = []
+  const map = {}
+  reservasFiltradas.forEach(r => {
+    const nombre = r.nombreTipo
+    if (!map[nombre]) {
+      map[nombre] = { nombre, cantidad: 0 }
+      resumen.push(map[nombre])
+    }
+    map[nombre].cantidad++
+  })
+  // Aplica el filtro de búsqueda
+  if (!busquedaNombreGeneral.value) return resumen
+  const search = busquedaNombreGeneral.value.toLowerCase()
+  return resumen.filter(o =>
+    o.nombre.toLowerCase().includes(search)
+  )
+})
+
+// Cambia el estado de todas las reservas de ese grupo (por nombre)
+function cambiarEstadoPorNombre(nombre, nuevoEstado) {
+  if (filtroTipo.value === 'tours') {
+    reservas.value.forEach(r => {
+      if (r.tipo === 'tours' && r.nombreTour === nombre && r.estado === (tipoEstadoSeleccionado.value === 'confirmadas' ? 'Confirmado' : 'Cancelada')) {
+        r.estado = nuevoEstado
+      }
+    })
+  } else {
+    reservas.value.forEach(r => {
+      if (r.tipo === filtroTipo.value && r.nombreTipo === nombre && r.estado === (tipoEstadoSeleccionado.value === 'confirmadas' ? 'Confirmado' : 'Cancelada')) {
+        r.estado = nuevoEstado
+      }
+    })
+  }
+}
+
+// Computed para mostrar reservas individuales por estado (confirmadas/canceladas/pendientes) y aplicar filtros de búsqueda y fechas
+const reservasPorEstado = computed(() => {
+  let lista = reservas.value.filter(r => r.tipo === filtroTipo.value)
+
+  // Filtra por estado seleccionado
+  if (tipoEstadoSeleccionado.value === 'confirmadas') {
+    lista = lista.filter(r => r.estado === 'Confirmado')
+  } else if (tipoEstadoSeleccionado.value === 'canceladas') {
+    lista = lista.filter(r => r.estado === 'Cancelada')
+  } else if (tipoEstadoSeleccionado.value === 'pendientes') {
+    lista = lista.filter(r => r.estado === 'Pendiente')
+  } else {
+    lista = []
+  }
+
+  // Filtra por fechas si hay filtro
+  if (filtroDesde.value) {
+    const desde = normalizaFecha(filtroDesde.value)
+    lista = lista.filter(r => normalizaFecha(r.fecha) >= desde)
+  }
+  if (filtroHasta.value) {
+    const hasta = normalizaFecha(filtroHasta.value)
+    lista = lista.filter(r => normalizaFecha(r.fecha) <= hasta)
+  }
+
+  // Filtra por nombre de tour/hotel/aerolínea o cliente
+  if (busquedaNombreGeneral.value) {
+    const search = busquedaNombreGeneral.value.toLowerCase()
+    lista = lista.filter(r => {
+      const nombreEntidad = filtroTipo.value === 'tours' ? r.nombreTour : r.nombreTipo
+      return (
+        (nombreEntidad && nombreEntidad.toLowerCase().includes(search)) ||
+        (r.cliente && r.cliente.toLowerCase().includes(search))
+      )
+    })
+  }
+
+  // Ordena por fecha descendente
+  return lista.slice().sort((a, b) => normalizaFecha(b.fecha) - normalizaFecha(a.fecha))
+})
 </script>
 
 <style scoped>
 th, td {
   border: 1px solid #ccc;
+  word-break: break-word;
+}
+@media (max-width: 768px) {
+  th, td {
+    font-size: 0.95rem;
+    padding: 0.25rem 0.5rem;
+  }
 }
 </style>
