@@ -19,7 +19,12 @@ const isSidebarCollapsed = ref(true); // Colapsado por defecto
 const anioCurrent = ref(new Date().getFullYear());
 const isOpen = ref(false);
 const toggleDropdown = () => { isOpen.value = !isOpen.value; };
-const toggleSidebar = () => { isSidebarCollapsed.value = !isSidebarCollapsed.value; };
+const toggleSidebar = () => {
+    isSidebarCollapsed.value = !isSidebarCollapsed.value;
+    if (isSidebarCollapsed.value) {
+        isOpen.value = false; // Cierra el menú de catálogos al colapsar el aside
+    }
+};
 //FUNCIONES PARA LA LOGICA DEL COMPONENTE
 const logout = async () => {
     try{
@@ -32,7 +37,11 @@ const logout = async () => {
 
 function handleResize() {
     if (window.innerWidth < 768) {
-        isSidebarCollapsed.value = false;
+        isSidebarCollapsed.value = true; // Siempre colapsado
+        isSidebarOpen.value = false;     // Siempre cerrado en móvil
+    } else {
+        isSidebarCollapsed.value = true; // Siempre colapsado en desktop también
+        isSidebarOpen.value = false;
     }
 }
 
@@ -220,3 +229,9 @@ onBeforeUnmount(() => {
     <!--fin paradiv para sidebar y contenido dinamico-->
    </div>
 </template>
+
+<!-- No hay campos de formulario en este layout, pero si agregas alguno, asegúrate de incluir siempre un atributo id o name único en cada input/select/textarea. 
+Por ejemplo:
+<input id="busqueda" name="busqueda" ... />
+<label for="busqueda">Buscar</label>
+-->
