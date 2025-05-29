@@ -124,10 +124,10 @@ onBeforeUnmount(() => {
                             <div
                                 v-if="isOpen && isSidebarCollapsed"
                                 class="absolute left-full top-1/2 -translate-y-1/2 flex flex-col space-y-2 z-50">
-                                <Link :href="route('dashboard')" title="Categorías"
+                                <Link :href="route('productos')" title="Categorías"
                                     class="bg-white text-red-500 rounded-full shadow-lg w-20 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
                                     <FontAwesomeIcon :icon="faLayerGroup" size="lg"/>
-                                    <h1>&nbsp;Tours</h1>
+                                    <h1>&nbsp;Productos</h1>
                                 </Link>
                                 <Link :href="route('dashboard')" title="Tours"
                                     class="bg-white text-red-500 rounded-full shadow-lg w-20 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
@@ -145,9 +145,9 @@ onBeforeUnmount(() => {
                                 v-else-if="isOpen"
                                 class="w-full rounded-md shadow-lg overflow-hidden">
                                 <li class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start">
-                                    <Link :href="route('dashboard')" class="flex items-center" title="Categorías">
+                                    <Link :href="route('productos')" class="flex items-center" title="Categorías">
                                         <FontAwesomeIcon :icon="faLayerGroup" />
-                                        <span class="ml-3">Categorías</span>
+                                        <span class="ml-3">Productos</span>
                                     </Link>
                                 </li>
                                 <li class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start">
