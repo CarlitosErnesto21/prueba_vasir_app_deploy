@@ -144,7 +144,7 @@ onBeforeUnmount(() => {
                                     <span class="ml-2 whitespace-nowrap">Productos</span>
                                 </Link>
                                 <Link
-                                    :href="route('dashboard')"
+                                    :href="route('tours')"
                                     title="Tours"
                                     class="bg-white text-red-500 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-600 hover:text-white transition"
                                     style="min-width: 110px; min-height: 48px; padding: 0 18px;">
@@ -175,9 +175,9 @@ onBeforeUnmount(() => {
                                 </li>
                                 <li
                                     class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start cursor-pointer"
-                                    @click="$inertia.visit(route('dashboard'))"
+                                    @click="$inertia.visit(route('tours'))"
                                     tabindex="0"
-                                    @keydown.enter="$inertia.visit(route('dashboard'))"
+                                    @keydown.enter="$inertia.visit(route('tours'))"
                                     title="Tours">
                                     <FontAwesomeIcon :icon="faTags" />
                                     <span class="ml-3">Tours</span>
