@@ -31,11 +31,11 @@
             <div class="flex flex-col md:flex-row gap-2">
               <div>
                 <label for="filtro-desde" class="block font-semibold mb-1">Desde:</label>
-                <DatePicker id="filtro-desde" name="filtro-desde" v-model="filtroDesde" dateFormat="dd/mm/yy" class="w-full" showIcon />
+                <DatePicker inputId="filtro-desde" name="filtro-desde" v-model="filtroDesde" dateFormat="dd/mm/yy" class="w-full" showIcon />
               </div>
               <div>
                 <label for="filtro-hasta" class="block font-semibold mb-1">Hasta:</label>
-                <DatePicker id="filtro-hasta" name="filtro-hasta" v-model="filtroHasta" dateFormat="dd/mm/yy" class="w-full" showIcon />
+                <DatePicker inputId="filtro-hasta" name="filtro-hasta" v-model="filtroHasta" dateFormat="dd/mm/yy" class="w-full" showIcon />
               </div>
               <div class="flex items-end">
                 <Button label="Limpiar Fechas" icon="pi pi-times" class="p-button-sm p-button-secondary" @click="limpiarFechas" />
@@ -49,22 +49,26 @@
         <label for="tipo-estado" class="font-semibold mb-0">Ver reservas:</label>
         <select
           id="tipo-estado"
+          name="tipo-estado"
           v-model="tipoEstadoSeleccionado"
           class="p-2 rounded border border-gray-300 appearance-none w-36"
-          style="background-position: right 1rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em;"
-        >
+          style="background-position: right 0.1rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em;">
+          <option value="pendientes">Pendientes</option>
           <option value="confirmadas">Confirmadas</option>
           <option value="canceladas">Canceladas</option>
-          <option value="pendientes">Pendientes</option>
+          <option value="">Reprogramadas</option>
         </select>
         <!-- Buscador global por nombre de tour/hotel/aerolínea -->
+        <label for="busqueda-nombre-general" class="sr-only">Buscar por nombre</label>
         <InputText
+          id="busqueda-nombre-general"
+          name="busqueda-nombre-general"
           v-model="busquedaNombreGeneral"
           placeholder="Buscar por nombre..."
           class="w-64"
         />
       </div>
-      <div class="overflow-x-auto" style="max-height: 340px; min-height: 340px; overflow-y: auto;">
+      <div class="overflow-x-auto">
         <template v-if="['pendientes','confirmadas','canceladas'].includes(tipoEstadoSeleccionado)">
           <h4 class="text-lg font-semibold mb-2">
             Reservas
