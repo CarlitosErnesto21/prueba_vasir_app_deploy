@@ -21,9 +21,8 @@ const isOpen = ref(false);
 const toggleDropdown = () => { isOpen.value = !isOpen.value; };
 const toggleSidebar = () => {
     isSidebarCollapsed.value = !isSidebarCollapsed.value;
-    if (isSidebarCollapsed.value) {
-        isOpen.value = false; // Cierra el menú de catálogos al colapsar el aside
-    }
+    // Cierra el menú de catálogos al cambiar el estado del aside (colapsar o expandir)
+    isOpen.value = false;
 };
 //FUNCIONES PARA LA LOGICA DEL COMPONENTE
 const logout = async () => {
@@ -45,12 +44,40 @@ function handleResize() {
     }
 }
 
+// Cierra burbujitas y aside al hacer clic fuera
+function handleGlobalClick(e) {
+    // Cierra el aside expandido (desktop o móvil) si el clic no fue dentro del aside ni en el botón hamburguesa
+    const aside = document.querySelector('aside');
+    const hamburger = document.querySelector('button.block.md\\:hidden');
+    if (
+        (isSidebarOpen.value || !isSidebarCollapsed.value) &&
+        aside &&
+        !aside.contains(e.target) &&
+        (!hamburger || !hamburger.contains(e.target))
+    ) {
+        isSidebarOpen.value = false;
+        isSidebarCollapsed.value = true;
+    }
+    // Si las burbujitas están abiertas y el clic no fue dentro del aside ni en el botón catálogos, ciérralas
+    if (isOpen.value) {
+        const catalogBtn = document.querySelector('button[title="Catálogos"]');
+        if (
+            (!aside || !aside.contains(e.target)) &&
+            (!catalogBtn || !catalogBtn.contains(e.target))
+        ) {
+            isOpen.value = false;
+        }
+    }
+}
+
 onMounted(() => {
     window.addEventListener('resize', handleResize);
     handleResize();
+    document.addEventListener('click', handleGlobalClick, true);
 });
 onBeforeUnmount(() => {
     window.removeEventListener('resize', handleResize);
+    document.removeEventListener('click', handleGlobalClick, true);
 });
 </script>
 
