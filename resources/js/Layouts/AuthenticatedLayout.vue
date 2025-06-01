@@ -21,9 +21,8 @@ const isOpen = ref(false);
 const toggleDropdown = () => { isOpen.value = !isOpen.value; };
 const toggleSidebar = () => {
     isSidebarCollapsed.value = !isSidebarCollapsed.value;
-    if (isSidebarCollapsed.value) {
-        isOpen.value = false; // Cierra el menú de catálogos al colapsar el aside
-    }
+    // Cierra el menú de catálogos al cambiar el estado del aside (colapsar o expandir)
+    isOpen.value = false;
 };
 //FUNCIONES PARA LA LOGICA DEL COMPONENTE
 const logout = async () => {
@@ -45,12 +44,40 @@ function handleResize() {
     }
 }
 
+// Cierra burbujitas y aside al hacer clic fuera
+function handleGlobalClick(e) {
+    // Cierra el aside expandido (desktop o móvil) si el clic no fue dentro del aside ni en el botón hamburguesa
+    const aside = document.querySelector('aside');
+    const hamburger = document.querySelector('button.block.md\\:hidden');
+    if (
+        (isSidebarOpen.value || !isSidebarCollapsed.value) &&
+        aside &&
+        !aside.contains(e.target) &&
+        (!hamburger || !hamburger.contains(e.target))
+    ) {
+        isSidebarOpen.value = false;
+        isSidebarCollapsed.value = true;
+    }
+    // Si las burbujitas están abiertas y el clic no fue dentro del aside ni en el botón catálogos, ciérralas
+    if (isOpen.value) {
+        const catalogBtn = document.querySelector('button[title="Catálogos"]');
+        if (
+            (!aside || !aside.contains(e.target)) &&
+            (!catalogBtn || !catalogBtn.contains(e.target))
+        ) {
+            isOpen.value = false;
+        }
+    }
+}
+
 onMounted(() => {
     window.addEventListener('resize', handleResize);
     handleResize();
+    document.addEventListener('click', handleGlobalClick, true);
 });
 onBeforeUnmount(() => {
     window.removeEventListener('resize', handleResize);
+    document.removeEventListener('click', handleGlobalClick, true);
 });
 </script>
 
@@ -104,15 +131,16 @@ onBeforeUnmount(() => {
             </div>
             <nav class="mt-4 text-white flex-1">
                 <ul>
-                    <li class="px-4 py-3 hover:bg-orange-600 flex items-center"
-                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                        <Link
-                            :href="route('dashboard')"
-                            class="flex items-center"
-                            :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'" title="Inicio">
-                            <FontAwesomeIcon :icon="faHome" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6" />
-                            <span v-if="!isSidebarCollapsed">Inicio</span>
-                        </Link>
+                    <li
+                        class="px-4 py-3 hover:bg-orange-600 flex items-center cursor-pointer"
+                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
+                        @click="$inertia.visit(route('dashboard'))"
+                        tabindex="0"
+                        @keydown.enter="$inertia.visit(route('dashboard'))"
+                        title="Inicio"
+                    >
+                        <FontAwesomeIcon :icon="faHome" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6" />
+                        <span v-if="!isSidebarCollapsed">Inicio</span>
                     </li>
                     <li class="px-0 py-3 flex flex-col relative">
                         <!-- Botón Catálogos alineado -->
@@ -132,75 +160,96 @@ onBeforeUnmount(() => {
                         <transition name="fade">
                             <div
                                 v-if="isOpen && isSidebarCollapsed"
-                                class="absolute left-full top-1/2 -translate-y-1/2 flex flex-col space-y-2 z-50">
-                                <Link :href="route('productos')" title="Categorías"
-                                    class="bg-white text-red-500 rounded-full shadow-lg w-20 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
+                                class="absolute left-full top-1/2 -translate-y-1/2 flex flex-col items-center space-y-3 z-50"
+                                style="min-width: 120px;">
+                                <Link
+                                    :href="route('productos')"
+                                    title="Categorías"
+                                    class="bg-white text-red-500 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-600 hover:text-white transition"
+                                    style="min-width: 110px; min-height: 48px; padding: 0 18px;">
                                     <FontAwesomeIcon :icon="faLayerGroup" size="lg"/>
-                                    <h1>&nbsp;Productos</h1>
+                                    <span class="ml-2 whitespace-nowrap">Productos</span>
                                 </Link>
-                                <Link :href="route('dashboard')" title="Tours"
-                                    class="bg-white text-red-500 rounded-full shadow-lg w-20 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
+                                <Link
+                                    :href="route('tours')"
+                                    title="Tours"
+                                    class="bg-white text-red-500 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-600 hover:text-white transition"
+                                    style="min-width: 110px; min-height: 48px; padding: 0 18px;">
                                     <FontAwesomeIcon :icon="faTags" size="lg"/>
-                                    <h1>&nbsp;Tours</h1>
+                                    <span class="ml-2 whitespace-nowrap">Tours</span>
                                 </Link>
-                                <Link :href="route('dashboard')" title="Tours"
-                                    class="bg-white text-red-500 rounded-full shadow-lg w-20 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
+                                <Link
+                                    :href="route('dashboard')"
+                                    title="Otros"
+                                    class="bg-white text-red-500 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-600 hover:text-white transition"
+                                    style="min-width: 110px; min-height: 48px; padding: 0 18px;">
                                     <FontAwesomeIcon :icon="faTags" size="lg"/>
-                                    <h1>&nbsp;Tours</h1>
+                                    <span class="ml-2 whitespace-nowrap">Otros</span>
                                 </Link>
                             </div>
                             <!-- Menú normal cuando el aside está expandido -->
                             <ul
                                 v-else-if="isOpen"
                                 class="w-full rounded-md shadow-lg overflow-hidden">
-                                <li class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start">
-                                    <Link :href="route('productos')" class="flex items-center" title="Categorías">
-                                        <FontAwesomeIcon :icon="faLayerGroup" />
-                                        <span class="ml-3">Productos</span>
-                                    </Link>
+                                <li
+                                    class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start cursor-pointer"
+                                    @click="$inertia.visit(route('productos'))"
+                                    tabindex="0"
+                                    @keydown.enter="$inertia.visit(route('productos'))"
+                                    title="Categorías">
+                                    <FontAwesomeIcon :icon="faLayerGroup" />
+                                    <span class="ml-3">Productos</span>
                                 </li>
-                                <li class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start">
-                                    <Link :href="route('dashboard')" class="flex items-center" title="Tours">
-                                        <FontAwesomeIcon :icon="faTags" />
-                                        <span class="ml-3">Tours</span>
-                                    </Link>
+                                <li
+                                    class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start cursor-pointer"
+                                    @click="$inertia.visit(route('tours'))"
+                                    tabindex="0"
+                                    @keydown.enter="$inertia.visit(route('tours'))"
+                                    title="Tours">
+                                    <FontAwesomeIcon :icon="faTags" />
+                                    <span class="ml-3">Tours</span>
                                 </li>
-                                <li class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start">
-                                    <Link :href="route('dashboard')" class="flex items-center" title="Tours">
-                                        <FontAwesomeIcon :icon="faTags" />
-                                        <span class="ml-3">Otros</span>
-                                    </Link>
+                                <li
+                                    class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start cursor-pointer"
+                                    @click="$inertia.visit(route('dashboard'))"
+                                    tabindex="0"
+                                    @keydown.enter="$inertia.visit(route('dashboard'))"
+                                    title="Otros">
+                                    <FontAwesomeIcon :icon="faTags" />
+                                    <span class="ml-3">Otros</span>
                                 </li>
                             </ul>
                         </transition>
                     </li>
-                    <li class="px-4 py-3 hover:bg-orange-600 flex items-center"
-                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                        <Link :href="route('productos')"
-                            class="flex items-center" title="Productos"
-                            :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
-                            <FontAwesomeIcon :icon="faStoreAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
-                            <span v-if="!isSidebarCollapsed">Productos</span>
-                        </Link>
+                    <li
+                        class="px-4 py-3 hover:bg-orange-600 flex items-center cursor-pointer"
+                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
+                        @click="$inertia.visit(route('productos'))"
+                        tabindex="0"
+                        @keydown.enter="$inertia.visit(route('productos'))"
+                        title="Productos">
+                        <FontAwesomeIcon :icon="faStoreAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
+                        <span v-if="!isSidebarCollapsed">Productos</span>
                     </li>
-                    <li class="px-5 py-3 hover:bg-orange-600 flex items-center"
-                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                        <Link :href="route('reservatours')"
-                            class="flex items-center" title="Reservas"
-                            :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
-                            <FontAwesomeIcon :icon="faReceipt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
-                            <span v-if="!isSidebarCollapsed">Reservas</span>
-                        </Link>
+                    <li
+                        class="px-5 py-3 hover:bg-orange-600 flex items-center cursor-pointer"
+                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
+                        @click="$inertia.visit(route('reservatours'))"
+                        tabindex="0"
+                        @keydown.enter="$inertia.visit(route('reservatours'))"
+                        title="Reservas">
+                        <FontAwesomeIcon :icon="faReceipt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
+                        <span v-if="!isSidebarCollapsed">Reservas</span>
                     </li>
-                    <li class="px-5 py-3 hover:bg-orange-600 flex items-center"
-                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                        <!--<Link :href="route('reservas.rango')"-->
-                        <Link :href="route('dashboard')"
-                            class="flex items-center" title="Reportes"
-                            :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
-                            <FontAwesomeIcon :icon="faFileAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
-                            <span v-if="!isSidebarCollapsed">Reportes</span>
-                        </Link>
+                    <li
+                        class="px-5 py-3 hover:bg-orange-600 flex items-center cursor-pointer"
+                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
+                        @click="$inertia.visit(route('dashboard'))"
+                        tabindex="0"
+                        @keydown.enter="$inertia.visit(route('dashboard'))"
+                        title="Reportes">
+                        <FontAwesomeIcon :icon="faFileAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
+                        <span v-if="!isSidebarCollapsed">Reportes</span>
                     </li>
                 </ul>
             </nav>
