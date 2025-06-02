@@ -30,6 +30,7 @@
     });
 
     const fetchProductos = async () => {
+
         try {
             const response = await axios.get('/api/productos'); // Llama al endpoint de productos
             productos.value = response.data; // Asigna los datos obtenidos
@@ -54,7 +55,7 @@
         } catch (err) {
             console.error('Error al obtener las categorías', err);
         }
-    };
+
 
     const openNew = () => {
         producto.value = { id: null, nombre: '', precio: null, imagenes: [] };
@@ -160,10 +161,18 @@
                     <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
                 </template>
                 <Column field="nombre" header="Nombre"  />
-                <Column field="descripcion" header="Descripción"  />
-                <Column field="precio" header="Precio" >
+                <Column field="descripcion" header="Descripción">
                     <template #body="slotProps">
+                        <div class="max-h-14 max-w-52 overflow-y-auto whitespace-pre-line px-2 py-1 break-words">
+                            {{ slotProps.data.descripcion }}
+                        </div>
+                    </template>
+                </Column>
+                <Column field="precio" header="Precio" >
+                    <template #body="slotProps"
+                    
                         ${{ parseFloat(slotProps.data.precio || 0).toFixed(2) }}
+
                     </template>
                 </Column>
                 <Column header="Imágenes">
@@ -196,7 +205,7 @@
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
                             <label for="descripcion" class="w-24">Descripción:</label>
-                            <InputText v-model.trim="producto.descripcion" id="descripcion" :class="{ 'p-invalid': submitted && !producto.descripcion }" class="flex-1" />
+                            <Textarea v-model.trim="producto.descripcion" id="descripcion" :class="{ 'p-invalid': submitted && !producto.descripcion }" class="flex-1" />
                         </div>
                         <small class="text-red-500 ml-28" v-if="submitted && !producto.descripcion">La descripción es obligatoria.</small>
                     </div>
