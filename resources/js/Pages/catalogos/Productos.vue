@@ -55,7 +55,7 @@
         } catch (err) {
             console.error('Error al obtener las categorías', err);
         }
-
+    };
 
     const openNew = () => {
         producto.value = { id: null, nombre: '', precio: null, imagenes: [] };
@@ -169,10 +169,8 @@
                     </template>
                 </Column>
                 <Column field="precio" header="Precio" >
-                    <template #body="slotProps"
-                    
+                    <template #body="slotProps">
                         ${{ parseFloat(slotProps.data.precio || 0).toFixed(2) }}
-
                     </template>
                 </Column>
                 <Column header="Imágenes">
