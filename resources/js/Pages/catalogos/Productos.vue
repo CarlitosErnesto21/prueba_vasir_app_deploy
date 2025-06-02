@@ -20,24 +20,40 @@
         global: { value: null, matchMode: FilterMatchMode.CONTAINS }
     });
     const btnTitle = ref('Guardar');
+    const inventarios = ref([]);
+    const categorias = ref([]);
 
     onMounted(() => {
         fetchProductos();
+        fetchInventarios();
+        fetchCategorias();
     });
 
     const fetchProductos = async () => {
-        productos.value = [
-            { id: 1, nombre: 'Producto A', precio: 10.99, imagenes: [] },
-            { id: 2, nombre: 'Producto B', precio: 20.5, imagenes: [] },
-            { id: 3, nombre: 'Producto C', precio: 32.99, imagenes: [] },
-            { id: 4, nombre: 'Producto D', precio: 15.75, imagenes: [] },
-            { id: 5, nombre: 'Producto E', precio: 8.99, imagenes: [] },
-            { id: 6, nombre: 'Producto F', precio: 25.0, imagenes: [] },
-            { id: 7, nombre: 'Producto G', precio: 18.5, imagenes: [] },
-            { id: 8, nombre: 'Producto H', precio: 30.0, imagenes: [] },
-            { id: 9, nombre: 'Producto I', precio: 12.99, imagenes: [] },
-            { id: 10, nombre: 'Producto J', precio: 22.5, imagenes: [] }
-        ];
+        try {
+            const response = await axios.get('/api/productos'); // Llama al endpoint de productos
+            productos.value = response.data; // Asigna los datos obtenidos
+        } catch (err) {
+            console.error('Error al obtener los productos', err);
+        }
+    };
+
+    const fetchInventarios = async () => {
+        try {
+            const response = await axios.get('/api/inventarios'); // Llama al endpoint de inventarios
+            inventarios.value = response.data; // Asigna los datos obtenidos
+        } catch (err) {
+            console.error('Error al obtener los inventarios', err);
+        }
+    };
+
+    const fetchCategorias = async () => {
+        try {
+            const response = await axios.get('/api/categorias-productos'); // Llama al endpoint de categorías
+            categorias.value = response.data; // Asigna los datos obtenidos
+        } catch (err) {
+            console.error('Error al obtener las categorías', err);
+        }
     };
 
     const openNew = () => {
@@ -55,52 +71,49 @@
         dialog.value = true;
     };
 
-    const saveOrUpdate = () => {
-    submitted.value = true;
+    const saveOrUpdate = async () => {
+        submitted.value = true;
 
-    if (
-        !producto.value.nombre ||
-        !producto.value.descripcion ||
-        producto.value.precio == null ||
-        producto.value.precio <= 0 ||
-        producto.value.precio > 999999.99 ||
-        imagenPreviewList.value.length === 0
-    ) return;
-
-    // Verificar si ya existe un producto con el mismo nombre (excepto en edición del mismo)
-    const nombreExiste = productos.value.some(p =>
-        p.nombre.toLowerCase().trim() === producto.value.nombre.toLowerCase().trim() &&
-        p.id !== producto.value.id
-    );
-
-    if (nombreExiste) {
-        toast.add({
-            severity: 'error',
-            summary: 'Nombre duplicado',
-            detail: `Ya tienes un producto con el nombre "${producto.value.nombre}".`,
-            life: 4000
-        });
-        return;
-    }
-
-    producto.value.imagenes = [...imagenPreviewList.value];
-
-    if (producto.value.id === null) {
-        producto.value.id = Date.now();
-        productos.value.push({ ...producto.value });
-        toast.add({ severity: 'success', summary: 'Producto agregado', life: 3000 });
-    } else {
-        const index = productos.value.findIndex(p => p.id === producto.value.id);
-        if (index !== -1) {
-            productos.value[index] = { ...producto.value };
-            toast.add({ severity: 'info', summary: 'Producto actualizado', life: 3000 });
+        if (
+            !producto.value.nombre ||
+            !producto.value.descripcion ||
+            producto.value.precio == null ||
+            producto.value.precio <= 0 ||
+            producto.value.precio > 999999.99 ||
+            !producto.value.inventario_id ||
+            !producto.value.categoria_id
+        ) {
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Por favor, completa todos los campos obligatorios.',
+                life: 3000,
+            });
+            return;
         }
-    }
 
-    dialog.value = false;
-    producto.value = { id: null, nombre: '', descripcion: '', precio: null, imagenes: [] };
-    imagenPreviewList.value = [];
-};
+        try {
+            if (producto.value.id === null) {
+                // Crear producto
+                const response = await axios.post('/api/productos', producto.value);
+                productos.value.push(response.data);
+                toast.add({ severity: 'success', summary: 'Producto agregado', life: 3000 });
+            } else {
+                // Actualizar producto
+                const response = await axios.put(`/api/productos/${producto.value.id}`, producto.value);
+                const index = productos.value.findIndex(p => p.id === producto.value.id);
+                if (index !== -1) {
+                    productos.value[index] = response.data;
+                }
+                toast.add({ severity: 'info', summary: 'Producto actualizado', life: 3000 });
+            }
+            dialog.value = false;
+            producto.value = { id: null, nombre: '', descripcion: '', precio: null, inventario_id: null, categoria_id: null };
+        } catch (err) {
+            console.error('Error al guardar el producto', err);
+            toast.add({ severity: 'error', summary: 'Error', detail: 'Error al guardar el producto.', life: 3000 });
+        }
+    };
 
     const confirmDeleteProduct = (prod) => {
         producto.value = { ...prod };
@@ -150,7 +163,7 @@
                 <Column field="descripcion" header="Descripción"  />
                 <Column field="precio" header="Precio" >
                     <template #body="slotProps">
-                        ${{ slotProps.data.precio.toFixed(2) }}
+                        ${{ parseFloat(slotProps.data.precio || 0).toFixed(2) }}
                     </template>
                 </Column>
                 <Column header="Imágenes">
@@ -160,6 +173,8 @@
                         </div>
                     </template>
                 </Column>
+                <Column field="inventario.nombre" header="Inventario" sortable style="min-width: 10rem"></Column>
+                <Column field="categoria.nombre" header="Categoría" sortable style="min-width: 10rem"></Column>
                 <Column header="Acciones" :exportable="false">
                     <template #body="slotProps">
                         <Button icon="pi pi-pencil" class="p-button-rounded p-button-warn p-button-md mr-2" @click="editProduct(slotProps.data)" />
@@ -220,6 +235,19 @@
                         </div>
                         <small class="text-red-500 ml-28" v-if="submitted && imagenPreviewList.length === 0">Al menos una imagen es obligatoria.</small>
                     </div>
+
+                    <div class="grid grid-cols-12 gap-4">
+    <div class="col-span-6">
+        <label for="inventario">Inventario</label>
+        <Select placeholder="Seleccionar..." v-model="producto.inventario_id" :options="inventarios" option-label="nombre" class="w-full"></Select>
+        <small v-if="submitted && !producto.inventario_id" class="text-red-500">Seleccione un inventario</small>
+    </div>
+    <div class="col-span-6">
+        <label for="categoria">Categorías</label>
+        <Select placeholder="Seleccionar..." v-model="producto.categoria_id" :options="categorias" option-label="nombre" class="w-full"></Select>
+        <small v-if="submitted && !producto.categoria_id" class="text-red-500">Seleccione una categoría</small>
+    </div>
+</div>
 
                     <div class="flex gap-4 flex-wrap mt-4 ml-28">
                         <div v-for="(img, index) in imagenPreviewList" :key="index" class="relative w-32 h-32">
