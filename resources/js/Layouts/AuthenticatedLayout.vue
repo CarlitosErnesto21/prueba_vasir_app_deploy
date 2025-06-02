@@ -9,7 +9,7 @@ import { usePage, Link } from '@inertiajs/vue3'; //link para que no recargue tod
 import Toast from 'primevue/toast';
 import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
 import { faList, faTags, faDoorOpen, faFileAlt, faLayerGroup, faCircleXmark, faUserCircle, 
-    faChevronCircleDown, faHouseChimney, faTableList, faStoreAlt, faReceipt, faUser, faHome} from "@fortawesome/free-solid-svg-icons";
+    faChevronCircleDown, faHouseChimney, faTableList, faStoreAlt, faReceipt, faUser, faHome, faHotel} from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
 
 const page = usePage();
@@ -181,6 +181,15 @@ onBeforeUnmount(() => {
                             :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
                             <FontAwesomeIcon :icon="faReceipt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Reservas</span>
+                        </Link>
+                    </li>
+                    <li class="px-5 py-3 hover:bg-orange-600 flex items-center"
+                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
+                        <Link :href="route('hoteles')"
+                            class="flex items-center" title="Hoteles"
+                            :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
+                            <FontAwesomeIcon :icon="faHotel" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
+                            <span v-if="!isSidebarCollapsed">Hoteles</span>
                         </Link>
                     </li>
                     <li class="px-5 py-3 hover:bg-orange-600 flex items-center"
