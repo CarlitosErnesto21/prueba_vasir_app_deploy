@@ -27,16 +27,16 @@
 
     const fetchProductos = async () => {
         productos.value = [
-            { id: 1, nombre: 'Producto A', precio: 10.99, imagenes: [] },
-            { id: 2, nombre: 'Producto B', precio: 20.5, imagenes: [] },
-            { id: 3, nombre: 'Producto C', precio: 32.99, imagenes: [] },
-            { id: 4, nombre: 'Producto D', precio: 15.75, imagenes: [] },
-            { id: 5, nombre: 'Producto E', precio: 8.99, imagenes: [] },
-            { id: 6, nombre: 'Producto F', precio: 25.0, imagenes: [] },
-            { id: 7, nombre: 'Producto G', precio: 18.5, imagenes: [] },
-            { id: 8, nombre: 'Producto H', precio: 30.0, imagenes: [] },
-            { id: 9, nombre: 'Producto I', precio: 12.99, imagenes: [] },
-            { id: 10, nombre: 'Producto J', precio: 22.5, imagenes: [] }
+            { id: 1, nombre: 'Producto A', descripcion: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque euismod, nisi eu consectetur consectetur, nisl nisi consectetur nisi, euismod euismod nisi nisi euismod.', precio: 10.99, imagenes: [] },
+            { id: 2, nombre: 'Producto B', descripcion: 'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco.', precio: 20.5, imagenes: [] },
+            { id: 3, nombre: 'Producto C', descripcion: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.', precio: 32.99, imagenes: [] },
+            { id: 4, nombre: 'Producto D', descripcion: 'Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur?', precio: 15.75, imagenes: [] },
+            { id: 5, nombre: 'Producto E', descripcion: 'Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur.', precio: 8.99, imagenes: [] },
+            { id: 6, nombre: 'Producto F', descripcion: 'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque.', precio: 25.0, imagenes: [] },
+            { id: 7, nombre: 'Producto G', descripcion: 'Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio.', precio: 18.5, imagenes: [] },
+            { id: 8, nombre: 'Producto H', descripcion: 'Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae.', precio: 30.0, imagenes: [] },
+            { id: 9, nombre: 'Producto I', descripcion: 'Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur.', precio: 12.99, imagenes: [] },
+            { id: 10, nombre: 'Producto J', descripcion: 'Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.', precio: 22.5, imagenes: [] }
         ];
     };
 
@@ -147,10 +147,16 @@
                     <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
                 </template>
                 <Column field="nombre" header="Nombre"  />
-                <Column field="descripcion" header="Descripción"  />
+                <Column field="descripcion" header="Descripción">
+                    <template #body="slotProps">
+                        <div class="max-h-14 max-w-52 overflow-y-auto whitespace-pre-line px-2 py-1 break-words">
+                            {{ slotProps.data.descripcion }}
+                        </div>
+                    </template>
+                </Column>
                 <Column field="precio" header="Precio" >
                     <template #body="slotProps">
-                        ${{ slotProps.data.precio.toFixed(2) }}
+                        <span class="px-2 py-1 block">${{ slotProps.data.precio.toFixed(2) }}</span>
                     </template>
                 </Column>
                 <Column header="Imágenes">
@@ -181,7 +187,7 @@
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
                             <label for="descripcion" class="w-24">Descripción:</label>
-                            <InputText v-model.trim="producto.descripcion" id="descripcion" :class="{ 'p-invalid': submitted && !producto.descripcion }" class="flex-1" />
+                            <Textarea v-model.trim="producto.descripcion" id="descripcion" :class="{ 'p-invalid': submitted && !producto.descripcion }" class="flex-1" />
                         </div>
                         <small class="text-red-500 ml-28" v-if="submitted && !producto.descripcion">La descripción es obligatoria.</small>
                     </div>

@@ -43,4 +43,8 @@ Route::get('catalogos/ReservaTours', function () {
     return Inertia::render('catalogos/ReservaTours');
     })->middleware(['auth', 'verified'])->name('reservatours');
 
+Route::get('catalogos/Tours', function () {
+    return Inertia::render('catalogos/Tours');
+})->middleware(['auth', 'verified'])->name('tours');
+
 require __DIR__.'/auth.php';
