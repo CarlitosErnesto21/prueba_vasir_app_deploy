@@ -9,8 +9,7 @@ class CategoriaProductoController extends Controller
 {
     public function index()
     {
-        $categorias = CategoriaProducto::all();
-        return response()->json($categorias);
+        return CategoriaProducto::all(); // Devuelve todas las categorías
     }
 
     public function store(Request $request)

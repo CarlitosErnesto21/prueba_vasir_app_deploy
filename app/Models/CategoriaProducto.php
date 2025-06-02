@@ -8,6 +8,8 @@ use Laravel\Sanctum\HasApiTokens;
 
 class CategoriaProducto extends Model
 {
+    protected $table = 'categorias_productos';
+    
     use HasFactory;
     protected $fillable = [
         'nombre'
