@@ -26,6 +26,7 @@ import FileUpload from 'primevue/fileupload';
 import Textarea from 'primevue/textarea';
 import InputNumber from 'primevue/inputnumber';
 import Select from 'primevue/select';
+import ConfirmationService from 'primevue/confirmationservice';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -48,6 +49,7 @@ createInertiaApp({
                 }
             });
             app.use(ToastService);
+            app.use(ConfirmationService)
             // Definimos los componentes de PrimeVue
             app.component('Toast', Toast);
             app.component('Button', Button);

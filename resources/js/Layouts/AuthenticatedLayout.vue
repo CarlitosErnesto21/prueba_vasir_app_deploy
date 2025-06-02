@@ -13,13 +13,18 @@ import { faList, faTags, faDoorOpen, faFileAlt, faLayerGroup, faCircleXmark, faU
 import axios from 'axios';
 
 const page = usePage();
-//const user = page.props.auth.user;
+const user = page.props.auth?.user || { name: 'Usuario', email: 'correo@ejemplo.com' };
+
 const isSidebarOpen = ref(false);
 const isSidebarCollapsed = ref(true); // Colapsado por defecto
 const anioCurrent = ref(new Date().getFullYear());
 const isOpen = ref(false);
 const toggleDropdown = () => { isOpen.value = !isOpen.value; };
-const toggleSidebar = () => { isSidebarCollapsed.value = !isSidebarCollapsed.value; };
+const toggleSidebar = () => {
+    isSidebarCollapsed.value = !isSidebarCollapsed.value;
+    // Cierra el menú de catálogos al cambiar el estado del aside (colapsar o expandir)
+    isOpen.value = false;
+};
 //FUNCIONES PARA LA LOGICA DEL COMPONENTE
 const logout = async () => {
     try{
@@ -32,16 +37,67 @@ const logout = async () => {
 
 function handleResize() {
     if (window.innerWidth < 768) {
-        isSidebarCollapsed.value = false;
+        isSidebarCollapsed.value = true; // Siempre colapsado
+        isSidebarOpen.value = false;     // Siempre cerrado en móvil
+    } else {
+        isSidebarCollapsed.value = true; // Siempre colapsado en desktop también
+        isSidebarOpen.value = false;
+    }
+}
+
+// Cierra burbujitas y aside al hacer clic fuera
+function handleGlobalClick(e) {
+    // Cierra el aside expandido (desktop o móvil) si el clic no fue dentro del aside ni en el botón hamburguesa
+    const aside = document.querySelector('aside');
+    const hamburger = document.querySelector('button.block.md\\:hidden');
+    if (
+        (isSidebarOpen.value || !isSidebarCollapsed.value) &&
+        aside &&
+        !aside.contains(e.target) &&
+        (!hamburger || !hamburger.contains(e.target))
+    ) {
+        isSidebarOpen.value = false;
+        isSidebarCollapsed.value = true;
+    }
+    // Si las burbujitas están abiertas y el clic no fue dentro del aside ni en el botón catálogos, ciérralas
+    if (isOpen.value) {
+        const catalogBtn = document.querySelector('button[title="Catálogos"]');
+        if (
+            (!aside || !aside.contains(e.target)) &&
+            (!catalogBtn || !catalogBtn.contains(e.target))
+        ) {
+            isOpen.value = false;
+        }
+    }
+}
+
+const showProfileMenu = ref(false);
+
+const openProfileMenu = (e) => {
+    e.stopPropagation();
+    showProfileMenu.value = true;
+};
+const closeProfileMenu = () => {
+    showProfileMenu.value = false;
+};
+
+function handleProfileMenuClick(e) {
+    const menu = document.getElementById('profile-menu');
+    if (showProfileMenu.value && menu && !menu.contains(e.target)) {
+        showProfileMenu.value = false;
     }
 }
 
 onMounted(() => {
     window.addEventListener('resize', handleResize);
     handleResize();
+    document.addEventListener('click', handleGlobalClick, true);
+    document.addEventListener('click', handleProfileMenuClick, true);
 });
 onBeforeUnmount(() => {
     window.removeEventListener('resize', handleResize);
+    document.removeEventListener('click', handleGlobalClick, true);
+    document.removeEventListener('click', handleProfileMenuClick, true);
 });
 </script>
 
@@ -64,14 +120,65 @@ onBeforeUnmount(() => {
             <!--Datos de la sesion-->
             <div class="flex items-center space-x-4">
                 <div class="relative group">
-                    <button @click="login" class="text-black text-xl" title="Usuario">
+                    <button @click="openProfileMenu" class="text-black text-xl" title="Usuario">
+                        <span class="font-semibold text-base text-gray-700 mr-2">Perfil</span>
                         <FontAwesomeIcon :icon="faUser"/>
                     </button>
-                </div>
-                <div class="relative group">
-                    <button @click="logout" class="text-black text-xl" title="Cerrar sesión">
-                        <FontAwesomeIcon :icon="faDoorOpen"/>
-                    </button>
+                    <!-- Menú de perfil tipo Chrome -->
+                    <transition name="fade">
+                        <div v-if="showProfileMenu" id="profile-menu" class="absolute right-0 mt-2 w-80 bg-gradient-to-br from-red-200 via-red-100 to-red-200 rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
+                            <div class="bg-gradient-to-br from-red-100 via-red-50 to-red-100 rounded-xl shadow-2xl border border-gray-200 flex flex-col items-center py-4 px-4">
+                                <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}`" class="w-16 h-16 rounded-full border mb-2" alt="avatar" />
+                                <div class="font-bold text-lg">{{ user.name }} • Administrador</div>
+                                <div class="text-gray-500 text-sm">{{ user.email }}</div>
+                            </div>
+                            <div class="divide-y divide-gray-200">
+                                <div class="py-2 px-4 flex flex-col gap-1">
+                                    <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-gray-700">
+                                        <FontAwesomeIcon :icon="faUserCircle" /> Contraseñas y Autocompletar
+                                    </button>
+                                    <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-gray-700">
+                                        <FontAwesomeIcon :icon="faTags" /> Gestionar tu cuenta
+                                    </button>
+                                    <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-gray-700">
+                                        <FontAwesomeIcon :icon="faLayerGroup" /> Personalizar perfil
+                                    </button>
+                                    <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-gray-700">
+                                        <FontAwesomeIcon :icon="faCircleXmark" /> Sincronización activada
+                                    </button>
+                                </div>
+                                <div class="py-2 px-4">
+                                    <div class="text-xs text-gray-500 mb-1">Otros perfiles</div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <img src="https://ui-avatars.com/api/?name=ITCHA" class="w-7 h-7 rounded-full border" />
+                                        <span class="text-sm">Carlos Ernesto (ITCHA)</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="bg-purple-500 w-7 h-7 rounded-full flex items-center justify-center text-white font-bold">F</span>
+                                        <span class="text-sm">Familia</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="bg-pink-500 w-7 h-7 rounded-full flex items-center justify-center text-white font-bold">L</span>
+                                        <span class="text-sm">Lyly</span>
+                                    </div>
+                                </div>
+                                <div class="py-2 px-4 flex flex-col gap-1">
+                                    <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-gray-700">
+                                        <FontAwesomeIcon :icon="faUserCircle" /> Añadir perfil
+                                    </button>
+                                    <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-gray-700">
+                                        <FontAwesomeIcon :icon="faUser" /> Perfil de invitado abierto
+                                    </button>
+                                    <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-gray-700">
+                                        <FontAwesomeIcon :icon="faTags" /> Gestionar perfiles
+                                    </button>
+                                    <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-red-600" @click="logout">
+                                        <FontAwesomeIcon :icon="faDoorOpen" /> Cerrar sesión
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </transition>
                 </div>
             </div>
         </div>
@@ -95,15 +202,16 @@ onBeforeUnmount(() => {
             </div>
             <nav class="mt-4 text-white flex-1">
                 <ul>
-                    <li class="px-4 py-3 hover:bg-orange-600 flex items-center"
-                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                        <Link
-                            :href="route('dashboard')"
-                            class="flex items-center"
-                            :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'" title="Inicio">
-                            <FontAwesomeIcon :icon="faHome" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6" />
-                            <span v-if="!isSidebarCollapsed">Inicio</span>
-                        </Link>
+                    <li
+                        class="px-4 py-3 hover:bg-orange-600 flex items-center cursor-pointer"
+                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
+                        @click="$inertia.visit(route('dashboard'))"
+                        tabindex="0"
+                        @keydown.enter="$inertia.visit(route('dashboard'))"
+                        title="Inicio"
+                    >
+                        <FontAwesomeIcon :icon="faHome" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6" />
+                        <span v-if="!isSidebarCollapsed">Inicio</span>
                     </li>
                     <li class="px-0 py-3 flex flex-col relative">
                         <!-- Botón Catálogos alineado -->
@@ -123,75 +231,96 @@ onBeforeUnmount(() => {
                         <transition name="fade">
                             <div
                                 v-if="isOpen && isSidebarCollapsed"
-                                class="absolute left-full top-1/2 -translate-y-1/2 flex flex-col space-y-2 z-50">
-                                <Link :href="route('productos')" title="Categorías"
-                                    class="bg-white text-red-500 rounded-full shadow-lg w-20 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
-                                    <FontAwesomeIcon :icon="faLayerGroup" size="lg"/>
-                                    <h1>&nbsp;Productos</h1>
+                                class="absolute left-full top-1/2 -translate-y-1/2 flex flex-col items-center space-y-3 z-50"
+                                style="min-width: 120px;">
+                                <Link
+                                    :href="route('productos')"
+                                    title="Categorías"
+                                    class="bg-white text-red-500 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-600 hover:text-white transition"
+                                    style="min-width: 110px; min-height: 48px; padding: 0 18px;">
+                                    <FontAwesomeIcon :icon="faStoreAlt" size="lg"/>
+                                    <span class="ml-2 whitespace-nowrap">Productos</span>
                                 </Link>
-                                <Link :href="route('dashboard')" title="Tours"
-                                    class="bg-white text-red-500 rounded-full shadow-lg w-20 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
+                                <Link
+                                    :href="route('tours')"
+                                    title="Tours"
+                                    class="bg-white text-red-500 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-600 hover:text-white transition"
+                                    style="min-width: 110px; min-height: 48px; padding: 0 18px;">
                                     <FontAwesomeIcon :icon="faTags" size="lg"/>
-                                    <h1>&nbsp;Tours</h1>
+                                    <span class="ml-2 whitespace-nowrap">Tours</span>
                                 </Link>
-                                <Link :href="route('dashboard')" title="Tours"
-                                    class="bg-white text-red-500 rounded-full shadow-lg w-20 h-12 flex items-center justify-center hover:bg-orange-600 hover:text-white transition">
+                                <Link
+                                    :href="route('dashboard')"
+                                    title="Otros"
+                                    class="bg-white text-red-500 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-600 hover:text-white transition"
+                                    style="min-width: 110px; min-height: 48px; padding: 0 18px;">
                                     <FontAwesomeIcon :icon="faTags" size="lg"/>
-                                    <h1>&nbsp;Tours</h1>
+                                    <span class="ml-2 whitespace-nowrap">Otros</span>
                                 </Link>
                             </div>
                             <!-- Menú normal cuando el aside está expandido -->
                             <ul
                                 v-else-if="isOpen"
                                 class="w-full rounded-md shadow-lg overflow-hidden">
-                                <li class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start">
-                                    <Link :href="route('productos')" class="flex items-center" title="Productos">
-                                        <FontAwesomeIcon :icon="faLayerGroup" />
-                                        <span class="ml-3">Productos</span>
-                                    </Link>
+                                <li
+                                    class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start cursor-pointer"
+                                    @click="$inertia.visit(route('productos'))"
+                                    tabindex="0"
+                                    @keydown.enter="$inertia.visit(route('productos'))"
+                                    title="Categorías">
+                                    <FontAwesomeIcon :icon="faStoreAlt" />
+                                    <span class="ml-3">Productos</span>
                                 </li>
-                                <li class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start">
-                                    <Link :href="route('dashboard')" class="flex items-center" title="Tours">
-                                        <FontAwesomeIcon :icon="faTags" />
-                                        <span class="ml-3">Tours</span>
-                                    </Link>
+                                <li
+                                    class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start cursor-pointer"
+                                    @click="$inertia.visit(route('tours'))"
+                                    tabindex="0"
+                                    @keydown.enter="$inertia.visit(route('tours'))"
+                                    title="Tours">
+                                    <FontAwesomeIcon :icon="faTags" />
+                                    <span class="ml-3">Tours</span>
                                 </li>
-                                <li class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start">
-                                    <Link :href="route('dashboard')" class="flex items-center" title="Tours">
-                                        <FontAwesomeIcon :icon="faTags" />
-                                        <span class="ml-3">Otros</span>
-                                    </Link>
+                                <li
+                                    class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start cursor-pointer"
+                                    @click="$inertia.visit(route('dashboard'))"
+                                    tabindex="0"
+                                    @keydown.enter="$inertia.visit(route('dashboard'))"
+                                    title="Otros">
+                                    <FontAwesomeIcon :icon="faTags" />
+                                    <span class="ml-3">Otros</span>
                                 </li>
                             </ul>
                         </transition>
                     </li>
-                    <li class="px-4 py-3 hover:bg-orange-600 flex items-center"
-                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                        <Link :href="route('productos')"
-                            class="flex items-center" title="Productos"
-                            :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
-                            <FontAwesomeIcon :icon="faStoreAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
-                            <span v-if="!isSidebarCollapsed">Productos</span>
-                        </Link>
+                    <li
+                        class="px-4 py-3 hover:bg-orange-600 flex items-center cursor-pointer"
+                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
+                        @click="$inertia.visit(route('dashboard'))"
+                        tabindex="0"
+                        @keydown.enter="$inertia.visit(route('dashboard'))"
+                        title="Otros">
+                        <FontAwesomeIcon :icon="faTags" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
+                        <span v-if="!isSidebarCollapsed">Otros</span>
                     </li>
-                    <li class="px-5 py-3 hover:bg-orange-600 flex items-center"
-                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                        <Link :href="route('reservatours')"
-                            class="flex items-center" title="Reservas"
-                            :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
-                            <FontAwesomeIcon :icon="faReceipt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
-                            <span v-if="!isSidebarCollapsed">Reservas</span>
-                        </Link>
+                    <li
+                        class="px-5 py-3 hover:bg-orange-600 flex items-center cursor-pointer"
+                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
+                        @click="$inertia.visit(route('reservatours'))"
+                        tabindex="0"
+                        @keydown.enter="$inertia.visit(route('reservatours'))"
+                        title="Reservas">
+                        <FontAwesomeIcon :icon="faReceipt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
+                        <span v-if="!isSidebarCollapsed">Reservas</span>
                     </li>
-                    <li class="px-5 py-3 hover:bg-orange-600 flex items-center"
-                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                        <!--<Link :href="route('reservas.rango')"-->
-                        <Link :href="route('dashboard')"
-                            class="flex items-center" title="Reportes"
-                            :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
-                            <FontAwesomeIcon :icon="faFileAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
-                            <span v-if="!isSidebarCollapsed">Reportes</span>
-                        </Link>
+                    <li
+                        class="px-5 py-3 hover:bg-orange-600 flex items-center cursor-pointer"
+                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
+                        @click="$inertia.visit(route('dashboard'))"
+                        tabindex="0"
+                        @keydown.enter="$inertia.visit(route('dashboard'))"
+                        title="Otros">
+                        <FontAwesomeIcon :icon="faFileAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
+                        <span v-if="!isSidebarCollapsed">Otros</span>
                     </li>
                 </ul>
             </nav>
@@ -220,3 +349,9 @@ onBeforeUnmount(() => {
     <!--fin paradiv para sidebar y contenido dinamico-->
    </div>
 </template>
+
+<!-- No hay campos de formulario en este layout, pero si agregas alguno, asegúrate de incluir siempre un atributo id o name único en cada input/select/textarea. 
+Por ejemplo:
+<input id="busqueda" name="busqueda" ... />
+<label for="busqueda">Buscar</label>
+-->
