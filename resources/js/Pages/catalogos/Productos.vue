@@ -202,7 +202,7 @@
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
                             <label for="descripcion" class="w-24">Descripción:</label>
-                            <textarea v-model.trim="producto.descripcion" id="descripcion" :class="{ 'p-invalid': submitted && !producto.descripcion }" class="flex-1" />
+                            <Textarea v-model.trim="producto.descripcion" id="descripcion" :class="{ 'p-invalid': submitted && !producto.descripcion }" class="flex-1" />
                         </div>
                         <small class="text-red-500 ml-28" v-if="submitted && !producto.descripcion">La descripción es obligatoria.</small>
                     </div>
