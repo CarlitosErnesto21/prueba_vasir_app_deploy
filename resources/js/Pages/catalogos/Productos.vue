@@ -147,7 +147,13 @@
                     <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
                 </template>
                 <Column field="nombre" header="Nombre"  />
-                <Column field="descripcion" header="Descripción"  />
+                <Column field="descripcion" header="Descripción">
+                    <template #body="slotProps">
+                        <div style="max-width: 220px; max-height: 60px; overflow-y: auto; overflow-x: hidden; white-space: pre-line;">
+                            {{ slotProps.data.descripcion }}
+                        </div>
+                    </template>
+                </Column>
                 <Column field="precio" header="Precio" >
                     <template #body="slotProps">
                         ${{ slotProps.data.precio.toFixed(2) }}
@@ -178,10 +184,17 @@
                         <small class="text-red-500 ml-28" v-if="submitted && !producto.nombre">El nombre es obligatorio.</small>
                     </div>
 
-                    <div class="w-full flex flex-col">
+                   <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
-                            <label for="descripcion" class="w-24">Descripción:</label>
-                            <InputText v-model.trim="producto.descripcion" id="descripcion" :class="{ 'p-invalid': submitted && !producto.descripcion }" class="flex-1" />
+                                <label for="descripcion" class="w-24">Descripción:</label>
+                                <Textarea
+                                    v-model.trim="producto.descripcion"
+                                    id="descripcion"
+                                    :class="{ 'p-invalid': submitted && !producto.descripcion }"
+                                    class="flex-1"
+                                    rows="3"
+                                    autoResize
+                                />
                         </div>
                         <small class="text-red-500 ml-28" v-if="submitted && !producto.descripcion">La descripción es obligatoria.</small>
                     </div>
@@ -249,3 +262,4 @@
         </div>
     </AuthenticatedLayout>
 </template>
+<!-- Agregar categoria e inventario -->
