@@ -52,11 +52,10 @@
         try {
             const response = await axios.get('/api/categorias-productos'); // Llama al endpoint de categorías
             categorias.value = response.data; // Asigna los datos obtenidos
-            } catch (err) {
-                console.error('Error al obtener las categorías', err);
-            }
-        };
-
+        } catch (err) {
+            console.error('Error al obtener las categorías', err);
+        }
+    };
 
     const openNew = () => {
         producto.value = { id: null, nombre: '', precio: null, imagenes: [] };
