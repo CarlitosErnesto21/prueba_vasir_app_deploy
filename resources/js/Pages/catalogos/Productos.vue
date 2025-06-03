@@ -282,7 +282,7 @@ const viewImages = (imagenesDeProducto) => {
                     @click="openNew"
                 />
             </div>
-
+            
             <DataTable :value="productos" dataKey="id">
                 <Column field="nombre" header="Nombre" />
                 <Column field="descripcion" header="Descripción" />
