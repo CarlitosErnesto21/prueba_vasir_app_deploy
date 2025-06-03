@@ -9,7 +9,7 @@ import { usePage, Link } from '@inertiajs/vue3'; //link para que no recargue tod
 import Toast from 'primevue/toast';
 import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
 import { faList, faTags, faDoorOpen, faFileAlt, faLayerGroup, faCircleXmark, faUserCircle, 
-    faChevronCircleDown, faHouseChimney, faTableList, faStoreAlt, faReceipt, faUser, faHome} from "@fortawesome/free-solid-svg-icons";
+    faChevronCircleDown, faHouseChimney, faTableList, faStoreAlt, faReceipt, faUser, faHome, faHotel} from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
 
 const page = usePage();
@@ -250,12 +250,12 @@ onBeforeUnmount(() => {
                                     <span class="ml-2 whitespace-nowrap">Tours</span>
                                 </Link>
                                 <Link
-                                    :href="route('dashboard')"
-                                    title="Otros"
+                                    :href="route('hoteles')"
+                                    title="Hoteles"
                                     class="bg-white text-red-500 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-600 hover:text-white transition"
                                     style="min-width: 110px; min-height: 48px; padding: 0 18px;">
                                     <FontAwesomeIcon :icon="faTags" size="lg"/>
-                                    <span class="ml-2 whitespace-nowrap">Otros</span>
+                                    <span class="ml-2 whitespace-nowrap">Hoteles</span>
                                 </Link>
                             </div>
                             <!-- Menú normal cuando el aside está expandido -->
@@ -282,12 +282,12 @@ onBeforeUnmount(() => {
                                 </li>
                                 <li
                                     class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start cursor-pointer"
-                                    @click="$inertia.visit(route('dashboard'))"
+                                    @click="$inertia.visit(route('hoteles'))"
                                     tabindex="0"
-                                    @keydown.enter="$inertia.visit(route('dashboard'))"
+                                    @keydown.enter="$inertia.visit(route('hoteles'))"
                                     title="Otros">
-                                    <FontAwesomeIcon :icon="faTags" />
-                                    <span class="ml-3">Otros</span>
+                                    <FontAwesomeIcon :icon="faHotel" />
+                                    <span class="ml-3">Hoteles</span>
                                 </li>
                             </ul>
                         </transition>
@@ -311,6 +311,16 @@ onBeforeUnmount(() => {
                         title="Reservas">
                         <FontAwesomeIcon :icon="faReceipt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
                         <span v-if="!isSidebarCollapsed">Reservas</span>
+                    </li>
+                    <li class="px-5 py-3 hover:bg-orange-600 flex items-center"
+                        :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
+                        <!--<Link :href="route('reservas.rango')"-->
+                        <Link :href="route('dashboard')"
+                            class="flex items-center" title="Reportes"
+                            :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
+                            <FontAwesomeIcon :icon="faFileAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
+                            <span v-if="!isSidebarCollapsed">Reportes</span>
+                        </Link>
                     </li>
                     <li
                         class="px-5 py-3 hover:bg-orange-600 flex items-center cursor-pointer"
