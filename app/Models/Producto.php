@@ -20,4 +20,9 @@ class Producto extends Model
     {
         return $this->belongsTo(CategoriaProducto::class);
     }
+
+    public function imagenes()
+    {
+        return $this->hasMany(Imagen::class);
+    }
 }
