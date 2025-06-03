@@ -2,16 +2,16 @@
   <Head title="Reservas de Tours" />
   <AuthenticatedLayout>
     <Toast />
-    <div class="py-6 px-2 sm:px-4 md:px-6 mt-10 mx-auto bg-red-100 shadow-md rounded-lg max-w-full">
+    <div class="py-6 px-2 sm:px-4 md:px-6 mt-10 mx-auto bg-red-50 shadow-md rounded-lg max-w-full">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-bold">Catálogo de reservas de tours</h3>
+        <h3 class="text-xl font-bold text-center w-full">Gestión de Reservas</h3>
       </div>
       <!-- Filtros superiores con títulos alineados -->
       <div class="bg-white p-4 rounded shadow mb-4 border border-blue-300">
-        <div class="flex flex-col md:flex-row md:items-end md:gap-8">
-          <div class="flex flex-col mb-4 md:mb-0 md:mr-8">
+        <div class="flex flex-col md:flex-row md:items-start md:gap-12">
+          <div class="flex flex-col mb-4 md:mb-0 md:w-1/3">
             <span class="font-semibold text-base text-gray-700 mb-2">Filtrar por tipo de reserva</span>
-            <div class="flex flex-col md:flex-row gap-2 md:gap-4">
+            <div class="flex flex-row gap-6">
               <!-- Radios accesibles: cada label envuelve su input y el id es único -->
               <label class="inline-flex items-center" for="radio-tours">
                 <input id="radio-tours" type="radio" v-model="filtroTipo" value="tours" name="tipo-reserva" class="mr-2" />
@@ -27,19 +27,21 @@
               </label>
             </div>
           </div>
-          <div class="flex-1 flex flex-col">
+          <div class="flex-1 flex flex-col md:w-2/3">
             <span class="font-semibold text-base text-gray-700 mb-1">Filtrar por rango de fechas</span>
-            <div class="flex flex-col md:flex-row gap-2">
-              <div>
-                <label for="filtro-desde" class="block font-semibold mb-1">Desde:</label>
-                <DatePicker inputId="filtro-desde" id="filtro-desde" name="filtro-desde" v-model="filtroDesde" dateFormat="dd/mm/yy" class="w-full" showIcon />
-              </div>
-              <div>
-                <label for="filtro-hasta" class="block font-semibold mb-1">Hasta:</label>
-                <DatePicker inputId="filtro-hasta" id="filtro-hasta" name="filtro-hasta" v-model="filtroHasta" dateFormat="dd/mm/yy" class="w-full" showIcon />
-              </div>
-              <div class="flex items-end">
-                <Button label="Limpiar Fechas" icon="pi pi-times" class="p-button-sm p-button-info" @click="limpiarFechas" />
+            <div class="flex flex-col md:flex-row md:items-end gap-2">
+              <div class="flex flex-col md:flex-row md:items-center w-full gap-2">
+                <div class="flex flex-col w-full md:w-1/2">
+                  <label for="filtro-desde" class="block font-semibold mb-1">Desde:</label>
+                  <DatePicker inputId="filtro-desde" id="filtro-desde" name="filtro-desde" v-model="filtroDesde" dateFormat="dd/mm/yy" class="w-full" showIcon />
+                </div>
+                <div class="flex flex-col w-full md:w-1/2">
+                  <label for="filtro-hasta" class="block font-semibold mb-1">Hasta:</label>
+                  <DatePicker inputId="filtro-hasta" id="filtro-hasta" name="filtro-hasta" v-model="filtroHasta" dateFormat="dd/mm/yy" class="w-full" showIcon />
+                </div>
+                <div class="flex items-end md:ml-4 mt-2 md:mt-0">
+                  <Button label="Limpiar fechas" icon="pi pi-times" class="p-button-sm p-button-info" @click="limpiarFechas" />
+                </div>
               </div>
             </div>
           </div>
@@ -136,8 +138,11 @@
               v-if="reservasPorEstado.length"
             >
               <Column field="tipo" header="Tipo"></Column>
-              <Column field="nombreTour" header="Tour" v-if="filtroTipo === 'tours'"></Column>
-              <Column field="nombreTipo" :header="filtroTipo === 'hoteles' ? 'Hotel' : 'Aerolínea'" v-if="filtroTipo !== 'tours'"></Column>
+              <Column header="Nombre">
+                <template #body="slotProps">
+                  {{ slotProps.data.nombreTour || slotProps.data.nombreTipo || '-' }}
+                </template>
+              </Column>
               <Column field="cliente" header="Cliente"></Column>
               <Column field="fecha" header="Fecha"></Column>
               <Column field="Cupos" header="Cupos">
@@ -198,8 +203,15 @@
                     v-if="tipoEstadoSeleccionado === 'reprogramadas'"
                     label="Rechazar"
                     icon="pi pi-times"
-                    class="p-button-xs p-button-danger"
+                    class="p-button-xs p-button-danger mr-2"
                     @click="cambiarEstado(slotProps.data, 'Rechazada')"
+                  />
+                  <Button
+                    v-if="tipoEstadoSeleccionado === 'reprogramadas'"
+                    label="Finalizar"
+                    icon="pi pi-check-circle"
+                    class="p-button-xs p-button-success"
+                    @click="finalizarReserva(slotProps.data)"
                   />
                 </template>
               </Column>
@@ -211,7 +223,14 @@
         </template>
       </div>
       <!-- Modal único para reservas por tour/hotel/aerolínea -->
-      <Dialog v-model:visible="mostrarModalReservasTour" modal header="Reservas" :style="{ width: '98vw', maxWidth: '1100px' }">
+      <Dialog
+        v-model:visible="mostrarModalReservasTour"
+        modal
+        header="Reservas"
+        :style="{ width: '98vw', maxWidth: '1100px' }"
+        :draggable="false"
+        :position="'center'"
+      >
         <div>
           <!-- Buscador en el modal -->
           <div class="flex flex-col md:flex-row gap-2 mb-3">
@@ -222,12 +241,14 @@
               placeholder="Buscar por cliente"
               class="w-full md:w-1/2"
             />
-            <InputText
+            <DatePicker
               id="busqueda-modal-fecha"
               name="busqueda-modal-fecha"
               v-model="busquedaModalFecha"
-              placeholder="Buscar por fecha (YYYY-MM-DD)"
+              placeholder="Buscar por fecha"
+              dateFormat="dd/mm/yy"
               class="w-full md:w-1/2"
+              showIcon
             />
           </div>
           <div class="overflow-y-auto" style="max-height: 350px;">
@@ -287,20 +308,27 @@
             </DataTable>
             <div v-else class="text-gray-500 text-center py-4">No hay reservas para este elemento.</div>
           </div>
-          <!-- Se eliminó el botón "Cerrar" de este modal -->
         </div>
       </Dialog>
       <!-- Modal para reprogramar reserva -->
-      <Dialog v-model:visible="mostrarModalReprogramar" modal header="Reprogramar reserva" :style="{ width: '350px' }">
+      <Dialog
+        v-model:visible="mostrarModalReprogramar"
+        modal
+        header="Reprogramar reserva"
+        :style="{ width: '350px' }"
+        :draggable="false"
+        :position="'center'"
+      >
         <div v-if="reservaAReprogramar">
           <div class="mb-4">
-            <label class="block font-semibold mb-1">Cliente:</label>
-            <span>{{ reservaAReprogramar.cliente }}</span>
+            <label class="block font-semibold mb-1" for="cliente-reprogramar">Cliente:</label>
+            <span id="cliente-reprogramar">{{ reservaAReprogramar.cliente }}</span>
           </div>
           <div class="mb-4">
             <label class="block font-semibold mb-1" for="nueva-fecha">Nueva fecha:</label>
             <DatePicker
               id="nueva-fecha"
+              inputId="nueva-fecha"
               v-model="nuevaFechaReprogramar"
               dateFormat="dd/mm/yy"
               class="w-full"
@@ -314,25 +342,71 @@
         </div>
       </Dialog>
       <!-- Modal Historial de Reservas -->
-      <Dialog v-model:visible="mostrarModalHistorial" modal header="Historial de Reservas" :style="{ width: '98vw', maxWidth: '1100px' }">
+      <Dialog
+        v-model:visible="mostrarModalHistorial"
+        modal
+        header="Historial de Reservas"
+        :style="{ width: '98vw', maxWidth: '1100px' }"
+        :draggable="false"
+        :position="'center'"
+      >
         <div>
-          <div class="flex flex-col md:flex-row gap-2 mb-3">
-            <InputText
-              id="busqueda-historial-nombre"
-              name="busqueda-historial-nombre"
-              v-model="busquedaHistorialNombre"
-              placeholder="Buscar por nombre"
-              class="w-full md:w-1/2"
-            />
-            <DatePicker
-              id="busqueda-historial-fecha"
-              name="busqueda-historial-fecha"
-              v-model="busquedaHistorialFecha"
-              placeholder="Filtrar por fecha"
-              dateFormat="dd/mm/yy"
-              class="w-full md:w-1/2"
-              showIcon
-            />
+          <div class="flex flex-col md:flex-row gap-3 mb-3">
+            <div class="w-full md:w-1/2 flex flex-col">
+              <span class="block font-semibold mb-1">Buscar:</span>
+              <InputText
+                id="busqueda-historial-nombre"
+                name="busqueda-historial-nombre"
+                v-model="busquedaHistorialNombre"
+                placeholder="Buscar por nombre o tipo..."
+                class="w-full mt-2 md:mt-3"/>
+            </div>
+            <div class="flex flex-col md:flex-row gap-2 w-full md:w-1/2">
+              <div class="w-full">
+                <label class="block font-semibold mb-2 text-center">Filtrar por fechas:</label>
+                <div class="flex flex-col md:flex-row gap-2 items-center">
+                  <DatePicker
+                    id="busqueda-historial-desde"
+                    inputId="busqueda-historial-desde"
+                    v-model="busquedaHistorialDesde"
+                    placeholder="Desde"
+                    dateFormat="dd/mm/yy"
+                    class="w-full"
+                    showIcon
+                  />
+                  <DatePicker
+                    id="busqueda-historial-hasta"
+                    inputId="busqueda-historial-hasta"
+                    v-model="busquedaHistorialHasta"
+                    placeholder="Hasta"
+                    dateFormat="dd/mm/yy"
+                    class="w-full"
+                    showIcon
+                  />
+                  <div class="flex md:block w-full md:w-auto">
+                    <Button
+                      label="Limpiar fechas"
+                      icon="pi pi-times"
+                      class="p-button-sm p-button-info w-full md:w-auto mt-2 md:mt-0"
+                      @click="() => { busquedaHistorialDesde = null; busquedaHistorialHasta = null }"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Filtro por tipo de reserva -->
+          <div class="flex flex-wrap gap-4 mb-3 items-center">
+            <label class="font-semibold">Tipo de reserva:</label>
+            <select
+              v-model="filtroTipoHistorial"
+              class="p-2 rounded border border-gray-300 w-40"
+            >
+              <option value="">Todos</option>
+              <option value="tours">Tours</option>
+              <option value="hoteles">Hoteles</option>
+              <option value="aerolineas">Aerolíneas</option>
+            </select>
           </div>
           <div class="overflow-y-auto" style="max-height: 350px;">
             <DataTable
@@ -346,8 +420,11 @@
               v-if="reservasFiltradasHistorial.length"
             >
               <Column field="tipo" header="Tipo"></Column>
-              <Column field="nombreTour" header="Tour" v-if="filtroTipo === 'tours'"></Column>
-              <Column field="nombreTipo" :header="filtroTipo === 'hoteles' ? 'Hotel' : 'Aerolínea'" v-if="filtroTipo !== 'tours'"></Column>
+              <Column header="Nombre">
+                <template #body="slotProps">
+                  {{ slotProps.data.nombreTour || slotProps.data.nombreTipo || '-' }}
+                </template>
+              </Column>
               <Column field="cliente" header="Cliente"></Column>
               <Column field="fecha" header="Fecha"></Column>
               <Column field="Cupos" header="Cupos">
@@ -379,12 +456,20 @@
           <!-- Botón Cerrar eliminado -->
         </div>
       </Dialog>
-      <ConfirmDialog />
-      <Dialog v-model:visible="mostrarDialogoFinalizada" modal header="Finalizada" :closable="false" :style="{ width: '350px' }">
+      <ConfirmDialog :draggable="false" :position="'center'" />
+      <Dialog
+        v-model:visible="mostrarDialogoFinalizada"
+        modal
+        header="Finalizada"
+        :closable="false"
+        :style="{ width: '350px' }"
+        :draggable="false"
+        :position="'center'"
+      >
         <div class="flex flex-col items-center gap-2 py-2">
           <i class="pi pi-check-circle text-green-600 text-4xl"></i>
           <span>La reserva ha sido movida al historial.</span>
-          <Button label="Aceptar" class="p-button-success mt-2" @click="mostrarDialogoFinalizada = false" />
+          <!-- El botón de cerrar ha sido eliminado -->
         </div>
       </Dialog>
     </div>
@@ -392,7 +477,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Dialog from 'primevue/dialog'
@@ -408,6 +493,9 @@ import { useConfirm } from 'primevue/useconfirm'
 const filtroDesde = ref(null)
 const filtroHasta = ref(null)
 const filtroTipo = ref('tours')
+
+// Filtro para el historial de reservas
+const filtroTipoHistorial = ref('')
 
 // Variables para el modal de reservas
 const mostrarModalReservasTour = ref(false)
@@ -667,6 +755,11 @@ const limpiarFechas = () => {
 
 const tipoEstadoSeleccionado = ref('pendientes')
 
+// Watch para reiniciar el filtro de estado a 'pendientes' cuando cambia el tipo de reserva
+watch(filtroTipo, () => {
+  tipoEstadoSeleccionado.value = 'pendientes'
+})
+
 // Buscador global por nombre de tour/hotel/aerolínea
 const busquedaNombreGeneral = ref('')
 
@@ -857,7 +950,9 @@ function guardarReprogramacion() {
 
 const mostrarModalHistorial = ref(false)
 const busquedaHistorialNombre = ref('')
-const busquedaHistorialFecha = ref(null)
+// Elimina busquedaHistorialFecha y agrega desde/hasta
+const busquedaHistorialDesde = ref(null)
+const busquedaHistorialHasta = ref(null)
 
 // Estado para guardar ids de reservas finalizadas
 const reservasFinalizadasIds = ref([])
@@ -869,26 +964,34 @@ const reservasFiltradasHistorial = computed(() => {
       reservasFinalizadasIds.value.includes(r.id) || r.estado === 'Finalizada'
     )
     .filter(r => {
-      // Filtro por nombre
+      // Filtro por tipo de reserva (nuevo)
+      if (filtroTipoHistorial.value && r.tipo !== filtroTipoHistorial.value) {
+        return false
+      }
+      // Filtro por nombre, cliente o tipo
       if (busquedaHistorialNombre.value) {
         const search = busquedaHistorialNombre.value.toLowerCase()
         const nombreEntidad = r.tipo === 'tours' ? r.nombreTour : r.nombreTipo
         if (
           !(nombreEntidad && nombreEntidad.toLowerCase().includes(search)) &&
-          !(r.cliente && r.cliente.toLowerCase().includes(search))
+          !(r.cliente && r.cliente.toLowerCase().includes(search)) &&
+          !(r.tipo && r.tipo.toLowerCase().includes(search))
         ) {
           return false
         }
       }
-      // Filtro por fecha
-      if (busquedaHistorialFecha.value) {
-        const fechaFiltro = normalizaFecha(busquedaHistorialFecha.value)
+      // Filtro por rango de fechas
+      if (busquedaHistorialDesde.value) {
+        const desde = normalizaFecha(busquedaHistorialDesde.value)
         const fechaReserva = normalizaFecha(r.fecha)
-        if (
-          fechaReserva.getFullYear() !== fechaFiltro.getFullYear() ||
-          fechaReserva.getMonth() !== fechaFiltro.getMonth() ||
-          fechaReserva.getDate() !== fechaFiltro.getDate()
-        ) {
+        if (fechaReserva < desde) {
+          return false
+        }
+      }
+      if (busquedaHistorialHasta.value) {
+        const hasta = normalizaFecha(busquedaHistorialHasta.value)
+        const fechaReserva = normalizaFecha(r.fecha)
+        if (fechaReserva > hasta) {
           return false
         }
       }
@@ -913,13 +1016,14 @@ function finalizarReserva(reserva) {
     acceptClass: 'p-button-success',
     rejectClass: 'p-button-danger',
     accept: () => {
-      // Quitar el registro de las listas normales y pasarlo al historial
       if (!reservasFinalizadasIds.value.includes(reserva.id)) {
         reservasFinalizadasIds.value.push(reserva.id)
       }
-      // Cambiar el estado para que no aparezca en confirmadas
       reserva.estado = 'Finalizada'
       mostrarDialogoFinalizada.value = true
+      setTimeout(() => {
+        mostrarDialogoFinalizada.value = false
+      }, 2000)
     }
   })
 }
