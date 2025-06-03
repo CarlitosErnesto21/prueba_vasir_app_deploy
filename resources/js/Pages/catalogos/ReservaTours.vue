@@ -1023,7 +1023,7 @@ function finalizarReserva(reserva) {
       mostrarDialogoFinalizada.value = true
       setTimeout(() => {
         mostrarDialogoFinalizada.value = false
-      }, 2000)
+      }, 1000)
     }
   })
 }
