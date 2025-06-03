@@ -34,6 +34,11 @@ Route::get('catalogos/Productos', function () {
     })->middleware(['auth', 'verified'])->name('productos');
 });
 
+Route::get('catalogos/Hoteles', function () {
+    return Inertia::render('catalogos/Hoteles');
+    })->middleware(['auth', 'verified'])->name('hoteles');
+    
+
 Route::get('catalogos/ReservaTours', function () {
     return Inertia::render('catalogos/ReservaTours');
     })->middleware(['auth', 'verified'])->name('reservatours');
