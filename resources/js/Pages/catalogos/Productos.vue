@@ -282,7 +282,7 @@ const viewImages = (imagenesDeProducto) => {
                     @click="openNew"
                 />
             </div>
-
+            
             <DataTable :value="productos" dataKey="id">
                 <Column field="nombre" header="Nombre" />
                 <Column field="descripcion" header="Descripción" />
@@ -338,6 +338,7 @@ const viewImages = (imagenesDeProducto) => {
 
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
+
                             <label for="descripcion" class="w-24"
                                 >Descripción:</label
                             >
@@ -350,6 +351,7 @@ const viewImages = (imagenesDeProducto) => {
                                 }"
                                 class="flex-1"
                             />
+
                         </div>
                         <small
                             class="text-red-500 ml-28"
