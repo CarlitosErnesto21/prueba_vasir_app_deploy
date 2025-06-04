@@ -9,7 +9,8 @@ import { usePage, Link } from '@inertiajs/vue3'; //link para que no recargue tod
 import Toast from 'primevue/toast';
 import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
 import { faList, faTags, faDoorOpen, faFileAlt, faLayerGroup, faCircleXmark, faUserCircle, 
-    faChevronCircleDown, faHouseChimney, faTableList, faStoreAlt, faReceipt, faUser, faHome, faHotel} from "@fortawesome/free-solid-svg-icons";
+    faChevronCircleDown, faHouseChimney, faTableList, faStoreAlt, faReceipt, faUser, faHome, faHotel,
+    faCalendarAlt} from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
 
 const page = usePage();
@@ -110,7 +111,7 @@ onBeforeUnmount(() => {
             <button @click="isSidebarOpen = !isSidebarOpen"
                 class="block md:hidden text-black mr-3"
                 style="font-size: 150%;">
-                <FontAwesomeIcon :icon="faList"/>
+                <FontAwesomeIcon :icon="faList" class="fa-shadow"/>
             </button>
             <div class="text-xl font-semibold text-black">
                 <Link :href="route('dashboard')" class="text-xl font-semibold text-black flex items-center cursor-pointer select-none">
@@ -122,7 +123,7 @@ onBeforeUnmount(() => {
                 <div class="relative group">
                     <button @click="openProfileMenu" class="text-black text-xl" title="Usuario">
                         <span class="font-semibold text-base text-gray-700 mr-2">Perfil</span>
-                        <FontAwesomeIcon :icon="faUser"/>
+                        <FontAwesomeIcon :icon="faUser" class="fa-shadow"/>
                     </button>
                     <!-- Menú de perfil tipo Chrome -->
                     <transition name="fade">
@@ -195,7 +196,7 @@ onBeforeUnmount(() => {
                 @click="toggleSidebar"
                 class="mx-auto mb-6 p-2 rounded-full bg-white text-red-500 hover:bg-red-100 transition hidden md:flex items-center justify-center"
                 :title="isSidebarCollapsed ? 'Expandir Menú' : 'Reducir Menú'">
-                <FontAwesomeIcon :icon="faTableList" :class="isSidebarCollapsed" class="h-5"/>
+                <FontAwesomeIcon :icon="faTableList" :class="[isSidebarCollapsed, 'fa-shadow']" class="h-5"/>
             </button>
             <div class="px-4 text-xl font-bold text-white flex justify-center items-center" v-if="!isSidebarCollapsed">
                 <span>MENÚ</span>
@@ -210,7 +211,7 @@ onBeforeUnmount(() => {
                         @keydown.enter="$inertia.visit(route('dashboard'))"
                         title="Inicio"
                     >
-                        <FontAwesomeIcon :icon="faHome" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6" />
+                        <FontAwesomeIcon :icon="faHome" :class="[isSidebarCollapsed ? '' : 'mr-3', 'fa-shadow']" class="h-6" />
                         <span v-if="!isSidebarCollapsed">Inicio</span>
                     </li>
                     <li class="px-0 py-3 flex flex-col relative">
@@ -222,10 +223,10 @@ onBeforeUnmount(() => {
                                 (isOpen && isSidebarCollapsed) ? 'bg-orange-700 text-white' : ''
                             ]"
                             title="Catálogos">
-                            <FontAwesomeIcon :icon="faList" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
+                            <FontAwesomeIcon :icon="faList" :class="[isSidebarCollapsed ? '' : 'mr-3', 'fa-shadow']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Catálogos</span>
                             <FontAwesomeIcon v-if="!isSidebarCollapsed" :icon="faChevronCircleDown"
-                                class="ml-2 transition-transform h-5" :class="{'rotate-90': isOpen}"/>
+                                class="ml-2 transition-transform h-5 fa-shadow" :class="{'rotate-90': isOpen}"/>
                         </button>
                         <!-- Menú desplegable como burbujas fuera del aside -->
                         <transition name="fade">
@@ -268,7 +269,7 @@ onBeforeUnmount(() => {
                                     tabindex="0"
                                     @keydown.enter="$inertia.visit(route('productos'))"
                                     title="Categorías">
-                                    <FontAwesomeIcon :icon="faStoreAlt" />
+                                    <FontAwesomeIcon :icon="faStoreAlt" class="fa-shadow" />
                                     <span class="ml-3">Productos</span>
                                 </li>
                                 <li
@@ -277,7 +278,7 @@ onBeforeUnmount(() => {
                                     tabindex="0"
                                     @keydown.enter="$inertia.visit(route('tours'))"
                                     title="Tours">
-                                    <FontAwesomeIcon :icon="faTags" />
+                                    <FontAwesomeIcon :icon="faTags" class="fa-shadow"/>
                                     <span class="ml-3">Tours</span>
                                 </li>
                                 <li
@@ -286,7 +287,7 @@ onBeforeUnmount(() => {
                                     tabindex="0"
                                     @keydown.enter="$inertia.visit(route('hoteles'))"
                                     title="Otros">
-                                    <FontAwesomeIcon :icon="faHotel" />
+                                    <FontAwesomeIcon :icon="faHotel" class="fa-shadow"/>
                                     <span class="ml-3">Hoteles</span>
                                 </li>
                             </ul>
@@ -299,7 +300,7 @@ onBeforeUnmount(() => {
                         tabindex="0"
                         @keydown.enter="$inertia.visit(route('dashboard'))"
                         title="Otros">
-                        <FontAwesomeIcon :icon="faTags" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
+                        <FontAwesomeIcon :icon="faTags" :class="[isSidebarCollapsed ? '' : 'mr-3', 'fa-shadow']" class="h-6"/>
                         <span v-if="!isSidebarCollapsed">Otros</span>
                     </li>
                     <li
@@ -308,17 +309,16 @@ onBeforeUnmount(() => {
                         @click="$inertia.visit(route('reservatours'))"
                         tabindex="0"
                         @keydown.enter="$inertia.visit(route('reservatours'))"
-                        title="Reservas">
-                        <FontAwesomeIcon :icon="faReceipt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
-                        <span v-if="!isSidebarCollapsed">Reservas</span>
+                        title="Gestionar reservas">
+                        <FontAwesomeIcon :icon="faCalendarAlt" :class="[isSidebarCollapsed ? '' : 'mr-3', 'fa-shadow']" class="h-6"/>
+                        <span v-if="!isSidebarCollapsed">Gestionar reservas</span>
                     </li>
                     <li class="px-5 py-3 hover:bg-orange-600 flex items-center"
                         :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'">
-                        <!--<Link :href="route('reservas.rango')"-->
                         <Link :href="route('dashboard')"
                             class="flex items-center" title="Reportes"
                             :class="isSidebarCollapsed ? 'justify-center w-auto' : 'w-full justify-start'">
-                            <FontAwesomeIcon :icon="faFileAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
+                            <FontAwesomeIcon :icon="faFileAlt" :class="[isSidebarCollapsed ? '' : 'mr-3', 'fa-shadow']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Reportes</span>
                         </Link>
                     </li>
@@ -329,7 +329,7 @@ onBeforeUnmount(() => {
                         tabindex="0"
                         @keydown.enter="$inertia.visit(route('dashboard'))"
                         title="Otros">
-                        <FontAwesomeIcon :icon="faFileAlt" :class="isSidebarCollapsed ? '' : 'mr-3'" class="h-6"/>
+                        <FontAwesomeIcon :icon="faFileAlt" :class="[isSidebarCollapsed ? '' : 'mr-3', 'fa-shadow']" class="h-6"/>
                         <span v-if="!isSidebarCollapsed">Otros</span>
                     </li>
                 </ul>
@@ -360,8 +360,10 @@ onBeforeUnmount(() => {
    </div>
 </template>
 
-<!-- No hay campos de formulario en este layout, pero si agregas alguno, asegúrate de incluir siempre un atributo id o name único en cada input/select/textarea. 
-Por ejemplo:
-<input id="busqueda" name="busqueda" ... />
-<label for="busqueda">Buscar</label>
--->
+<style scoped>
+/* ...existing code... */
+.fa-shadow {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+/* ...existing code... */
+</style>
