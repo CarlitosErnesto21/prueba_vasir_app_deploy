@@ -254,7 +254,7 @@ onBeforeUnmount(() => {
                                     title="Hoteles"
                                     class="bg-white text-red-500 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-600 hover:text-white transition"
                                     style="min-width: 110px; min-height: 48px; padding: 0 18px;">
-                                    <FontAwesomeIcon :icon="faTags" size="lg"/>
+                                    <FontAwesomeIcon :icon="faHotel" size="lg"/>
                                     <span class="ml-2 whitespace-nowrap">Hoteles</span>
                                 </Link>
                             </div>
