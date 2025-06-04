@@ -6,11 +6,12 @@ import { useToast } from 'primevue/usetoast';
 import { FilterMatchMode } from '@primevue/core/api';
 import FileUpload from 'primevue/fileupload';
 import Toast from 'primevue/toast';
+import Dropdown from 'primevue/dropdown';
 
 const toast = useToast();
 
 const hoteles = ref([]);  
-const hotel = ref({ id: null, nombre: '', descripcion: '', pais: '', provincia: '', precio: null, imagenes: [] });
+const hotel = ref({ id: null, nombre: '', direccion: '', descripcion: '', estado: '', pais: '', provincia: '', categoria: '', imagenes: [] });
 const imagenPreviewList = ref([]);
 const selectedHoteles = ref();
 const dialog = ref(false);
@@ -27,17 +28,16 @@ onMounted(() => {
 
 const fetchHoteles = async () => {
     hoteles.value = [
-        { id: 1, nombre: 'Hotel Sol de Oro', descripcion:'Hotel Sol de Oro es un elegante alojamiento de 4 estrellas ubicado en Av. Larco 1234, Miraflores, Lima, Perú. Ofrece confort moderno, excelente atención y una ubicación privilegiada cerca de centros comerciales y playas. Ideal para viajes de negocios o escapadas turísticas'
-         , pais: 'Peru', provincia: 'Lima', precio: 100.99, imagenes: [] },
-        { id: 2, nombre: 'Hotel B', precio: 120.5, imagenes: [] },
-        { id: 3, nombre: 'Hotel C', precio: 132.99, imagenes: [] },
-        { id: 4, nombre: 'Hotel D', precio: 215.75, imagenes: [] },
-        { id: 5, nombre: 'Hotel E', precio: 80.99, imagenes: [] },
+        { id: 1, nombre: 'Hotel Sol de Oro', direccion:'Hotel Sol de Oro, Av. Pardo Miraflores Calle San Martín 610', pais: 'Peru', provincia: 'Lima', imagenes: [] },
+        { id: 2, nombre: 'Hotel B', imagenes: [] },
+        { id: 3, nombre: 'Hotel C', imagenes: [] },
+        { id: 4, nombre: 'Hotel D', imagenes: [] },
+        { id: 5, nombre: 'Hotel E', imagenes: [] },
     ];
 };
 
 const openNew = () => {
-    hotel.value = { id: null, nombre: '', descripcion: '', pais: '', provincia: '', precio: null, imagenes: [] };
+    hotel.value = { id: null, nombre: '', direccion: '', descripcion: '', estado: '', pais: '', provincia: '', categoria: '', imagenes: [] };
     imagenPreviewList.value = [];
     submitted.value = false;
     btnTitle.value = 'Guardar';
@@ -56,12 +56,12 @@ const saveOrUpdate = () => {
 
     if (
         !hotel.value.nombre ||
+        !hotel.value.direccion ||
         !hotel.value.descripcion ||
+        !hotel.value.estado ||
         !hotel.value.pais ||
         !hotel.value.provincia ||
-        hotel.value.precio == null ||
-        hotel.value.precio <= 0 ||
-        hotel.value.precio > 999999.99 ||
+        !hotel.value.categoria ||
         imagenPreviewList.value.length === 0
     ) return;
 
@@ -96,7 +96,7 @@ const saveOrUpdate = () => {
     }
 
     dialog.value = false;
-    hotel.value = { id: null, nombre: '', descripcion: '', pais: '', provincia: '', precio: null, imagenes: [] };
+    hotel.value = { id: null, nombre: '', direccion: '', descripcion: '', estado: '', pais: '', provincia: '', categoria: '', imagenes: [] };
     imagenPreviewList.value = [];
 };
 
@@ -128,37 +128,78 @@ const onImageSelect = (event) => {
 const removeImage = (index) => {
     imagenPreviewList.value.splice(index, 1);
 };
+
+const paises = ref([
+    { nombre: 'Peru' },
+    { nombre: 'Argentina' },
+    { nombre: 'Chile' },
+    { nombre: 'Colombia' },
+    { nombre: 'México' },
+    { nombre: 'España' },
+    // Agrega más países según necesidad
+]);
+
+const provincias = ref([
+    { nombre: 'Lima' },
+    { nombre: 'Buenos Aires' },
+    { nombre: 'Santiago' },
+    { nombre: 'Bogotá' },
+    { nombre: 'CDMX' },
+    { nombre: 'Madrid' },
+    // Agrega más provincias según necesidad
+]);
+
+function sanitizeDropdownInput(value) {
+    // Solo letras, tildes y sin espacios iniciales
+    return value.replace(/^\s+/, '').replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, '');
+}
+
+function onInputDropdown(field, event) {
+    if (typeof event === 'string') {
+        hotel.value[field] = sanitizeDropdownInput(event);
+    }
+}
+
+function onFilterDropdown(field, event) {
+    if (event && event.value) {
+        event.value = sanitizeDropdownInput(event.value);
+    }
+}
 </script>
 
 <template>
     <Head title="Hoteles" />
     <AuthenticatedLayout>
     <Toast />
-        <div class="py-6 px-6 mt-10 mx-auto bg-red-100 shadow-md rounded-lg">
+        <div class="py-6 px-7 mt-10 mx-auto bg-red-100 shadow-md rounded-lg">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold">Catálogo hoteles</h3>
                 <Button label="Agregar hotel" icon="pi pi-plus" class="p-button-sm p-button-danger" @click="openNew" />
             </div>
 
-            <DataTable :value="hoteles" v-model:selection="selectedHoteles" dataKey="id" :filters="filters" :paginator="true" :rows="4">
+            <DataTable :value="hoteles" v-model:selection="selectedHoteles" dataKey="id" :filters="filters" :paginator="true" :rows="4" class="overflow-x-auto max-w-full" style="display:block; max-width:84vw;">
                 <template #header>
                     <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
                 </template>
-                <Column field="nombre" header="Nombre"  />
+                <Column field="nombre" header="Nombre" sortable />
+                <Column field="direccion" header="Dirección">
+                    <template #body="slotProps">
+                       <div style="max-height: 80px; width: 300px; overflow-y: auto; overflow-x: auto; background: #fff; border-radius: 4px; padding: 4px 8px; font-size: 0.95em; box-shadow: 0 1px 2px rgba(0,0,0,0.03); white-space: pre-line; word-break: break-word; scrollbar-width: thin;">
+                            {{ slotProps.data.direccion }}
+                        </div>
+                    </template>
+                </Column>
                 <Column field="descripcion" header="Descripción">
                     <template #body="slotProps">
-                        <div style="max-height: 60px; min-width: 180px; max-width: 300px; overflow-y: auto; overflow-x: hidden; background: #fff; border-radius: 4px; padding: 4px 8px; font-size: 0.95em; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+                        <div style="max-height: 80px; width: 300px; overflow-y: auto; overflow-x: auto; background: #fff; border-radius: 4px; padding: 4px 8px; font-size: 0.95em; box-shadow: 0 1px 2px rgba(0,0,0,0.03); white-space: pre-line; word-break: break-word; scrollbar-width: thin;">
                             {{ slotProps.data.descripcion }}
                         </div>
                     </template>
                 </Column>
+                <Column field="estado" header="Estado" />
+                <Column field="categoria" header="Categoría" />
                 <Column field="pais" header="País" />
                 <Column field="provincia" header="Provincia" />
-                <Column field="precio" header="Precio" >
-                    <template #body="slotProps">
-                        ${{ slotProps.data.precio.toFixed(2) }}
-                    </template>
-                </Column>
                 <Column header="Imágenes">
                     <template #body="slotProps">
                         <div class="flex gap-1">
@@ -183,7 +224,15 @@ const removeImage = (index) => {
                             <label for="nombre" class="w-24">Nombre:</label>
                             <InputText v-model.trim="hotel.nombre" id="nombre" :class="{ 'p-invalid': submitted && !hotel.nombre }" class="flex-1" />
                         </div>
-                        <small class="text-red-500 ml-28" v-if="submitted && !hotel.nombre">El nombre es obligatorio.</small>
+                         <small class="text-red-500 ml-28" v-if="submitted && !hotel.nombre">El nombre es obligatorio.</small>
+                    </div>
+
+                    <div class="w-full flex flex-col">
+                        <div class="flex items-center gap-4">
+                            <label for="direccion" class="w-24">Dirección:</label>
+                            <textarea v-model.trim="hotel.direccion" id="direccion" :class="{ 'p-invalid': submitted && !hotel.direccion }" class="flex-1" />
+                        </div>
+                        <small class="text-red-500 ml-28" v-if="submitted && !hotel.direccion">La dirección es obligatoria.</small>
                     </div>
 
                     <div class="w-full flex flex-col">
@@ -196,8 +245,27 @@ const removeImage = (index) => {
 
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
+                            <label for="estado" class="w-24">Estado:</label>
+                            <InputText v-model.trim="hotel.estado" id="estado" :class="{ 'p-invalid': submitted && !hotel.estado }" class="flex-1" />
+                        </div>
+                        <small class="text-red-500 ml-28" v-if="submitted && !hotel.estado">El estado es obligatorio.</small>
+                    </div>
+
+                    <div class="w-full flex flex-col">
+                        <div class="flex items-center gap-4">
+                            <label for="categoria" class="w-24">Categoría:</label>
+                            <InputText v-model.trim="hotel.categoria" id="categoria" :class="{ 'p-invalid': submitted && !hotel.categoria }" class="flex-1" />
+                        </div>
+                        <small class="text-red-500 ml-28" v-if="submitted && !hotel.categoria">La categoría es obligatoria.</small>
+                    </div>
+
+                    <div class="w-full flex flex-col">
+                        <div class="flex items-center gap-4">
                             <label for="pais" class="w-24">País:</label>
-                            <InputText v-model.trim="hotel.pais" id="pais" :class="{ 'p-invalid': submitted && !hotel.pais }" class="flex-1" />
+                            <Dropdown v-model="hotel.pais" :options="paises" optionLabel="nombre" optionValue="nombre" id="pais" :filter="true" filterPlaceholder="Buscar país..." :showClear="true" :class="{ 'p-invalid': submitted && !hotel.pais }" class="flex-1" placeholder="Selecciona un país"
+    @input="onInputDropdown('pais', $event)"
+    @filter="onFilterDropdown('pais', $event)"
+/>
                         </div>
                         <small class="text-red-500 ml-28" v-if="submitted && !hotel.pais">El país es obligatorio.</small>
                     </div>
@@ -205,36 +273,12 @@ const removeImage = (index) => {
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
                             <label for="provincia" class="w-24">Provincia:</label>
-                            <InputText v-model.trim="hotel.provincia" id="provincia" :class="{ 'p-invalid': submitted && !hotel.provincia }" class="flex-1" />
+                            <Dropdown v-model="hotel.provincia" :options="provincias" optionLabel="nombre" optionValue="nombre" id="provincia" :filter="true" filterPlaceholder="Buscar provincia..." :showClear="true" :class="{ 'p-invalid': submitted && !hotel.provincia }" class="flex-1" placeholder="Selecciona una provincia"
+    @input="onInputDropdown('provincia', $event)"
+    @filter="onFilterDropdown('provincia', $event)"
+/>
                         </div>
                         <small class="text-red-500 ml-28" v-if="submitted && !hotel.provincia">La provincia es obligatoria.</small>
-                    </div>
-
-                    <div class="w-full flex flex-col">
-                        <div class="flex items-center gap-4">
-                            <label for="precio" class="w-24">Precio:</label>
-                            <InputNumber
-                            v-model="hotel.precio"
-                            id="precio"
-                            mode="currency"
-                            currency="USD"
-                            :locale="'en-US'"
-                            :min="0.01"
-                            :max="9999.99"
-                            :maxFractionDigits="2"
-                            :minFractionDigits="2"
-                            :class="{ 'p-invalid': submitted && (!hotel.precio || hotel.precio <= 0 || hotel.precio > 999999.99) }"
-                            class="flex-1"
-                            />
-
-                        </div>
-                        <small
-                        class="text-red-500 ml-28"
-                        v-if="submitted && (hotel.precio == null || hotel.precio <= 0 || hotel.precio > 999999.99)"
-                        >
-                        El precio es obligatorio, debe ser mayor a 0 y menor o igual a 9999.99.
-                        </small>
-
                     </div>
 
                     <div class="w-full flex flex-col">
