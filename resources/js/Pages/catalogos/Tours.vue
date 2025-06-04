@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { FilterMatchMode } from '@primevue/core/api';
 import Calendar from 'primevue/calendar';
@@ -21,6 +21,9 @@ const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 });
 const btnTitle = ref('Guardar');
+const horaRegresoInput = ref('');
+const horaRegresoAMPM = ref('AM');
+const horaRegresoCalendar = ref(null);
 
 onMounted(() => {
     fetchTours();
@@ -38,13 +41,26 @@ const fetchTours = async () => {
 
 const openNew = () => {
     tour.value = { id: null, nombre: '', precio: null };
+    horaRegresoInput.value = '';
+    horaRegresoAMPM.value = 'AM';
+    horaRegresoCalendar.value = null;
     submitted.value = false;
-    btnTitle.value  = 'Guardar';
+    btnTitle.value  = 'Agregar';
     dialog.value = true;
 };
 
 const editTour = (t) => {
     tour.value = { ...t };
+    if (t.horaRegreso) {
+        const [hora, ampm] = t.horaRegreso.split(' ');
+        horaRegresoInput.value = hora || '';
+        horaRegresoAMPM.value = ampm || 'AM';
+        syncCalendarFromInput();
+    } else {
+        horaRegresoInput.value = '';
+        horaRegresoAMPM.value = 'AM';
+        horaRegresoCalendar.value = null;
+    }
     // Si el tour ya tiene imágenes, mostrarlas en el preview
     if (t.imagenes && Array.isArray(t.imagenes) && t.imagenes.length > 0) {
         imagenPreviewList.value = [...t.imagenes];
@@ -58,13 +74,44 @@ const editTour = (t) => {
     dialog.value = true;
 };
 
+// Cuando el usuario selecciona en el Calendar, sincroniza los inputs manuales
+function onHoraRegresoCalendarChange(e) {
+    if (!horaRegresoCalendar.value) return;
+    const date = new Date(horaRegresoCalendar.value);
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    let ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+    const hh = hours.toString().padStart(2, '0');
+    const mm = minutes.toString().padStart(2, '0');
+    horaRegresoInput.value = `${hh}:${mm}`;
+    horaRegresoAMPM.value = ampm;
+}
+
+// Cuando el usuario edita manualmente, sincroniza el Calendar (opcional, solo si el input es válido)
+function syncCalendarFromInput() {
+    const [hhmm, ampm] = [horaRegresoInput.value, horaRegresoAMPM.value];
+    if (!hhmm || !ampm) return;
+    const [hh, mm] = hhmm.split(':');
+    let hours = parseInt(hh, 10);
+    if (ampm === 'PM' && hours < 12) hours += 12;
+    if (ampm === 'AM' && hours === 12) hours = 0;
+    const date = new Date();
+    date.setHours(hours);
+    date.setMinutes(parseInt(mm, 10) || 0);
+    date.setSeconds(0);
+    horaRegresoCalendar.value = date;
+}
+
 const saveOrUpdate = () => {
     submitted.value = true;
 
     // Validar todos los campos requeridos y al menos una imagen
-    if (!tour.value.nombre || !tour.value.descripcion || !tour.value.puntoSalida || !tour.value.horaRegreso || !tour.value.fecha || !tour.value.precio || imagenPreviewList.value.length === 0 || tour.value.precio <= 0 || tour.value.precio > 9999.99) {
+    if (!tour.value.nombre || !tour.value.descripcion || !tour.value.puntoSalida || !horaRegresoInput.value || !horaRegresoAMPM.value || !tour.value.fecha || !tour.value.precio || imagenPreviewList.value.length === 0 || tour.value.precio <= 0 || tour.value.precio > 9999.99) {
         return;
     }
+    tour.value.horaRegreso = horaRegresoInput.value + ' ' + horaRegresoAMPM.value;
 
     // Verificar si ya existe un tour con el mismo nombre (excepto en edición del mismo)
     const nombreExiste = tours.value.some(p =>
@@ -100,6 +147,8 @@ const saveOrUpdate = () => {
 
     dialog.value = false;
     tour.value = { id: null, nombre: '', descripcion: '', precio: null, imagen: null, puntoSalida: '', horaRegreso: null, fecha: null, imagenes: [] };
+    horaRegresoInput.value = '';
+    horaRegresoAMPM.value = 'AM';
     imagenPreview.value = null;
     imagenPreviewList.value = [];
     imagenFileList.value = [];
@@ -125,8 +174,11 @@ const deleteTour = () => {
 
 const hideDialog = () => {
     dialog.value = false;
-    // Limpiar todos los campos y arrays de imágenes al cerrar/cancelar
     tour.value = { id: null, nombre: '', descripcion: '', precio: null, imagen: null, puntoSalida: '', horaRegreso: null, fecha: null, imagenes: [] };
+    horaRegresoInput.value = '';
+    horaRegresoAMPM.value = 'AM';
+    horaRegresoCalendar.value = null;
+    // Limpiar todos los campos y arrays de imágenes al cerrar/cancelar
     imagenPreview.value = null;
     imagenPreviewList.value = [];
     imagenFileList.value = [];
@@ -155,16 +207,34 @@ const removeImage = (index) => {
     imagenFileList.value.splice(index, 1);
 };
 
+// Utilidad para formatear hora a HH:mm
+function formatTimeInput(value) {
+    // Elimina todo lo que no sea dígito
+    let digits = value.replace(/\D/g, '');
+    if (digits.length === 0) return '';
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 4) return digits.slice(0, 2) + ':' + digits.slice(2, 4);
+    // Limita a 4 dígitos (HHmm)
+    return digits.slice(0, 2) + ':' + digits.slice(2, 4);
+}
+
+// Handler para input manual en horaRegreso
+function onHoraRegresoInput(e) {
+    let formatted = formatTimeInput(e.target.value);
+    horaRegresoInput.value = formatted;
+    syncCalendarFromInput();
+}
+
+// Modifica el Dropdown para sincronizar el Calendar
+watch(horaRegresoAMPM, () => {
+    syncCalendarFromInput();
+});
 </script>
 
 <template>
     <Head title="Tours" />
     <AuthenticatedLayout>
-        <template #header>
-            <h2 class="text-xl font-semibold text-gray-800">Tours</h2>
-        </template>
-
-        <div class="py-6 px-6 mt-10 mx-auto bg-red-100 shadow-md rounded-lg">
+        <div class="py-6 px-6 mt-10 mx-auto bg-red-50 shadow-md rounded-lg">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-bold">Gestión de Tours</h3>
                 <Button label="Agregar tour" icon="pi pi-plus" class="p-button-sm p-button-danger" @click="openNew" />
@@ -175,16 +245,22 @@ const removeImage = (index) => {
                     <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
                 </template>
                 <Column field="nombre" header="Nombre" sortable />
-                <Column field="descripcion" header="Descripcion" />
+                <Column field="descripcion" header="Descripción">
+                    <template #body="slotProps">
+                        <div class="max-h-14 max-w-52 overflow-y-auto whitespace-pre-line px-2 py-1 break-words">
+                            {{ slotProps.data.descripcion }}
+                        </div>
+                    </template>
+                </Column>
                 <Column field="puntoSalida" header="Punto de salida"  />
                 <Column field="fecha" header="Fecha y hora de salida">
                     <template #body="slotProps">
                         {{ slotProps.data.fecha ? new Date(slotProps.data.fecha).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : '' }}
                     </template>
                 </Column>
-                <Column field="horaRegreso" header="Hora de regreso">
+                <Column field="horaRegreso" header="Hora de regreso" bodyStyle="min-width:120px;">
                     <template #body="slotProps">
-                        {{ slotProps.data.horaRegreso ? new Date(slotProps.data.horaRegreso).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: true }) : '' }}
+                        {{ slotProps.data.horaRegreso || '' }}
                     </template>
                 </Column>
                 <Column field="precio" header="Precio" >
@@ -217,34 +293,46 @@ const removeImage = (index) => {
             <!-- Modal Producto -->
             <Dialog v-model:visible="dialog" :header="btnTitle + ' Tour'" :modal="true" :style="{ width: '400px' }">
                 <div class="p-fluid space-y-6">
-                    <div>
-                        <label for="nombre" class="block mb-2">Nombre</label>
-                        <InputText v-model.trim="tour.nombre" id="nombre" required :class="{ 'p-invalid': submitted && !tour.nombre }" class="w-full" />
-                        <small class="text-red-500" v-if="submitted && !tour.nombre">El nombre es obligatorio</small>
+                    <div class="w-full flex flex-col">
+                        <div class="flex items-center gap-4">
+                            <label for="nombre" class="w-24">Nombre:</label>
+                            <InputText v-model.trim="tour.nombre" id="nombre" :class="{ 'p-invalid': submitted && !tour.nombre }" class="flex-1" />
+                        </div>
+                        <small class="text-red-500 ml-28" v-if="submitted && !tour.nombre">El nombre es obligatorio.</small>
                     </div>
-                    <div>
-                        <label for="descripcion" class="block mb-2">Descripción</label>
-                        <InputText v-model.trim="tour.descripcion" id="descripcion" required :class="{ 'p-invalid': submitted && !tour.descripcion}" class="w-full" />
-                        <small class="text-red-500" v-if="submitted && !tour.descripcion">La descripcion es obligatoria</small>
+                    <div class="w-full flex flex-col">
+                        <div class="flex items-center gap-4">
+                            <label for="descripcion" class="w-24">Descripción:</label>
+                            <Textarea v-model.trim="tour.descripcion" id="descripcion" :class="{ 'p-invalid': submitted && !tour.descripcion }" class="flex-1" />
+                        </div>
+                        <small class="text-red-500 ml-28" v-if="submitted && !tour.descripcion">La descripción es obligatoria.</small>
                     </div>
                     <div>
                         <label for="puntoSalida" class="block mb-2">Punto de salida</label>
                         <InputText v-model.trim="tour.puntoSalida" id="puntoSalida" required :class="{ 'p-invalid': submitted && !tour.puntoSalida}" class="w-full" />
                         <small class="text-red-500" v-if="submitted && !tour.puntoSalida">Punto de salida es requerido.</small>
                     </div>
-                    <div>
-                        <label for="horaRegreso" class="block mb-2">Hora de regreso</label>
-                        <Calendar v-model="tour.horaRegreso" id="horaRegreso" :showIcon="true" timeOnly hourFormat="12" :class="{ 'p-invalid': submitted && !tour.horaRegreso }" class="w-full">
-                            <template #inputicon>
-                                <i class="pi pi-clock" />
-                            </template>
-                        </Calendar>
-                        <small class="text-red-500" v-if="submitted && !tour.horaRegreso">Hora de regreso es requerido.</small>
-                    </div>
-                    <div>
-                        <label for="fecha" class="block mb-2">Fecha y hora de salida</label>
-                        <Calendar v-model="tour.fecha" id="fecha" :showIcon="true" :showTime="true" hourFormat="12" dateFormat="yy-mm-dd" :class="{ 'p-invalid': submitted && !tour.fecha }" class="w-full" />
-                        <small class="text-red-500" v-if="submitted && !tour.fecha">Fecha y hora requerida.</small>
+                    <div class="flex gap-4">
+                        <div class="flex-1">
+                            <label for="fecha" class="block mb-2">Fecha y hora de salida</label>
+                            <Calendar v-model="tour.fecha" id="fecha" :showIcon="true" :showTime="true" hourFormat="12" dateFormat="yy-mm-dd" :class="{ 'p-invalid': submitted && !tour.fecha }" class="w-full" :manualInput="false" />
+                            <small class="text-red-500" v-if="submitted && !tour.fecha">Fecha y hora requerida.</small>
+                        </div>
+                        <div style="width: 90px; min-width: 95px;">
+                            <label for="horaRegreso" class="block mb-2">Hora regreso</label>
+                            <Calendar
+                                v-model="horaRegresoCalendar"
+                                id="horaRegresoCalendar"
+                                :showTime="true"
+                                :timeOnly="true"
+                                hourFormat="12"
+                                :manualInput="false"
+                                :class="{ 'p-invalid': submitted && !horaRegresoInput }"
+                                style="width: 100%; min-width: 95px;"
+                                @change="onHoraRegresoCalendarChange"
+                            />
+                            <small class="text-red-500" v-if="submitted && (!horaRegresoInput || !horaRegresoAMPM)">Hora de regreso y AM/PM son requeridos.</small>
+                        </div>
                     </div>
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
@@ -262,7 +350,6 @@ const removeImage = (index) => {
                             :class="{ 'p-invalid': submitted && (!tour.precio || tour.precio <= 0 || tour.precio > 999999.99) }"
                             class="flex-1"
                             />
-
                         </div>
                         <small
                         class="text-red-500 ml-28"
@@ -279,7 +366,6 @@ const removeImage = (index) => {
                             </div>
                             <small class="text-red-500 ml-28" v-if="submitted && imagenPreviewList.length === 0">Al menos una imagen es obligatoria.</small>
                         </div>
-
                          <div class="flex gap-4 flex-wrap mt-4 ml-28">
                         <div v-for="(img, index) in imagenPreviewList" :key="index" class="relative w-32 h-32">
                             <img :src="img" alt="Vista previa" class="w-full h-full object-cover rounded border" />
