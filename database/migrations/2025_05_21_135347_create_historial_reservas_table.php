@@ -23,6 +23,10 @@ return new class extends Migration
             $table->decimal('precio_unitario', 8, 2);
             $table->decimal('precio_total', 8, 2);
             $table->dateTime('fecha_registro');
+            // Llave foránea a la tabla reservas
+            $table->unsignedBigInteger('reserva_id')->nullable();
+            $table->foreign('reserva_id')->references('id')->on('reservas')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 
