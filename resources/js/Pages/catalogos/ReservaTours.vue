@@ -457,21 +457,6 @@
         </div>
       </Dialog>
       <ConfirmDialog :draggable="false" :position="'center'" />
-      <Dialog
-        v-model:visible="mostrarDialogoFinalizada"
-        modal
-        header="Finalizada"
-        :closable="false"
-        :style="{ width: '350px' }"
-        :draggable="false"
-        :position="'center'"
-      >
-        <div class="flex flex-col items-center gap-2 py-2">
-          <i class="pi pi-check-circle text-green-600 text-4xl"></i>
-          <span>La reserva ha sido movida al historial.</span>
-          <!-- El botón de cerrar ha sido eliminado -->
-        </div>
-      </Dialog>
     </div>
   </AuthenticatedLayout>
 </template>
@@ -488,6 +473,8 @@ import DatePicker from 'primevue/datepicker'
 import InputText from 'primevue/inputtext'
 import ConfirmDialog from 'primevue/confirmdialog'
 import { useConfirm } from 'primevue/useconfirm'
+import Toast from 'primevue/toast'
+import { useToast } from 'primevue/usetoast'
 
 // Filtros
 const filtroDesde = ref(null)
@@ -500,6 +487,9 @@ const filtroTipoHistorial = ref('')
 // Variables para el modal de reservas
 const mostrarModalReservasTour = ref(false)
 const reservasTourSeleccionado = ref([])
+
+// Usa useToast correctamente
+const toast = useToast()
 
 // Variables para búsqueda en el modal
 const busquedaModalCliente = ref('')
@@ -1008,10 +998,10 @@ const reservaParaFinalizar = ref(null)
 function finalizarReserva(reserva) {
   reservaParaFinalizar.value = reserva
   confirm.require({
-    message: 'Esta acción moverá la reserva al historial.',
-    header: '¿Finalizar reserva?',
+    message: 'Esta acción es irreversible.',
+    header: '¿Estás seguro de completar esta reserva?',
     icon: 'pi pi-question-circle',
-    acceptLabel: 'Ok',
+    acceptLabel: 'Completar',
     rejectLabel: 'Cancelar',
     acceptClass: 'p-button-success',
     rejectClass: 'p-button-danger',
@@ -1020,10 +1010,15 @@ function finalizarReserva(reserva) {
         reservasFinalizadasIds.value.push(reserva.id)
       }
       reserva.estado = 'Finalizada'
-      mostrarDialogoFinalizada.value = true
+      // Usa nextTick para asegurar que el Toast se muestre después del cierre del modal de confirmación
       setTimeout(() => {
-        mostrarDialogoFinalizada.value = false
-      }, 1000)
+        toast.add({
+          severity: 'success',
+          summary: 'Completada',
+          detail: 'La reserva ha sido movida al historial.',
+          life: 2000
+        })
+      }, 100)
     }
   })
 }
