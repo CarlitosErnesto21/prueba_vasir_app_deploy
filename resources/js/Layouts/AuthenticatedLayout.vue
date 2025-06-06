@@ -8,9 +8,10 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { usePage, Link } from '@inertiajs/vue3'; //link para que no recargue toda la pagina
 import Toast from 'primevue/toast';
 import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
-import { faList, faTags, faDoorOpen, faFileAlt, faLayerGroup, faCircleXmark, faUserCircle, 
+import { faList, faTags, faRoute, faDoorOpen, faFileAlt, faLayerGroup, faCircleXmark, faUserCircle, 
     faChevronCircleDown, faHouseChimney, faTableList, faStoreAlt, faReceipt, faUser, faHome, faHotel,
-    faCalendarAlt} from "@fortawesome/free-solid-svg-icons";
+    faCalendarAlt,
+    faPlaneDeparture} from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
 
 const page = usePage();
@@ -247,7 +248,7 @@ onBeforeUnmount(() => {
                                     title="Tours"
                                     class="bg-white text-red-500 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-600 hover:text-white transition"
                                     style="min-width: 110px; min-height: 48px; padding: 0 18px;">
-                                    <FontAwesomeIcon :icon="faTags" size="lg"/>
+                                    <FontAwesomeIcon :icon="faRoute" size="lg"/>
                                     <span class="ml-2 whitespace-nowrap">Tours</span>
                                 </Link>
                                 <Link
@@ -257,6 +258,14 @@ onBeforeUnmount(() => {
                                     style="min-width: 110px; min-height: 48px; padding: 0 18px;">
                                     <FontAwesomeIcon :icon="faHotel" size="lg"/>
                                     <span class="ml-2 whitespace-nowrap">Hoteles</span>
+                                </Link>
+                                <Link
+                                    :href="route('aerolineas')"
+                                    title="Hoteles"
+                                    class="bg-white text-red-500 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-600 hover:text-white transition"
+                                    style="min-width: 110px; min-height: 48px; padding: 0 18px;">
+                                    <FontAwesomeIcon :icon="faPlaneDeparture" size="lg"/>
+                                    <span class="ml-2 whitespace-nowrap">Aerolíneas</span>
                                 </Link>
                             </div>
                             <!-- Menú normal cuando el aside está expandido -->
@@ -278,7 +287,7 @@ onBeforeUnmount(() => {
                                     tabindex="0"
                                     @keydown.enter="$inertia.visit(route('tours'))"
                                     title="Tours">
-                                    <FontAwesomeIcon :icon="faTags" class="fa-shadow"/>
+                                    <FontAwesomeIcon :icon="faRoute" class="fa-shadow"/>
                                     <span class="ml-3">Tours</span>
                                 </li>
                                 <li
@@ -289,6 +298,15 @@ onBeforeUnmount(() => {
                                     title="Otros">
                                     <FontAwesomeIcon :icon="faHotel" class="fa-shadow"/>
                                     <span class="ml-3">Hoteles</span>
+                                </li>
+                                <li
+                                    class="flex items-center px-5 py-2 hover:bg-orange-600 justify-start cursor-pointer"
+                                    @click="$inertia.visit(route('aerolineas'))"
+                                    tabindex="0"
+                                    @keydown.enter="$inertia.visit(route('aerolineas'))"
+                                    title="Otros">
+                                    <FontAwesomeIcon :icon="faPlaneDeparture" class="fa-shadow"/>
+                                    <span class="ml-3">Aerolíneas</span>
                                 </li>
                             </ul>
                         </transition>

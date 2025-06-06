@@ -47,4 +47,8 @@ Route::get('catalogos/Tours', function () {
     return Inertia::render('catalogos/Tours');
 })->middleware(['auth', 'verified'])->name('tours');
 
+Route::get('catalogos/Aerolineas', function () {
+    return Inertia::render('catalogos/Aerolineas');
+})->middleware(['auth', 'verified'])->name('aerolineas');
+
 require __DIR__.'/auth.php';
