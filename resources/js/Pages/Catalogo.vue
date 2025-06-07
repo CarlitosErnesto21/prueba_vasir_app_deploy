@@ -14,13 +14,9 @@ const paquetesOpenAside = ref(false)
 const userMenuOpen = ref(false)
 
 const togglePaquetes = () => paquetesOpen.value = !paquetesOpen.value
-const closePaquetes = (e) => {
-    if (!e.target.closest('.paquetes-dropdown')) paquetesOpen.value = false
-}
+const closePaquetes = e => { if (!e.target.closest('.paquetes-dropdown')) paquetesOpen.value = false }
 const toggleUserMenu = () => userMenuOpen.value = !userMenuOpen.value
-const closeUserMenu = (e) => {
-    if (!e.target.closest('.user-menu-dropdown')) userMenuOpen.value = false
-}
+const closeUserMenu = e => { if (!e.target.closest('.user-menu-dropdown')) userMenuOpen.value = false }
 onMounted(() => {
     document.addEventListener('click', closePaquetes)
     document.addEventListener('click', closeUserMenu)
@@ -54,10 +50,15 @@ const redes = [
     <header class="bg-gradient-to-r from-white/60 to-white/60 backdrop-blur-sm text-black shadow-md fixed top-8 left-0 w-full z-50">
         <div class="px-6 py-3 flex justify-between items-center">
             <!-- Botón menú hamburguesa SOLO en móvil -->
-            <button @click="isSidebarOpen = !isSidebarOpen"
-                class="block md:hidden text-black mr-3"
-                style="font-size: 150%;">
-                <FontAwesomeIcon :icon="faList"/>
+            <button
+                @click="isSidebarOpen = !isSidebarOpen"
+                class="block md:hidden mr-3 rounded-full p-2 bg-white/80 shadow-lg border border-red-200 hover:bg-red-600 hover:text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 group"
+                aria-label="Abrir menú de navegación"
+            >
+                <span class="sr-only">Abrir menú</span>
+                <span class="flex items-center justify-center w-6 h-6">
+                    <FontAwesomeIcon :icon="faList" class="w-6 h-6 text-red-700 group-hover:text-white transition-colors duration-200" />
+                </span>
             </button>
             <div class="flex items-center space-x-8">
                 <Link :href="route('inicio')" class="flex items-center cursor-pointer select-none">
@@ -142,6 +143,7 @@ const redes = [
                     ]"
                 >Contactos</Link>
             </nav>
+            
             <!--Datos de la sesion-->
             <div class="flex items-center space-x-2 md:space-x-4">
                 <template v-if="!$page.props.auth || !$page.props.auth.user">
