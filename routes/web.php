@@ -5,8 +5,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Catalogo');
-})->name('Catalogo');
+    return Inertia::render('Inicio');
+})->name('inicio');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -40,10 +40,6 @@ Route::get('catalogos/Aerolineas', function () {
 
 
 // Rutas para vistas de clientes
-Route::get('/inicio', function () {
-    return Inertia::render('Inicio');
-})->name('inicio');
-
 Route::get('/paquetes', function () {
     return Inertia::render('vistasClientes/Paquetes');
 })->name('paquetes');

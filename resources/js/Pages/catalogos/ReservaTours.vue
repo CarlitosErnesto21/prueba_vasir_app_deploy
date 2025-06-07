@@ -992,11 +992,8 @@ const reservasFiltradasHistorial = computed(() => {
 
 // Función para finalizar una reserva
 const confirm = useConfirm()
-const mostrarDialogoFinalizada = ref(false)
-const reservaParaFinalizar = ref(null)
 
 function finalizarReserva(reserva) {
-  reservaParaFinalizar.value = reserva
   confirm.require({
     message: 'Esta acción es irreversible.',
     header: '¿Estás seguro de completar esta reserva?',
@@ -1010,7 +1007,6 @@ function finalizarReserva(reserva) {
         reservasFinalizadasIds.value.push(reserva.id)
       }
       reserva.estado = 'Finalizada'
-      // Usa nextTick para asegurar que el Toast se muestre después del cierre del modal de confirmación
       setTimeout(() => {
         toast.add({
           severity: 'success',
