@@ -369,7 +369,7 @@ onBeforeUnmount(() => {
                 </header>
                 <!-- Contenido principal con padding para no quedar debajo de los headers -->
                 <main class="flex-1 p-4 pt-16 md:p-10 md:pt-20 overflow-auto bg-white">
-                    <slot />
+                    <slot /> <!-- Aquí se renderizará el contenido dinámico -->
                 </main>
             </div>
         </div>
