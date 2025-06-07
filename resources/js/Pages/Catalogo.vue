@@ -38,7 +38,7 @@ const redes = [
 
 <template>
     <!-- Header de redes sociales (solo una vez) -->
-    <header class="bg-red-600 text-white fixed top-0 left-0 w-full z-50 h-8 flex items-center">
+    <header class="bg-gradient-to-r from-red-700 via-red-600 to-red-400 text-white fixed top-0 left-0 w-full z-50 h-8 flex items-center">
         <div class="flex items-center h-full px-4 text-xs space-x-6 w-full">
             <div class="flex items-center space-x-2 ml-4">
                 <template v-for="(r, i) in redes" :key="i">
@@ -51,7 +51,7 @@ const redes = [
     </header>
 
     <!-- Header principal -->
-    <header class="bg-gradient-to-r from-white to-white text-black shadow-md fixed top-8 left-0 w-full z-50">
+    <header class="bg-gradient-to-r from-white/60 to-white/60 backdrop-blur-sm text-black shadow-md fixed top-8 left-0 w-full z-50">
         <div class="px-6 py-3 flex justify-between items-center">
             <!-- Botón menú hamburguesa SOLO en móvil -->
             <button @click="isSidebarOpen = !isSidebarOpen"
@@ -66,58 +66,82 @@ const redes = [
             </div>
 
             <!-- Menú de navegación con desplegable (solo desktop) -->
-            <nav
-                class="hidden md:flex items-center font-semibold bg-white/70 backdrop-blur-md rounded-xl px-6 py-2 shadow-lg border border-red-100 space-x-2"
-            >
+            <nav class="hidden md:flex items-center font-semibold space-x-2">
                 <Link
                     :href="route('inicio')"
-                    :class="[
-                        'px-4 py-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200',
-                        $page.url === route('inicio') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+                    :class=" [
+                        'px-5 py-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide',
+                        route().current('inicio')
+                            ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
+                            : 'hover:bg-red-50 hover:text-red-700'
                     ]"
                 >Inicio</Link>
                 <div class="relative paquetes-dropdown" @click.stop="togglePaquetes">
                     <button
-                        class="px-4 py-2 rounded-lg transition-all duration-200 flex items-center focus:outline-none focus:ring-2 focus:ring-red-200 hover:bg-red-50 hover:text-red-700"
-                        :class="{ 'bg-red-50 text-red-700': paquetesOpen }"
-                        type="button"
-                    >
+                        class="px-5 py-2 rounded-xl transition-all duration-200 flex items-center focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide"
+                        :class=" [
+                            (paquetesOpen || route().current('paquetes') || route().current('reservaciones'))
+                                ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
+                                : 'hover:bg-red-50 hover:text-red-700'
+                        ]"
+                        type="button">
                         Paquetes
-                        <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                         </svg>
                     </button>
                     <div
-                        class="absolute left-0 mt-2 w-52 bg-white/95 border border-red-100 rounded-xl shadow-xl z-50 transition-all"
+                        class="absolute left-0 mt-2 w-56 bg-white/95 border border-red-100 rounded-2xl z-50 transition-all"
                         v-show="paquetesOpen"
                     >
-                        <Link :href="route('paquetes')" class="block px-5 py-2 text-black rounded-lg hover:bg-red-50 hover:text-red-700 transition-all">Paquetes turísticos</Link>
-                        <Link :href="route('reservaciones')" class="block px-5 py-2 text-black rounded-lg hover:bg-red-50 hover:text-red-700 transition-all">Reservaciones</Link>
+                        <Link
+                            :href="route('paquetes')"
+                            :class=" [
+                                'block px-6 py-3 text-black rounded-xl transition-all',
+                                route().current('paquetes')
+                                    ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
+                                    : 'hover:bg-red-50 hover:text-red-700'
+                            ]"
+                        >Paquetes turísticos</Link>
+                        <Link
+                            :href="route('reservaciones')"
+                            :class=" [
+                                'block px-6 py-3 text-black rounded-xl transition-all',
+                                route().current('reservaciones')
+                                    ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
+                                    : 'hover:bg-red-50 hover:text-red-700'
+                            ]"
+                        >Reservaciones</Link>
                     </div>
                 </div>
                 <Link
                     :href="route('tienda')"
-                    :class="[
-                        'px-4 py-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200',
-                        $page.url === route('tienda') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+                    :class=" [
+                        'px-5 py-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide',
+                        route().current('tienda')
+                            ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
+                            : 'hover:bg-red-50 hover:text-red-700'
                     ]"
                 >Tienda</Link>
                 <Link
                     :href="route('sobre-nosotros')"
-                    :class="[
-                        'px-4 py-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200',
-                        $page.url === route('sobre-nosotros') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+                    :class=" [
+                        'px-5 py-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide',
+                        route().current('sobre-nosotros')
+                            ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
+                            : 'hover:bg-red-50 hover:text-red-700'
                     ]"
                 >Sobre Nosotros</Link>
                 <Link
                     :href="route('contactos')"
-                    :class="[
-                        'px-4 py-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200',
-                        $page.url === route('contactos') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+                    :class=" [
+                        'px-5 py-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide',
+                        route().current('contactos')
+                            ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
+                            : 'hover:bg-red-50 hover:text-red-700'
                     ]"
                 >Contactos</Link>
-            </nav>    
-
+            </nav>
             <!--Datos de la sesion-->
             <div class="flex items-center space-x-2 md:space-x-4">
                 <template v-if="!$page.props.auth || !$page.props.auth.user">
@@ -211,9 +235,9 @@ const redes = [
         <nav class="flex flex-col space-y-1 px-4 py-4 font-semibold bg-white/80 backdrop-blur-md rounded-xl shadow border border-red-100 mx-2 mt-4">
           <Link
             :href="route('inicio')"
-            :class="[
+            :class=" [
               'py-2 px-3 rounded-lg transition-all duration-200',
-              $page.url === route('inicio') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+              route().current('inicio') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
             ]"
             @click="isSidebarOpen = false"
           >Inicio</Link>
@@ -221,7 +245,7 @@ const redes = [
             <button
               @click="paquetesOpenAside = !paquetesOpenAside"
               class="w-full flex items-center justify-between py-2 px-3 rounded-lg transition-all duration-200 focus:outline-none hover:bg-red-50 hover:text-red-700"
-              :class="{ 'bg-red-50 text-red-700': paquetesOpenAside }"
+              :class="{ 'bg-red-50 text-red-700': paquetesOpenAside || route().current('paquetes') || route().current('reservaciones') }"
             >
               Paquetes
               <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -231,37 +255,43 @@ const redes = [
             <div v-show="paquetesOpenAside" class="ml-2 mt-1 flex flex-col space-y-1">
               <Link
                 :href="route('paquetes')"
-                class="py-2 px-3 rounded-lg transition-all duration-200 text-black hover:bg-red-50 hover:text-red-700"
+                :class=" [
+                  'py-2 px-3 rounded-lg transition-all duration-200',
+                  route().current('paquetes') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+                ]"
                 @click="isSidebarOpen = false"
               >Paquetes turísticos</Link>
               <Link
                 :href="route('reservaciones')"
-                class="py-2 px-3 rounded-lg transition-all duration-200 text-black hover:bg-red-50 hover:text-red-700"
+                :class=" [
+                  'py-2 px-3 rounded-lg transition-all duration-200',
+                  route().current('reservaciones') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+                ]"
                 @click="isSidebarOpen = false"
               >Reservaciones</Link>
             </div>
           </div>
           <Link
             :href="route('tienda')"
-            :class="[
+            :class=" [
               'py-2 px-3 rounded-lg transition-all duration-200',
-              $page.url === route('tienda') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+              route().current('tienda') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
             ]"
             @click="isSidebarOpen = false"
           >Tienda</Link>
           <Link
             :href="route('sobre-nosotros')"
-            :class="[
+            :class=" [
               'py-2 px-3 rounded-lg transition-all duration-200',
-              $page.url === route('sobre-nosotros') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+              route().current('sobre-nosotros') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
             ]"
             @click="isSidebarOpen = false"
           >Sobre Nosotros</Link>
           <Link
             :href="route('contactos')"
-            :class="[
+            :class=" [
               'py-2 px-3 rounded-lg transition-all duration-200',
-              $page.url === route('contactos') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+              route().current('contactos') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
             ]"
             @click="isSidebarOpen = false"
           >Contactos</Link>
@@ -315,7 +345,7 @@ const redes = [
     </transition>
 
     <!-- AQUÍ VA EL CONTENIDO DINÁMICO -->
-    <main class="mt-28">
+    <main class="mt-32">
       <slot />
     </main>
 
@@ -350,7 +380,7 @@ const redes = [
                 <h3 class="font-bold text-lg mb-2">Síguenos</h3>
                 <div class="flex space-x-4 mt-2">
                     <template v-for="(r, i) in redes.slice(0, 3)" :key="i">
-                      <a :href="r.href" target="_blank" class="hover:text-blue-300 underline">
+                      <a :href="r.href" target="_blank" class="hover:text-blue-300">
                         <FontAwesomeIcon :icon="r.icon" class="mr-1" /> {{ r.label }}
                       </a>
                     </template>
@@ -362,6 +392,3 @@ const redes = [
         </div>
     </footer>
 </template>
-
-<!-- No hay campos de formulario en este archivo.
-Si agregas un formulario en el futuro, recuerda añadir atributos id/name y asociar un label. -->
