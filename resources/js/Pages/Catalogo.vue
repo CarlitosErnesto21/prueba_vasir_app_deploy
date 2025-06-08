@@ -366,15 +366,37 @@ const redes = [
                 <ul class="text-sm space-y-1">
                     <li>
                         <FontAwesomeIcon :icon="faPhone" class="mr-2 text-red-200" />
-                        <span class="font-semibold">Tel:</span> 2327 9199
+                        <span class="font-semibold">Tel:</span>
+                        <a
+                            href="tel:+50379858777"
+                            class="underline hover:text-blue-200"
+                        >
+                            +503 7985 8777
+                        </a>
                     </li>
                     <li>
                         <FontAwesomeIcon :icon="faEnvelope" class="mr-2 text-red-200" />
-                        <span class="font-semibold">Email:</span> vasirtours19@gmail.com
+                        <span class="font-semibold">Email:</span>
+                        <a
+                            href="https://mail.google.com/mail/?view=cm&fs=1&to=vasirtours19@gmail.com"
+                            class="underline hover:text-blue-200"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            vasirtours19@gmail.com
+                        </a>
                     </li>
                     <li>
                         <FontAwesomeIcon :icon="faMapMarkerAlt" class="mr-2 text-red-200" />
-                        <span class="font-semibold">Dirección:</span> Chalatenango, El Salvador
+                        <span class="font-semibold">Dirección:</span>
+                        <a
+                            href="https://maps.app.goo.gl/Se61cWuQWd39rNkSA"
+                            class="underline hover:text-blue-200"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            2a Calle Oriente casa #12, Chalatenango, El Salvador
+                        </a>
                     </li>
                 </ul>
             </div>
