@@ -27,7 +27,7 @@ const placeholders = Array.from({ length: 6 })
       <h1 class="text-2xl font-bold mb-4 text-red-700">Tienda</h1>
       <p class="mb-4 text-gray-700">Productos disponibles para la venta.</p>
       <div
-        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 transition-all"
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 transition-all"
         :style="{ minHeight: loading ? '340px' : undefined }"
       >
         <template v-if="loading">
@@ -37,14 +37,14 @@ const placeholders = Array.from({ length: 6 })
           <Card
             v-for="{ id, nombre, descripcion, precio, imagenes } in products"
             :key="id"
-            class="border border-red-200 bg-white shadow hover:shadow-lg transition-shadow duration-200 flex flex-col h-full"
+            class="border border-red-200 bg-white shadow hover:shadow-lg flex flex-col h-full"
           >
             <template #header>
-              <div class="w-full flex justify-center items-center h-40 bg-red-50 rounded mb-2 overflow-hidden">
+              <div class="w-full flex justify-center items-center h-40 bg-red-50 rounded mb-2 overflow-hidden hover:scale-105 transition-transform duration-300">
                 <img
                   :src="imagenes && imagenes.length > 0 ? `/images/productos/${imagenes[0].nombre}` : '/storage/no-image.png'"
                   :alt="imagenes && imagenes.length > 0 ? nombre : 'Sin imagen'"
-                  class="object-contain h-full max-h-36 w-auto"
+                  class="object-contain h-full max-h-36 w-auto "
                   :class="{ 'opacity-40': !imagenes || imagenes.length === 0 }"
                 />
               </div>

@@ -11,14 +11,20 @@ import { faFacebook, faInstagram, faTiktok } from '@fortawesome/free-brands-svg-
 const isSidebarOpen = ref(false)
 const paquetesOpen = ref(false)
 const paquetesOpenAside = ref(false)
+const toursOpen = ref(false)
+const toursOpenAside = ref(false)
 const userMenuOpen = ref(false)
 
 const togglePaquetes = () => paquetesOpen.value = !paquetesOpen.value
 const closePaquetes = e => { if (!e.target.closest('.paquetes-dropdown')) paquetesOpen.value = false }
+const toggleTours = () => toursOpen.value = !toursOpen.value
+const closeTours = e => { if (!e.target.closest('.tours-dropdown')) toursOpen.value = false }
 const toggleUserMenu = () => userMenuOpen.value = !userMenuOpen.value
 const closeUserMenu = e => { if (!e.target.closest('.user-menu-dropdown')) userMenuOpen.value = false }
+
 onMounted(() => {
     document.addEventListener('click', closePaquetes)
+    document.addEventListener('click', closeTours)
     document.addEventListener('click', closeUserMenu)
 })
 const logout = () => router.post(route('logout'))
@@ -35,7 +41,7 @@ const redes = [
 <template>
     <!-- Header de redes sociales (solo una vez) -->
     <header class="bg-gradient-to-r from-red-700 via-red-600 to-red-400 text-white fixed top-0 left-0 w-full z-50 h-8 flex items-center">
-        <div class="flex items-center h-full px-4 text-xs space-x-6 w-full">
+        <div class="flex items-center h-full px-4 text-sm space-x-6 w-full">
             <div class="flex items-center space-x-2 ml-4">
                 <template v-for="(r, i) in redes" :key="i">
                   <a :href="r.href" class="ml-2 hover:text-blue-300" target="_blank">
@@ -71,19 +77,21 @@ const redes = [
                 <Link
                     :href="route('inicio')"
                     :class=" [
-                        'px-5 py-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide',
+                        'px-5 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide hover:scale-105 transition-transform duration-300',
                         route().current('inicio')
                             ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
-                            : 'hover:bg-red-50 hover:text-red-700'
+                            : 'hover:bg-gradient-to-r hover:from-red-600 hover:to-red-400 hover:text-white'
                     ]"
                 >Inicio</Link>
+
+                <!--Desplegable de Paquetes-->
                 <div class="relative paquetes-dropdown" @click.stop="togglePaquetes">
                     <button
-                        class="px-5 py-2 rounded-xl transition-all duration-200 flex items-center focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide"
+                        class="px-5 py-2 rounded-xl hover:scale-105 transition-transform duration-300 flex items-center focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide"
                         :class=" [
                             (paquetesOpen || route().current('paquetes') || route().current('reservaciones'))
                                 ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
-                                : 'hover:bg-red-50 hover:text-red-700'
+                                : 'hover:bg-gradient-to-r hover:from-red-600 hover:to-red-400 hover:text-white'
                         ]"
                         type="button">
                         Paquetes
@@ -98,48 +106,90 @@ const redes = [
                         <Link
                             :href="route('paquetes')"
                             :class=" [
-                                'block px-6 py-3 text-black rounded-xl transition-all',
+                                'block px-6 py-3 text-black rounded-xl hover:scale-105 transition-transform duration-300',
                                 route().current('paquetes')
                                     ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
-                                    : 'hover:bg-red-50 hover:text-red-700'
+                                    : 'hover:bg-gradient-to-r hover:from-red-600 hover:to-red-400 hover:text-white'
                             ]"
                         >Paquetes turísticos</Link>
                         <Link
                             :href="route('reservaciones')"
                             :class=" [
-                                'block px-6 py-3 text-black rounded-xl transition-all',
+                                'block px-6 py-3 text-black rounded-xl hover:scale-105 transition-transform duration-300',
                                 route().current('reservaciones')
                                     ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
-                                    : 'hover:bg-red-50 hover:text-red-700'
+                                    : 'hover:bg-gradient-to-r hover:from-red-600 hover:to-red-400 hover:text-white'
                             ]"
                         >Reservaciones</Link>
                     </div>
                 </div>
+                <!--Termina el desplegable de Paquetes-->
+
+                <!--Desplegable de Tours-->
+                <div class="relative tours-dropdown" @click.stop="toggleTours">
+                    <button
+                        class="px-5 py-2 rounded-xl hover:scale-105 transition-transform duration-300 flex items-center focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide"
+                        :class=" [
+                            (toursOpen || route().current('paquetes') || route().current('reservaciones'))
+                                ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
+                                : 'hover:bg-gradient-to-r hover:from-red-600 hover:to-red-400 hover:text-white'
+                        ]"
+                        type="button">
+                        Tours
+                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div
+                        class="absolute left-0 mt-2 w-56 bg-white/95 border border-red-100 rounded-2xl z-50 transition-all"
+                        v-show="toursOpen">
+                        <Link
+                            :href="route('paquetes')"
+                            :class=" [
+                                'block px-6 py-3 text-black rounded-xl hover:scale-105 transition-transform duration-300',
+                                route().current('paquetes')
+                                    ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
+                                    : 'hover:bg-gradient-to-r hover:from-red-600 hover:to-red-400 hover:text-white'
+                            ]"
+                        >Paquetes turísticos</Link>
+                        <Link
+                            :href="route('reservaciones')"
+                            :class=" [
+                                'block px-6 py-3 text-black rounded-xl hover:scale-105 transition-transform duration-300',
+                                route().current('reservaciones')
+                                    ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
+                                    : 'hover:bg-gradient-to-r hover:from-red-600 hover:to-red-400 hover:text-white'
+                            ]"
+                        >Reservaciones</Link>
+                    </div>
+                </div>
+                <!--Termina el desplegable de Tours-->  
+
                 <Link
                     :href="route('tienda')"
                     :class=" [
-                        'px-5 py-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide',
+                        'px-5 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide hover:scale-105 transition-transform duration-300',
                         route().current('tienda')
                             ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
-                            : 'hover:bg-red-50 hover:text-red-700'
+                            : 'hover:bg-gradient-to-r hover:from-red-600 hover:to-red-400 hover:text-white'
                     ]"
                 >Tienda</Link>
                 <Link
                     :href="route('sobre-nosotros')"
                     :class=" [
-                        'px-5 py-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide',
+                        'px-5 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide hover:scale-105 transition-transform duration-300',
                         route().current('sobre-nosotros')
                             ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
-                            : 'hover:bg-red-50 hover:text-red-700'
+                            : 'hover:bg-gradient-to-r hover:from-red-600 hover:to-red-400 hover:text-white'
                     ]"
                 >Sobre Nosotros</Link>
                 <Link
                     :href="route('contactos')"
                     :class=" [
-                        'px-5 py-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide',
+                        'px-5 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide hover:scale-105 transition-transform duration-300',
                         route().current('contactos')
                             ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
-                            : 'hover:bg-red-50 hover:text-red-700'
+                            : 'hover:bg-gradient-to-r hover:from-red-600 hover:to-red-400 hover:text-white'
                     ]"
                 >Contactos</Link>
             </nav>
@@ -243,6 +293,8 @@ const redes = [
             ]"
             @click="isSidebarOpen = false"
           >Inicio</Link>
+
+          <!--Desplegable de Paquetes-->
           <div>
             <button
               @click="paquetesOpenAside = !paquetesOpenAside"
@@ -273,6 +325,41 @@ const redes = [
               >Reservaciones</Link>
             </div>
           </div>
+          <!--Termina el desplegable de Paquetes-->
+
+          <!--Desplegable de Tours-->
+          <div>
+            <button
+              @click="toursOpenAside = !toursOpenAside"
+              class="w-full flex items-center justify-between py-2 px-3 rounded-lg transition-all duration-200 focus:outline-none hover:bg-red-50 hover:text-red-700"
+              :class="{ 'bg-red-50 text-red-700': toursOpenAside || route().current('paquetes') || route().current('reservaciones') }"
+            >
+              Tours
+              <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div v-show="toursOpenAside" class="ml-2 mt-1 flex flex-col space-y-1">
+              <Link
+                :href="route('paquetes')"
+                :class=" [
+                  'py-2 px-3 rounded-lg transition-all duration-200',
+                  route().current('paquetes') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+                ]"
+                @click="isSidebarOpen = false"
+              >Paquetes turísticos</Link>
+              <Link
+                :href="route('reservaciones')"
+                :class=" [
+                  'py-2 px-3 rounded-lg transition-all duration-200',
+                  route().current('reservaciones') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+                ]"
+                @click="isSidebarOpen = false"
+              >Reservaciones</Link>
+            </div>
+          </div>
+          <!--Termina el desplegable de Tours-->
+
           <Link
             :href="route('tienda')"
             :class=" [
@@ -353,66 +440,77 @@ const redes = [
 
     <!-- Footer -->
     <footer class="bg-red-700 text-white mt-16">
-        <div class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-                <h3 class="font-bold text-lg mb-2">Vasir</h3>
-                <p class="text-sm">
-                    Agencia de viajes y turismo en El Salvador.<br>
-                    Experiencias únicas, tours, paquetes y más.
-                </p>
-            </div>
-            <div>
-                <h3 class="font-bold text-lg mb-2">Contacto</h3>
-                <ul class="text-sm space-y-1">
-                    <li>
-                        <FontAwesomeIcon :icon="faPhone" class="mr-2 text-red-200" />
-                        <span class="font-semibold">Tel:</span>
-                        <a
-                            href="tel:+50379858777"
-                            class="underline hover:text-blue-200"
-                        >
-                            +503 7985 8777
-                        </a>
-                    </li>
-                    <li>
-                        <FontAwesomeIcon :icon="faEnvelope" class="mr-2 text-red-200" />
-                        <span class="font-semibold">Email:</span>
-                        <a
-                            href="https://mail.google.com/mail/?view=cm&fs=1&to=vasirtours19@gmail.com"
-                            class="underline hover:text-blue-200"
-                            target="_blank"
-                            rel="noopener"
-                        >
-                            vasirtours19@gmail.com
-                        </a>
-                    </li>
-                    <li>
-                        <FontAwesomeIcon :icon="faMapMarkerAlt" class="mr-2 text-red-200" />
-                        <span class="font-semibold">Dirección:</span>
-                        <a
-                            href="https://maps.app.goo.gl/Se61cWuQWd39rNkSA"
-                            class="underline hover:text-blue-200"
-                            target="_blank"
-                            rel="noopener"
-                        >
-                            2a Calle Oriente casa #12, Chalatenango, El Salvador
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div>
-                <h3 class="font-bold text-lg mb-2">Síguenos</h3>
-                <div class="flex space-x-4 mt-2">
-                    <template v-for="(r, i) in redes.slice(0, 3)" :key="i">
-                      <a :href="r.href" target="_blank" class="hover:text-blue-300">
-                        <FontAwesomeIcon :icon="r.icon" class="mr-1" /> {{ r.label }}
-                      </a>
-                    </template>
-                </div>
-            </div>
+      <div class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+          <h3 class="font-bold text-lg mb-2">Vasir</h3>
+          <p class="text-sm">
+            Experiencias auténticas en El Salvador y más allá.<br>
+            Turismo cultural, sostenible y creativo para viajeros de todas las edades<br><br>
+            <span class="font-bold">Ofrecemos:</span><br>
+            - Paquetes vacacionales. <br>
+            - Boletos aéreos y traslados. <br>
+            - Estadías en hoteles.<br>
+            - 🇺🇲Trámite de visas.<br><br>
+            <span class="font-bold">!Viajá con propósito!!.</span><br>
+          </p>
         </div>
-        <div class="bg-red-900 text-center text-xs py-3">
-            &copy; {{ new Date().getFullYear() }} Vasir. Todos los derechos reservados.
+        <div>
+          <h3 class="font-bold text-lg mb-2">Contacto</h3>
+          <ul class="text-sm space-y-1">
+            <li>
+              <FontAwesomeIcon :icon="faPhone" class="mr-2 text-red-200" />
+              <span class="font-semibold">Tel:&nbsp;</span>
+              <a
+                href="tel:+50379858777"
+                class="underline hover:text-blue-200">+503 7985 8777
+              </a>
+              <span>&nbsp;o al&nbsp;</span>
+              <a
+                href="tel:+50323279199"
+                class="underline hover:text-blue-200">+503 2327 9199
+              </a>
+            </li>
+            <li>
+              <FontAwesomeIcon :icon="faEnvelope" class="mr-2 text-red-200" />
+              <span class="font-semibold">Email:&nbsp;</span>
+              <a
+                href="https://mail.google.com/mail/?view=cm&fs=1&to=vasirtours19@gmail.com"
+                class="underline hover:text-blue-200"
+                target="_blank"
+                rel="noopener">vasirtours19@gmail.com
+              </a>
+            </li>
+            <li>
+              <FontAwesomeIcon :icon="faMapMarkerAlt" class="mr-2 text-red-200" />
+              <span class="font-semibold">Dirección:&nbsp;</span>
+              <a
+                href="https://maps.app.goo.gl/Se61cWuQWd39rNkSA"
+                class="underline hover:text-blue-200"
+                target="_blank"
+                rel="noopener">2a Calle Oriente casa #12, Chalatenango, El Salvador
+              </a>
+            </li>
+          </ul>
         </div>
+        <div>
+          <h3 class="font-bold text-lg mb-2">Síguenos</h3>
+          <div class="flex space-x-4 mt-2">
+            <template v-for="(r, i) in redes.slice(0, 3)" :key="i">
+              <a :href="r.href" target="_blank" class="hover:text-blue-300 text-sm">
+                <FontAwesomeIcon :icon="r.icon" class="mr-1" /> {{ r.label }}
+              </a>
+            </template>
+          </div><br>
+          <div>
+            <h3 class="font-bold text-lg mb-2">Categoría</h3>
+            <div class="flex space-x-4 mt-2">
+              <h1 class="text-sm">Agencia de turismo</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-red-900 text-center text-xs py-3">
+        &copy; {{ new Date().getFullYear() }} Vasir. Todos los derechos reservados.
+      </div>
     </footer>
 </template>
