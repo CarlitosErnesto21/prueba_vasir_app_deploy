@@ -336,7 +336,7 @@ const viewImages = (imagenesDeProducto) => {
                         >
                     </div>
 
-                    <div class="w-full flex flex-col">
+                   <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
 
                             <label for="descripcion" class="w-24"
@@ -571,3 +571,4 @@ const viewImages = (imagenesDeProducto) => {
         </div>
     </AuthenticatedLayout>
 </template>
+<!-- Agregar categoria e inventario -->
