@@ -39,7 +39,7 @@ Route::get('catalogos/Aerolineas', function () {
 })->middleware(['auth', 'verified'])->name('aerolineas');
 
 
-// Rutas para vistas de clientes
+// Rutas para vistas de clientes //***NO MODIFICAR ESTAS RUTAS***//
 Route::get('/paquetes', function () {
     return Inertia::render('vistasClientes/Paquetes');
 })->name('paquetes');
