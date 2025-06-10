@@ -2,11 +2,8 @@
 import { Head, Link, router } from '@inertiajs/vue3'
 import { ref, onMounted } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import {
-    faList, faUser, faDoorOpen, faShop,
-    faPhone, faEnvelope, faMapMarkerAlt
-} from '@fortawesome/free-solid-svg-icons'
-import { faFacebook, faInstagram, faTiktok } from '@fortawesome/free-brands-svg-icons'
+import { faList, faUser, faDoorOpen, faShop, faPhone, faEnvelope, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons'
+import { faFacebook, faInstagram, faTiktok, faWhatsapp } from '@fortawesome/free-brands-svg-icons'
 
 const isSidebarOpen = ref(false)
 const paquetesOpen = ref(false)
@@ -199,7 +196,7 @@ const redes = [
                 <template v-if="!$page.props.auth || !$page.props.auth.user">
                     <Link
                         :href="route('login')"
-                        class="px-3 py-1 sm:px-4 sm:py-2 md:px-5 md:py-2 rounded-lg bg-red-700 text-white font-semibold shadow-md border border-red-700 hover:bg-white hover:text-red-700 hover:border-red-700 hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 animate-fade-in text-sm md:text-base"
+                        class="px-3 py-1 sm:px-4 sm:py-2 md:px-5 md:py-2 rounded-lg bg-gradient-to-r from-red-600 to-red-500 text-white font-semibold shadow-md border border-red-700 hover:bg-white hover:text-white hover:border-red-700 hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 animate-fade-in text-sm md:text-base"
                     >
                         <FontAwesomeIcon :icon="faUser" class="mr-1 md:mr-2" />
                         <span class="hidden sm:inline">Iniciar Sesión</span>
@@ -207,7 +204,7 @@ const redes = [
                     </Link>
                     <Link
                         :href="route('register')"
-                        class="px-3 py-1 sm:px-4 sm:py-2 md:px-5 md:py-2 rounded-lg bg-white text-red-700 font-semibold shadow-md border border-red-700 hover:bg-red-700 hover:text-white hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 animate-fade-in text-sm md:text-base"
+                        class="px-3 py-1 sm:px-4 sm:py-2 md:px-5 md:py-2 rounded-lg text-red-700 font-semibold shadow-md border border-red-700 hover:bg-gradient-to-r from-red-600 to-red-500 hover:text-white hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 animate-fade-in text-sm md:text-base"
                     >
                         <svg class="inline-block mr-1 md:mr-2 w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -289,7 +286,7 @@ const redes = [
             :href="route('inicio')"
             :class=" [
               'py-2 px-3 rounded-lg transition-all duration-200',
-              route().current('inicio') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+              route().current('inicio') ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
             ]"
             @click="isSidebarOpen = false"
           >Inicio</Link>
@@ -298,8 +295,8 @@ const redes = [
           <div>
             <button
               @click="paquetesOpenAside = !paquetesOpenAside"
-              class="w-full flex items-center justify-between py-2 px-3 rounded-lg transition-all duration-200 focus:outline-none hover:bg-red-50 hover:text-red-700"
-              :class="{ 'bg-red-50 text-red-700': paquetesOpenAside || route().current('paquetes') || route().current('reservaciones') }"
+              class="w-full flex items-center justify-between py-2 px-3 rounded-lg transition-all duration-200 focus:outline-none hover:bg-red-50"
+              :class="{ 'bg-gradient-to-r from-red-600 to-red-500 text-white': paquetesOpenAside || route().current('paquetes') || route().current('reservaciones') }"
             >
               Paquetes
               <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -311,7 +308,7 @@ const redes = [
                 :href="route('paquetes')"
                 :class=" [
                   'py-2 px-3 rounded-lg transition-all duration-200',
-                  route().current('paquetes') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+                  route().current('paquetes') ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
                 ]"
                 @click="isSidebarOpen = false"
               >Paquetes turísticos</Link>
@@ -319,7 +316,7 @@ const redes = [
                 :href="route('reservaciones')"
                 :class=" [
                   'py-2 px-3 rounded-lg transition-all duration-200',
-                  route().current('reservaciones') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+                  route().current('reservaciones') ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
                 ]"
                 @click="isSidebarOpen = false"
               >Reservaciones</Link>
@@ -331,8 +328,8 @@ const redes = [
           <div>
             <button
               @click="toursOpenAside = !toursOpenAside"
-              class="w-full flex items-center justify-between py-2 px-3 rounded-lg transition-all duration-200 focus:outline-none hover:bg-red-50 hover:text-red-700"
-              :class="{ 'bg-red-50 text-red-700': toursOpenAside || route().current('paquetes') || route().current('reservaciones') }"
+              class="w-full flex items-center justify-between py-2 px-3 rounded-lg transition-all duration-200 focus:outline-none hover:bg-red-50"
+              :class="{ 'bg-gradient-to-r from-red-600 to-red-500 text-white': toursOpenAside || route().current('paquetes') || route().current('reservaciones') }"
             >
               Tours
               <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -344,7 +341,7 @@ const redes = [
                 :href="route('paquetes')"
                 :class=" [
                   'py-2 px-3 rounded-lg transition-all duration-200',
-                  route().current('paquetes') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+                  route().current('paquetes') ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
                 ]"
                 @click="isSidebarOpen = false"
               >Paquetes turísticos</Link>
@@ -352,7 +349,7 @@ const redes = [
                 :href="route('reservaciones')"
                 :class=" [
                   'py-2 px-3 rounded-lg transition-all duration-200',
-                  route().current('reservaciones') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+                  route().current('reservaciones') ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
                 ]"
                 @click="isSidebarOpen = false"
               >Reservaciones</Link>
@@ -364,7 +361,7 @@ const redes = [
             :href="route('tienda')"
             :class=" [
               'py-2 px-3 rounded-lg transition-all duration-200',
-              route().current('tienda') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+              route().current('tienda') ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
             ]"
             @click="isSidebarOpen = false"
           >Tienda</Link>
@@ -372,7 +369,7 @@ const redes = [
             :href="route('sobre-nosotros')"
             :class=" [
               'py-2 px-3 rounded-lg transition-all duration-200',
-              route().current('sobre-nosotros') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+              route().current('sobre-nosotros') ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
             ]"
             @click="isSidebarOpen = false"
           >Sobre Nosotros</Link>
@@ -380,7 +377,7 @@ const redes = [
             :href="route('contactos')"
             :class=" [
               'py-2 px-3 rounded-lg transition-all duration-200',
-              route().current('contactos') ? 'bg-red-700 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+              route().current('contactos') ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
             ]"
             @click="isSidebarOpen = false"
           >Contactos</Link>
@@ -390,7 +387,7 @@ const redes = [
           <template v-if="!$page.props.auth || !$page.props.auth.user">
             <Link
                 :href="route('login')"
-                class="block w-full mb-2 py-1 px-2 sm:py-2 sm:px-2 rounded-lg bg-red-700 text-white font-semibold shadow-md border border-red-700 hover:bg-white hover:text-red-700 hover:border-red-700 hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 animate-fade-in text-sm sm:text-base text-left"
+                class="block w-full mb-2 py-1 px-2 sm:py-2 sm:px-2 rounded-lg bg-gradient-to-r from-red-600 to-red-500 text-white font-semibold shadow-md border border-red-700 hover:bg-white hover:text-white hover:border-red-700 hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 animate-fade-in text-sm sm:text-base text-left"
                 @click="isSidebarOpen = false"
             >
                 <FontAwesomeIcon :icon="faUser" class="mr-1 sm:mr-2" />
@@ -399,7 +396,7 @@ const redes = [
             </Link>
             <Link
                 :href="route('register')"
-                class="block w-full py-1 px-2 sm:py-2 sm:px-2 rounded-lg bg-white text-red-700 font-semibold shadow-md border border-red-700 hover:bg-red-700 hover:text-white hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 animate-fade-in text-sm sm:text-base text-left"
+                class="block w-full py-1 px-2 sm:py-2 sm:px-2 rounded-lg bg-white text-red-700 font-semibold shadow-md border border-red-700 hover:bg-gradient-to-r from-red-600 to-red-500 hover:text-white hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 animate-fade-in text-sm sm:text-base text-left"
                 @click="isSidebarOpen = false"
             >
                 <svg class="inline-block mr-1 sm:mr-2 w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -458,13 +455,13 @@ const redes = [
           <h3 class="font-bold text-lg mb-2">Contacto</h3>
           <ul class="text-sm space-y-1">
             <li>
-              <FontAwesomeIcon :icon="faPhone" class="mr-2 text-red-200" />
-              <span class="font-semibold">Tel:&nbsp;</span>
+              <FontAwesomeIcon :icon="faWhatsapp" class="mr-2 text-red-200" />
               <a
                 href="tel:+50379858777"
                 class="underline hover:text-blue-200">+503 7985 8777
               </a>
               <span>&nbsp;o al&nbsp;</span>
+              <FontAwesomeIcon :icon="faPhone" class="mr-2 text-red-200" />
               <a
                 href="tel:+50323279199"
                 class="underline hover:text-blue-200">+503 2327 9199
