@@ -73,6 +73,24 @@ const mesesFiltrados = computed(() => {
 const pdfUrl = ref(null)
 
 function descargarPDF() {
+  if (modoSeleccion.value === 'unico') {
+    if (!mesUnico.value) {
+      toast.add({ severity: 'error', summary: 'Error', detail: 'Seleccione un mes para generar el informe.', life: 3500 })
+      return
+    }
+    toast.add({ severity: 'info', summary: 'Generando informe', detail: 'Por favor espere mientras se genera el PDF.', life: 2000 })
+    const params = new URLSearchParams()
+    // El formato debe ser YYYY-MM
+    const year = mesUnico.value.getFullYear()
+    const month = (mesUnico.value.getMonth() + 1).toString().padStart(2, '0')
+    params.append('meses[]', `${year}-${month}`)
+    pdfUrl.value = `/descargar-informe?${params.toString()}`
+    setTimeout(() => {
+      toast.add({ severity: 'success', summary: 'Vista previa lista', detail: 'El informe PDF se ha generado y está listo para visualizar.', life: 2500 })
+    }, 1200)
+    return
+  }
+  // modoSeleccion.value === 'rango'
   if (!desde.value || !hasta.value) {
     toast.add({ severity: 'error', summary: 'Error', detail: 'Seleccione un rango válido de meses para generar el informe.', life: 3500 })
     return
@@ -88,15 +106,41 @@ function descargarPDF() {
   toast.add({ severity: 'info', summary: 'Generando informe', detail: 'Por favor espere mientras se genera el PDF.', life: 2000 })
   const params = new URLSearchParams()
   mesesFiltrados.value.forEach(mes => params.append('meses[]', mes))
-  // Mostrar el PDF en el iframe
   pdfUrl.value = `/descargar-informe?${params.toString()}`
-  // Alerta cuando el PDF ya está listo
   setTimeout(() => {
     toast.add({ severity: 'success', summary: 'Vista previa lista', detail: 'El informe PDF se ha generado y está listo para visualizar.', life: 2500 })
   }, 1200)
 }
 
 const toast = useToast()
+
+// Estado para controlar qué modo está activo: 'unico' o 'rango'
+const modoSeleccion = ref('unico') // 'unico' o 'rango'
+
+// Nuevo estado para el calendario único
+const mesUnico = ref(null)
+
+// Nuevo estado para activar/desactivar los calendarios de rango
+const activarFechas = computed({
+  get: () => modoSeleccion.value === 'rango',
+  set: val => { if (val) modoSeleccion.value = 'rango' }
+})
+
+// Habilitar el botón Vista previa PDF si hay selección válida en el modo correspondiente
+const puedeGenerar = computed(() => {
+  if (modoSeleccion.value === 'unico') {
+    return !!mesUnico.value
+  }
+  // modoSeleccion.value === 'rango'
+  return !!(desde.value && hasta.value)
+})
+
+// Función para limpiar las fechas seleccionadas
+function limpiarFechas() {
+  mesUnico.value = null
+  desde.value = null
+  hasta.value = null
+}
 </script>
 
 <template>
@@ -121,10 +165,61 @@ const toast = useToast()
         <p class="text-gray-600 mb-5 text-center text-base">
           Seleccione el rango de meses o un solo mes para generar el informe PDF.
         </p>
+        <!-- Radio para activar el calendario de mes único y botón limpiar fechas en la misma fila -->
+        <div class="w-full flex items-center mb-3 gap-3">
+          <input
+            id="radio-mes-unico"
+            type="radio"
+            v-model="modoSeleccion"
+            value="unico"
+            class="mr-2 accent-blue-600"
+          />
+          <label for="radio-mes-unico" class="font-semibold text-gray-700 cursor-pointer select-none mr-2">
+            Seleccionar un solo mes
+          </label>
+          <button
+            @click="limpiarFechas"
+            class="px-4 py-1 bg-gray-200 text-gray-700 rounded-lg shadow hover:bg-gray-300 transition font-semibold text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            :disabled="false"
+            :class="{ 'opacity-60 cursor-pointer': false }"
+          >
+            Limpiar fechas
+          </button>
+        </div>
+        <!-- Calendario para seleccionar solo un mes -->
+        <div class="w-full mb-5">
+          <label for="mes-unico-picker" class="block mb-2 font-semibold text-gray-700">Mes único:</label>
+          <DatePicker
+            id="mes-unico-picker"
+            v-model="mesUnico"
+            view="month"
+            dateFormat="MM yy"
+            showIcon
+            class="w-full"
+            placeholder="Seleccione un mes"
+            :manualInput="false"
+            :maxDate="today"
+            :locale="esLocale"
+            :disabled="modoSeleccion !== 'unico'"
+          />
+        </div>
+        <div class="w-full flex items-center mb-5 gap-3">
+          <input
+            id="radio-activar-fechas"
+            type="radio"
+            v-model="modoSeleccion"
+            value="rango"
+            class="mr-2 accent-blue-600"
+          />
+          <label for="radio-activar-fechas" class="font-semibold text-gray-700 cursor-pointer select-none mr-2">
+            Activar selección de meses
+          </label>
+        </div>
         <div class="w-full mb-4 flex flex-col sm:flex-row gap-4">
           <div class="flex-1">
-            <label class="block mb-2 font-semibold text-gray-700">Desde:</label>
+            <label for="desde-picker" class="block mb-2 font-semibold text-gray-700">Desde:</label>
             <DatePicker
+              id="desde-picker"
               v-model="desde"
               view="month"
               dateFormat="MM yy"
@@ -134,11 +229,13 @@ const toast = useToast()
               :manualInput="false"
               :maxDate="today"
               :locale="esLocale"
+              :disabled="modoSeleccion !== 'rango'"
             />
           </div>
           <div class="flex-1">
-            <label class="block mb-2 font-semibold text-gray-700">Hasta:</label>
+            <label for="hasta-picker" class="block mb-2 font-semibold text-gray-700">Hasta:</label>
             <DatePicker
+              id="hasta-picker"
               v-model="hasta"
               view="month"
               dateFormat="MM yy"
@@ -148,18 +245,24 @@ const toast = useToast()
               :manualInput="false"
               :maxDate="today"
               :locale="esLocale"
+              :disabled="modoSeleccion !== 'rango'"
             />
           </div>
         </div>
-        <button
-          @click="descargarPDF"
-          class="flex items-center gap-2 px-7 py-2 bg-gradient-to-r from-red-800 to-red-500 text-white rounded-lg shadow-lg hover:from-red-900 hover:to-red-600 transition font-semibold text-base border border-red-800 focus:outline-none focus:ring-2 focus:ring-red-400"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
-          </svg>
-          Vista previa PDF
-        </button>
+        <!-- Botones en línea centrados -->
+        <div class="w-full flex flex-row gap-3 mb-4 justify-center">
+          <button
+            @click="descargarPDF"
+            class="bg-gradient-to-r from-red-800 to-red-500 flex items-center gap-2 px-7 py-2 text-white rounded-lg shadow-lg hover:from-red-900 hover:to-red-600 transition font-semibold text-base border border-red-800 focus:outline-none focus:ring-2 focus:ring-red-400"
+            :disabled="!puedeGenerar"
+            :class="{ 'opacity-60 cursor-not-allowed': !puedeGenerar }"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Vista previa PDF
+          </button>
+        </div>
         <div v-if="pdfUrl" class="w-full mt-4 flex flex-col items-center lg:hidden">
           <iframe
             :src="pdfUrl"

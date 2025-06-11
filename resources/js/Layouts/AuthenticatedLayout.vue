@@ -19,7 +19,7 @@ import axios from 'axios';
 import { route } from 'ziggy-js';
 
 const page = usePage();
-const user = page.props.auth?.user || { name: 'Usuario', email: 'correo@ejemplo.com' };
+const user = page.props.auth?.user || { name: 'Usuario', email: 'correo@ejemplo.com', role: 'Invitado' };
 const isSidebarOpen = ref(false);
 const isSidebarCollapsed = ref(true); // Colapsado por defecto
 const anioCurrent = ref(new Date().getFullYear());
@@ -132,59 +132,50 @@ onBeforeUnmount(() => {
                             <span class="font-semibold text-base text-gray-700 mr-2">Perfil</span>
                             <FontAwesomeIcon :icon="faUser" class="drop-shadow-md" />
                         </button>
-                        <!-- Menú de perfil tipo Chrome -->
+                        <!-- Menú de perfil mejorado -->
                         <transition name="fade">
-                            <div v-if="showProfileMenu" id="profile-menu" class="absolute right-0 mt-2 w-80 bg-gradient-to-br from-red-200 via-red-100 to-red-200 rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
-                                <div class="bg-gradient-to-br from-red-100 via-red-50 to-red-100 rounded-xl shadow-2xl border border-gray-200 flex flex-col items-center py-4 px-4">
-                                    <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}`" class="w-16 h-16 rounded-full border mb-2" alt="avatar" />
-                                    <div class="font-bold text-lg">{{ user.name }} • Administrador</div>
-                                    <div class="text-gray-500 text-sm">{{ user.email }}</div>
+                            <div v-if="showProfileMenu" id="profile-menu"
+                                class="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 overflow-hidden animate-fade-in">
+                                <!-- Cabecera con avatar y datos -->
+                                <div class="flex flex-col items-center py-6 px-6 bg-gradient-to-br from-red-100 via-white to-red-50">
+                                    <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=ed1c24&color=fff&size=128`"
+                                        class="w-20 h-20 rounded-full border-4 border-white shadow-lg mb-3" alt="avatar" />
+                                    <div class="font-bold text-lg text-gray-800 text-center">{{ user.name }}</div>
+                                    <div class="text-xs text-gray-500 text-center mb-1">{{ user.email }}</div>
+                                    <span class="inline-block bg-red-200 text-red-700 text-xs px-3 py-1 rounded-full mt-1">
+                                        {{ user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Invitado' }}
+                                    </span>
                                 </div>
-                                <div class="divide-y divide-gray-200">
-                                    <div class="py-2 px-4 flex flex-col gap-1">
-                                        <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-gray-700">
-                                            <FontAwesomeIcon :icon="faUserCircle" class="drop-shadow-md" /> Contraseñas y Autocompletar
-                                        </button>
-                                        <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-gray-700">
-                                            <FontAwesomeIcon :icon="faTags" class="drop-shadow-md" /> Gestionar tu cuenta
-                                        </button>
-                                        <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-gray-700">
-                                            <FontAwesomeIcon :icon="faLayerGroup" class="drop-shadow-md" /> Personalizar perfil
-                                        </button>
-                                        <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-gray-700">
-                                            <FontAwesomeIcon :icon="faCircleXmark" class="drop-shadow-md" /> Sincronización activada
-                                        </button>
-                                    </div>
-                                    <div class="py-2 px-4">
-                                        <div class="text-xs text-gray-500 mb-1">Otros perfiles</div>
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <img src="https://ui-avatars.com/api/?name=ITCHA" class="w-7 h-7 rounded-full border" />
-                                            <span class="text-sm">Carlos Ernesto (ITCHA)</span>
-                                        </div>
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <span class="bg-purple-500 w-7 h-7 rounded-full flex items-center justify-center text-white font-bold">F</span>
-                                            <span class="text-sm">Familia</span>
-                                        </div>
-                                        <div class="flex items-center gap-2 mb-1">
-                                            <span class="bg-pink-500 w-7 h-7 rounded-full flex items-center justify-center text-white font-bold">L</span>
-                                            <span class="text-sm">Lyly</span>
-                                        </div>
-                                    </div>
-                                    <div class="py-2 px-4 flex flex-col gap-1">
-                                        <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-gray-700">
-                                            <FontAwesomeIcon :icon="faUserCircle" class="drop-shadow-md" /> Añadir perfil
-                                        </button>
-                                        <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-gray-700">
-                                            <FontAwesomeIcon :icon="faUser" class="drop-shadow-md" /> Perfil de invitado abierto
-                                        </button>
-                                        <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-gray-700">
-                                            <FontAwesomeIcon :icon="faTags" class="drop-shadow-md" /> Gestionar perfiles
-                                        </button>
-                                        <button class="flex items-center gap-2 text-left w-full hover:bg-red-300 rounded px-2 py-1 text-red-600" @click="logout">
-                                            <FontAwesomeIcon :icon="faDoorOpen" class="drop-shadow-md" /> Cerrar sesión
-                                        </button>
-                                    </div>
+                                <!-- Acciones principales -->
+                                <div class="py-3 px-4 flex flex-col gap-2">
+                                    <!-- Opciones eliminadas: Contraseñas y Autocompletar, Gestionar tu cuenta, Personalizar perfil -->
                                 </div>
+                                <!-- Elimina los hr y la sección vacía de "Otros perfiles" -->
+                                <!-- Acciones de perfil -->
+                                <div class="py-3 px-4 flex flex-col gap-2 border-t border-gray-200 my-1">
+                                    <button class="flex items-center gap-3 text-left w-full hover:bg-red-50 rounded px-3 py-2 text-gray-700 transition">
+                                        <FontAwesomeIcon :icon="faUserCircle" class="text-violet-500" /> Añadir perfil
+                                    </button>
+                                    <button class="flex items-center gap-3 text-left w-full hover:bg-red-50 rounded px-3 py-2 text-gray-700 transition">
+                                        <FontAwesomeIcon :icon="faUser" class="text-gray-500" /> Perfil de invitado abierto
+                                    </button>
+                                    <button class="flex items-center gap-3 text-left w-full hover:bg-red-50 rounded px-3 py-2 text-gray-700 transition">
+                                        <FontAwesomeIcon :icon="faTags" class="text-green-500" /> Gestionar perfiles
+                                    </button>
+                                </div>
+                                <hr class="border-t border-gray-200 my-1" />
+                                <!-- Cerrar sesión -->
+                                <div class="py-3 px-4">
+                                    <button class="flex items-center gap-3 text-left w-full hover:bg-red-100 rounded px-3 py-2 text-red-600 font-semibold transition"
+                                        @click="logout">
+                                        <FontAwesomeIcon :icon="faDoorOpen" class="text-red-600" /> Cerrar sesión
+                                    </button>
+                                </div>
+                                <!-- Botón cerrar menú -->
+                                <button class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition"
+                                    @click="closeProfileMenu" aria-label="Cerrar menú">
+                                    <FontAwesomeIcon :icon="faCircleXmark" class="h-5 w-5" />
+                                </button>
                             </div>
                         </transition>
                     </div>

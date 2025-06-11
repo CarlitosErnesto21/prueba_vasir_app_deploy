@@ -87,6 +87,6 @@ class InformePDFController extends Controller
         $nombreArchivo = "informe_{$correlativo}_{$fecha_hora}.pdf";
 
         $pdf = Pdf::loadView('informes.informe', $data);
-        return $pdf->stream($nombreArchivo); // Cambia download() por stream()
+        return $pdf->stream($nombreArchivo);
     }
 }
