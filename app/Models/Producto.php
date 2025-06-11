@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Producto extends Model
 {
+    protected $table = 'productos';
+
     use HasFactory;
     protected $fillable = ['nombre', 'descripcion', 'precio', 'inventario_id', 'categoria_id'];
 
@@ -23,6 +25,6 @@ class Producto extends Model
 
     public function imagenes()
     {
-        return $this->hasMany(Imagen::class);
+        return $this->morphMany(Imagen::class, 'imageable');
     }
 }

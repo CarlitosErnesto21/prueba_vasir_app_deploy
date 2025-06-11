@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Provincia extends Model
 {
+    protected $table = 'provincias';
+    
     use HasFactory;
     protected $fillable = ['nombre', 'pais_id'];
     // Relaciones pertenecen "a" o la inversa de la relación

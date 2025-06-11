@@ -13,11 +13,14 @@ return new class extends Migration
     {
         Schema::create('imagenes', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('producto_id');
+            // Polymorphic relation fields
+            $table->unsignedBigInteger('imageable_id');
+            $table->string('imageable_type');
             $table->string('nombre');
             $table->timestamps();
 
-            $table->foreign('producto_id')->references('id')->on('productos')->onDelete('cascade');
+            // Optional: index for performance
+            $table->index(['imageable_id', 'imageable_type']);
         });
     }
 
