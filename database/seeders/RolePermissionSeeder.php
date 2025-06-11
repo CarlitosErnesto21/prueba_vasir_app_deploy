@@ -8,22 +8,25 @@ use Spatie\Permission\Models\Permission;
 
 class RolePermissionSeeder extends Seeder
 {
-    public function run()
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
     {
         // Crear roles
-        $adminRole = Role::create(['name' => 'admin']);
-        $clienteRole = Role::create(['name' => 'cliente']);
-        $empleadoRole = Role::create(['name' => 'empleado']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        $clienteRole = Role::firstOrCreate(['name' => 'cliente', 'guard_name' => 'web']);
+        $empleadoRole = Role::firstOrCreate(['name' => 'empleado', 'guard_name' => 'web']);
 
         // Crear permisos
-        $verReservas = Permission::create(['name' => 'ver reservas']);
-        $crearReservas = Permission::create(['name' => 'crear reservas']);
-        $editarReservas = Permission::create(['name' => 'editar reservas']);
-        $eliminarReservas = Permission::create(['name' => 'eliminar reservas']);
+        $verReservas = Permission::firstOrCreate(['name' => 'ver reservas', 'guard_name' => 'web']);
+        $crearReservas = Permission::firstOrCreate(['name' => 'crear reservas', 'guard_name' => 'web']);
+        $editarReservas = Permission::firstOrCreate(['name' => 'editar reservas', 'guard_name' => 'web']);
+        $eliminarReservas = Permission::firstOrCreate(['name' => 'eliminar reservas', 'guard_name' => 'web']);
 
         // Asignar permisos a los roles
-        $adminRole->givePermissionTo(Permission::all());
-        $empleadoRole->givePermissionTo([$verReservas, $crearReservas, $editarReservas]);
-        $clienteRole->givePermissionTo([$verReservas, $crearReservas]);
+        $adminRole->syncPermissions([$verReservas, $crearReservas, $editarReservas, $eliminarReservas]);
+        $empleadoRole->syncPermissions([$verReservas, $crearReservas, $editarReservas]);
+        $clienteRole->syncPermissions([$verReservas, $crearReservas]);
     }
 }
