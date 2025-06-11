@@ -48,7 +48,6 @@ onMounted(() => {
 const fetchProductos = async () => {
     try {
         const response = await axios.get(url);
-        console.log("Productos recibidos:", response.data);
         productos.value = response.data;
     } catch (err) {
         console.error("Error al obtener los productos", err);
