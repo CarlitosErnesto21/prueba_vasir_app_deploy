@@ -13,7 +13,7 @@ class HotelController extends Controller
     public function index()
     {
         // Obtener todos los hoteles con sus relaciones
-        $hoteles = Hotel::with(['provincia', 'categoriaHotel'])->get();
+        $hoteles = Hotel::with(['provincia', 'categoriaHotel', 'imagenes', 'provincia.pais'])->get();
         return response()->json($hoteles);
     }
 
@@ -30,20 +30,91 @@ class HotelController extends Controller
      */
     public function store(Request $request)
     {
-        // Validar los datos del formulario
         $validated = $request->validate([
             'nombre' => 'required|string|max:50',
             'direccion' => 'required|string|max:200',
+            'descripcion' => 'required|string|max:255',
+            'estado' => 'required|string|max:20',
             'provincia_id' => 'required|exists:provincias,id',
             'categoria_id' => 'required|exists:categorias_hoteles,id',
+            'imagenes' => 'nullable|array',
+            'imagenes.*' => 'image|max:2048',
         ]);
 
-        // Crear un nuevo hotel
         $hotel = Hotel::create($validated);
+
+        if ($request->hasFile('imagenes')) {
+            foreach ($request->file('imagenes') as $imagen) {
+                if ($imagen instanceof \Illuminate\Http\UploadedFile && $imagen->isValid()) {
+                    $nombreArchivo = uniqid() . '_' . $imagen->getClientOriginalName();
+                    $destino = public_path('images/hoteles');
+                    if (!file_exists($destino)) {
+                        mkdir($destino, 0755, true);
+                    }
+                    $imagen->move($destino, $nombreArchivo);
+                    $hotel->imagenes()->create([
+                        'nombre' => $nombreArchivo
+                    ]);
+                }
+            }
+        }
 
         return response()->json([
             'message' => 'Hotel creado exitosamente',
-            'hotel' => $hotel,
+            'hotel' => $hotel->load(['imagenes', 'categoriaHotel', 'provincia.pais']),
+        ]);
+    }
+
+    public function update(Request $request, Hotel $hotele)
+    {
+        // Asegúrate de cargar las relaciones necesarias
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:50',
+            'direccion' => 'required|string|max:200',
+            'descripcion' => 'required|string|max:500',
+            'estado' => 'required|string|max:20',
+            'provincia_id' => 'required|exists:provincias,id',
+            'categoria_id' => 'required|exists:categorias_hoteles,id',
+            'imagenes' => 'nullable|array',
+            'imagenes.*' => 'image|max:2048',
+        ]);
+
+        $hotele->update($validated);
+
+        // Agregar nuevas imágenes
+        if ($request->hasFile('imagenes')) {
+            foreach ($request->file('imagenes') as $imagen) {
+                if ($imagen instanceof \Illuminate\Http\UploadedFile && $imagen->isValid()) {
+                    $nombreArchivo = uniqid() . '_' . $imagen->getClientOriginalName();
+                    $destino = public_path('images/hoteles');
+                    if (!file_exists($destino)) {
+                        mkdir($destino, 0755, true);
+                    }
+                    $imagen->move($destino, $nombreArchivo);
+                    $hotele->imagenes()->create([
+                        'nombre' => $nombreArchivo
+                    ]);
+                }
+            }
+        }
+
+        // Eliminar imágenes seleccionadas
+        if ($request->has('removed_images')) {
+            foreach ($request->input('removed_images') as $imageName) {
+                $imagen = $hotele->imagenes()->where('nombre', $imageName)->first();
+                if ($imagen) {
+                    $rutaImagen = public_path('images/hoteles/' . $imagen->nombre);
+                    if (file_exists($rutaImagen)) {
+                        unlink($rutaImagen);
+                    }
+                    $imagen->forceDelete(); // Cambiado de delete() a forceDelete()
+                }
+            }
+        }
+
+        return response()->json([
+            'message' => 'Hotel actualizado exitosamente',
+            'hotel' => $hotele->load(['imagenes', 'categoriaHotel', 'provincia.pais']),
         ]);
     }
 
@@ -66,33 +137,21 @@ class HotelController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Hotel $hotel)
-    {
-        // Validar los datos del formulario
-        $validated = $request->validate([
-            'nombre' => 'required|string|max:50',
-            'direccion' => 'required|string|max:200',
-            'provincia_id' => 'required|exists:provincias,id',
-            'categoria_id' => 'required|exists:categorias_hoteles,id',
-        ]);
-
-        // Actualizar el hotel
-        $hotel->update($validated);
-
-        return response()->json([
-            'message' => 'Hotel actualizado exitosamente',
-            'hotel' => $hotel,
-        ]);
-    }
-
-    /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Hotel $hotel)
+    public function destroy($id)
     {
-        // Eliminar el hotel
+        $hotel = Hotel::findOrFail($id);
+        $hotel->loadMissing(['imagenes', 'provincia', 'categoriaHotel']);
+
+        foreach ($hotel->imagenes as $imagen) {
+            $rutaImagen = public_path('images/hoteles/' . $imagen->nombre);
+            if (file_exists($rutaImagen)) {
+                unlink($rutaImagen);
+            }
+            $imagen->forceDelete();
+        }
+
         $hotel->delete();
 
         return response()->json([

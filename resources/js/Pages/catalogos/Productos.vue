@@ -5,7 +5,7 @@ import { Head } from "@inertiajs/vue3";
 import { ref, onMounted } from "vue";
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode } from "@primevue/core/api";
-import Carousel from 'primevue/carousel';
+import Carousel from "primevue/carousel";
 
 const toast = useToast();
 
@@ -164,7 +164,7 @@ const saveOrUpdate = async () => {
                 life: 3000,
             });
         }
-
+        await fetchProductos();
         // Limpiar formulario
         dialog.value = false;
         producto.value = {
@@ -281,7 +281,7 @@ const viewImages = (imagenesDeProducto) => {
                     @click="openNew"
                 />
             </div>
-            
+
             <DataTable :value="productos" dataKey="id">
                 <Column field="nombre" header="Nombre" />
                 <Column field="descripcion" header="Descripción" />
@@ -337,7 +337,6 @@ const viewImages = (imagenesDeProducto) => {
 
                    <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
-
                             <label for="descripcion" class="w-24"
                                 >Descripción:</label
                             >
@@ -350,7 +349,6 @@ const viewImages = (imagenesDeProducto) => {
                                 }"
                                 class="flex-1"
                             />
-
                         </div>
                         <small
                             class="text-red-500 ml-28"
@@ -396,26 +394,6 @@ const viewImages = (imagenesDeProducto) => {
                         </small>
                     </div>
 
-                    <div class="w-full flex flex-col">
-                        <div class="flex items-center gap-4">
-                            <label for="imagen" class="w-24">Imágenes:</label>
-                            <FileUpload
-                                mode="basic"
-                                name="imagenes[]"
-                                accept="image/*"
-                                :auto="true"
-                                chooseLabel="Seleccionar imágenes"
-                                @select="onImageSelect"
-                                :customUpload="true"
-                                :multiple="true"
-                                class="flex-1 p-button-rounded p-button-warn p-button-md mr-2"
-                            />
-                        </div>
-                        <small class="text-red-500 ml-28" v-if="false">
-                            Al menos una imagen es obligatoria.
-                        </small>
-                    </div>
-
                     <div class="grid grid-cols-12 gap-4">
                         <div class="col-span-6">
                             <label for="inventario">Inventario</label>
@@ -449,6 +427,26 @@ const viewImages = (imagenesDeProducto) => {
                                 >Seleccione una categoría</small
                             >
                         </div>
+                    </div>
+
+                    <div class="w-full flex flex-col">
+                        <div class="flex items-center gap-4">
+                            <label for="imagen" class="w-24">Imágenes:</label>
+                            <FileUpload
+                                mode="basic"
+                                name="imagenes[]"
+                                accept="image/*"
+                                :auto="true"
+                                chooseLabel="Seleccionar imágenes"
+                                @select="onImageSelect"
+                                :customUpload="true"
+                                :multiple="true"
+                                class="flex-1 p-button-rounded p-button-warn p-button-md mr-2"
+                            />
+                        </div>
+                        <small class="text-red-500 ml-28" v-if="false">
+                            Al menos una imagen es obligatoria.
+                        </small>
                     </div>
 
                     <div class="flex gap-4 flex-wrap mt-4 ml-28">
@@ -546,7 +544,9 @@ const viewImages = (imagenesDeProducto) => {
                     :showIndicators="true"
                 >
                     <template #item="slotProps">
-                        <div class="relative flex justify-center items-center h-96 w-full">
+                        <div
+                            class="relative flex justify-center items-center h-96 w-full"
+                        >
                             <img
                                 :src="slotProps.data"
                                 alt="Producto"

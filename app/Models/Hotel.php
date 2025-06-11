@@ -8,9 +8,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Hotel extends Model
 {
+    protected $table = 'hoteles';
+
     use HasFactory;
-    protected $fillable = ['nombre', 'direccion', 'provincia_id', 'categoria_id'];
-    // referencias
+    protected $fillable = [
+        'nombre',
+        'direccion',
+        'descripcion',
+        'estado',
+        'provincia_id',
+        'categoria_id'
+    ];    // referencias
 
     public function provincia()
     {
@@ -24,5 +32,10 @@ class Hotel extends Model
     public function detalleReservas()
     {
         return $this->hasMany(DetalleReservaHotel::class, 'hotel_id');
+    }
+
+    public function imagenes()
+    {
+        return $this->morphMany(Imagen::class, 'imageable');
     }
 }
