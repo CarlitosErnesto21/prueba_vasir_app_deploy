@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\InformePDFController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -59,5 +60,14 @@ Route::get('/sobre-nosotros', function () {
 Route::get('/contactos', function () {
     return Inertia::render('vistasClientes/Contactos');
 })->name('contactos');
+
+
+//Ruta para los informes de la aplicacion
+Route::get('/informes', function () {
+    return Inertia::render('informes/Informes');
+})->middleware(['auth', 'verified'])->name('informes');
+
+Route::get('/descargar-informe', [InformePDFController::class, 'descargarInforme']);
+
 
 require __DIR__.'/auth.php';

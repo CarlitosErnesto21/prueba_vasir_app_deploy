@@ -1,11 +1,22 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { usePage, Link } from '@inertiajs/vue3'; //link para que no recargue toda la pagina
+import { usePage, Link } from '@inertiajs/vue3';
 import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
 import { faList, faTags, faRoute, faDoorOpen, faFileAlt, faLayerGroup, faCircleXmark, faUserCircle, 
     faChevronCircleDown, faUser, faHotel, faPlaneDeparture, faGear, faBoxesStacked, 
-    faClipboardList, faBox, faHouseChimneyUser, faBarsProgress} from "@fortawesome/free-solid-svg-icons";
+    faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,
+    faFileInvoice,
+    faChartBar,
+    faFileLines,
+    faChartColumn,
+    faChartLine,
+    faChartDiagram,
+    faChartGantt,
+    faChartArea,
+    faFileCircleCheck,
+    faFileArchive} from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
+import { route } from 'ziggy-js';
 
 const page = usePage();
 const user = page.props.auth?.user || { name: 'Usuario', email: 'correo@ejemplo.com' };
@@ -349,12 +360,12 @@ onBeforeUnmount(() => {
                         <li
                             class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
                             :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
-                            @click="$inertia.visit(route('dashboard'))"
+                            @click="$inertia.visit(route('informes'))"
                             tabindex="0"
-                            @keydown.enter="$inertia.visit(route('dashboard'))"
-                            title="Modificar datos">
-                            <FontAwesomeIcon :icon="faFileAlt" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
-                            <span v-if="!isSidebarCollapsed">Modificar</span>
+                            @keydown.enter="$inertia.visit(route('informes'))"
+                            title="Generar informes">
+                            <FontAwesomeIcon :icon="faFileInvoice" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
+                            <span v-if="!isSidebarCollapsed">Informes</span>
                         </li>
                     </ul>
                 </nav>
