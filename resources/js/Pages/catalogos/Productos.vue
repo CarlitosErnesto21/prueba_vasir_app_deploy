@@ -48,7 +48,6 @@ onMounted(() => {
 const fetchProductos = async () => {
     try {
         const response = await axios.get(url);
-        console.log("Productos recibidos:", response.data);
         productos.value = response.data;
     } catch (err) {
         console.error("Error al obtener los productos", err);
@@ -336,7 +335,7 @@ const viewImages = (imagenesDeProducto) => {
                         >
                     </div>
 
-                    <div class="w-full flex flex-col">
+                   <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
                             <label for="descripcion" class="w-24"
                                 >Descripción:</label
@@ -569,3 +568,4 @@ const viewImages = (imagenesDeProducto) => {
         </div>
     </AuthenticatedLayout>
 </template>
+<!-- Agregar categoria e inventario -->

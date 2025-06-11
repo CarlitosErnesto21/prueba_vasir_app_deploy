@@ -69,7 +69,7 @@ const toggleForm = () => {
                     <TextInput
                         id="login-email"
                         type="email"
-                        class="mt-1 block w-full"
+                        class="mt-1 block w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl"
                         v-model="form.email"
                         required
                         :autofocus="!isRegister" 
@@ -83,7 +83,7 @@ const toggleForm = () => {
                     <TextInput
                         id="login-password"
                         type="password"
-                        class="mt-1 block w-full"
+                        class="mt-1 block w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl"
                         v-model="form.password"
                         required
                         autocomplete="current-password"
@@ -99,19 +99,20 @@ const toggleForm = () => {
                 </div>
 
                 <div class="mt-4 flex items-center justify-center">
+                    <PrimaryButton
+                        class="ms-4 bg-gradient-to-r from-red-500 to-red-400 hover:bg-red-600 focus:bg-red-700 text-white"
+                        :class="{ 'opacity-25': form.processing }"
+                        :disabled="form.processing">
+                        Iniciar Sesión
+                    </PrimaryButton>
+                </div>
+                <div class="mt-2 flex items-center justify-center">
                     <Link
                         v-if="canResetPassword"
                         :href="route('password.request')"
                         class="rounded-md text-sm text-red-600 underline hover:text-red-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                         ¿Olvidaste tu contraseña?
                     </Link>
-
-                    <PrimaryButton
-                        class="ms-4 bg-red-500 hover:bg-red-600 focus:bg-red-700 text-white"
-                        :class="{ 'opacity-25': form.processing }"
-                        :disabled="form.processing">
-                        Iniciar Sesión
-                    </PrimaryButton>
                 </div>
             </form>
         </template>
