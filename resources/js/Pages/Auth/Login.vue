@@ -100,7 +100,7 @@ const toggleForm = () => {
 
                 <div class="mt-4 flex items-center justify-center">
                     <PrimaryButton
-                        class="ms-4 bg-red-500 hover:bg-red-600 focus:bg-red-700 text-white"
+                        class="ms-4 bg-gradient-to-r from-red-500 to-red-400 hover:bg-red-600 focus:bg-red-700 text-white"
                         :class="{ 'opacity-25': form.processing }"
                         :disabled="form.processing">
                         Iniciar Sesión

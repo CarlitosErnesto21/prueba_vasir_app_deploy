@@ -44,6 +44,12 @@ const slides = computed(() =>
         </div>
       </template>
       <template v-else>
+        <h1 class="text-center">
+          Los elementos que contiene estas vistas
+          son de ejemplo y no son reales. 
+          <br>Puedes ver los productos en la sección de
+            <Link :href="route('tienda')" class="text-red-600 hover:underline">Tienda</Link>.
+        </h1>
         <div class="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto bg-white rounded shadow min-h-[60vh] flex flex-col justify-center">
           <div class="w-full">
             <Carousel
@@ -89,7 +95,7 @@ const slides = computed(() =>
             <Link :href="route('paquetes')">
               <Button
                 label="Ver Paquetes"
-                class="!bg-red-600 !border-none !px-4 sm:!px-6 !py-2 sm:!py-3 !text-white font-semibold rounded hover:!bg-red-700 transition w-full sm:w-auto"
+                class="!bg-red-600 !border-none !px-4 sm:!px-6 !py-2 sm:!py-3 !text-white font-semibold rounded hover:!bg-red-700 w-full sm:w-auto hover:scale-105 transition-transform duration-300"
               />
             </Link>
           </div>

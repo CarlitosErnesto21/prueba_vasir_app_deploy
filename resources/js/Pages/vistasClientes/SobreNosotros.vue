@@ -4,6 +4,14 @@ import Card from 'primevue/card'
 import { ref, onMounted } from 'vue'
 
 const loading = ref(true)
+const showImagenAmpliada = ref(false)
+
+function ampliarImagen() {
+  showImagenAmpliada.value = true
+}
+function cerrarImagen() {
+  showImagenAmpliada.value = false
+}
 
 onMounted(() => {
   setTimeout(() => { loading.value = false }, 600)
@@ -11,7 +19,7 @@ onMounted(() => {
 </script>
 <template>
   <Catalogo>
-    <div class="p-8 max-w-3xl mx-auto bg-white rounded shadow">
+    <div class="p-8 max-w-8xl mx-auto bg-white rounded shadow">
       <template v-if="loading">
         <div class="animate-pulse space-y-6">
           <div class="h-10 bg-red-50 rounded w-1/2"></div>
@@ -54,7 +62,12 @@ onMounted(() => {
           </Card>
         </div>
         <div class="flex flex-col md:flex-row items-center gap-8 mt-8">
-          <img src="/imagenes/equipo.jpg" alt="Equipo Vasir" class="w-full md:w-1/2 rounded shadow border border-red-100" />
+          <img
+            src="../../../../imagenes/Negocio.jpg"
+            alt="Equipo Vasir"
+            class="w-full md:w-1/3 rounded shadow border border-red-100 cursor-zoom-in hover:scale-105 transition-transform duration-300"
+            @click="ampliarImagen"
+          />
           <Card class="flex-1 bg-white border border-red-100 rounded shadow p-4">
             <template #title>
               <h3 class="text-lg font-bold text-red-700 mb-2">Nuestro equipo</h3>
@@ -65,6 +78,42 @@ onMounted(() => {
               </p>
             </template>
           </Card>
+        </div>
+        <teleport to="body">
+          <div
+            v-if="showImagenAmpliada"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
+            @click.self="cerrarImagen"
+          >
+            <img
+              src="../../../../imagenes/Negocio.jpg"
+              alt="Equipo Vasir"
+              class="max-w-3xl max-h-[90vh] rounded shadow-lg border-4 border-white"
+            />
+            <button
+              class="absolute top-6 right-8 text-white text-3xl font-bold bg-black bg-opacity-50 rounded-full px-4 py-1 hover:bg-opacity-80"
+              @click="cerrarImagen"
+              aria-label="Cerrar"
+            >&times;</button>
+          </div>
+        </teleport>
+        <div class="mt-10 rounded overflow-hidden shadow border border-red-200">
+          <p class="mb-2 text-gray-700 text-center">
+            <span class="font-semibold text-red-600">Nuestra ubicación:&nbsp;</span>2a Calle Oriente casa #12, Chalatenango, El Salvador
+          </p>
+          <p class="mb-2 text-gray-700 text-center">
+            <span class="font-semibold text-red-600">Horario de atención:&nbsp;</span>Lunes a Viernes 8:00 am - 4:00 pm, Sábado 8:00 am - 12:00 md
+          </p>
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d241.91319397188843!2d-88.9363812!3d14.0410515!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8f636570efc5e09d%3A0xe884d67df04d7ff5!2sVASIR!5e0!3m2!1ses-419!2ssv!4v1749418509387!5m2!1ses-419!2ssv"
+            width="100%"
+            height="350"
+            style="border:0;"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            title="Ubicación VASIR">
+          </iframe>
         </div>
       </template>
     </div>
