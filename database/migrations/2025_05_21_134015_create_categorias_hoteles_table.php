@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('categorias_hoteles', function (Blueprint $table) {
             $table->id();
-            $table->enum('estrella', ['1 estrella', '2 estrellas', '3 estrellas', '4 estrellas', '5 estrellas']);
+$table->string('nombre', 15);
             $table->timestamps();
         });
     }

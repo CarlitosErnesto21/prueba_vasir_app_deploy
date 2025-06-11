@@ -35,12 +35,9 @@ class ProductoController extends Controller
             'precio'        => 'required|numeric|min:0|max:9999.99',
             'inventario_id' => 'required|exists:inventarios,id',
             'categoria_id'  => 'required|exists:categorias_productos,id',
-
-            // acepta jpeg, png, gif, webp, bmp, svg por MIME
             'imagenes'      => 'nullable|array',
             'imagenes.*'    => 'image|max:2048',
         ]);
-        // Crea el producto con los datos validados
 
         $producto = Producto::create($request->only([
             'nombre',
@@ -61,9 +58,8 @@ class ProductoController extends Controller
 
                 $imagen->move($destino, $nombreArchivo);
 
-                Imagen::create([
-                    'producto_id' => $producto->id,
-                    'nombre' => $nombreArchivo // ✅ solo el nombre real del archivo
+                $producto->imagenes()->create([
+                    'nombre' => $nombreArchivo
                 ]);
             }
         }
@@ -71,28 +67,10 @@ class ProductoController extends Controller
         return response()->json($producto->load('imagenes'), 201);
     }
 
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Producto $producto)
-    {
-        $producto->load('categoria');
-        return response()->json($producto);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Producto $producto)
-    {
-        //
-    }
-
     /**
      * Update the specified resource in storage.
      */
+
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
@@ -120,16 +98,16 @@ class ProductoController extends Controller
 
                 $imagen->move($destino, $nombreArchivo);
 
-                Imagen::create([
-                    'producto_id' => $producto->id,
-                    'nombre' => $nombreArchivo, // Guarda solo el nombre del archivo
+                $producto->imagenes()->create([
+                    'nombre' => $nombreArchivo,
                 ]);
             }
         }
 
+        // Eliminar imágenes seleccionadas
         if ($request->has('removed_images')) {
             foreach ($request->input('removed_images') as $imageName) {
-                $imagen = Imagen::where('nombre', $imageName)->where('producto_id', $producto->id)->first();
+                $imagen = $producto->imagenes()->where('nombre', $imageName)->first();
                 if ($imagen) {
                     $rutaImagen = public_path('images/productos/' . $imagen->nombre);
                     if (file_exists($rutaImagen)) {
@@ -143,6 +121,23 @@ class ProductoController extends Controller
         return response()->json($producto->load('imagenes'), 200);
     }
 
+    /**
+     * Display the specified resource.
+     */
+    public function show(Producto $producto)
+    {
+        $producto->load('categoria');
+        return response()->json($producto);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Producto $producto)
+    {
+        //
+    }
+
 
     /**
      * Remove the specified resource from storage.
@@ -153,6 +148,15 @@ class ProductoController extends Controller
 
         if (!$producto) {
             return response()->json(['error' => 'Producto no encontrado'], 404);
+        }
+
+        // Eliminar imágenes asociadas
+        foreach ($producto->imagenes as $imagen) {
+            $rutaImagen = public_path('images/productos/' . $imagen->nombre);
+            if (file_exists($rutaImagen)) {
+                unlink($rutaImagen);
+            }
+            $imagen->delete();
         }
 
         $producto->delete();

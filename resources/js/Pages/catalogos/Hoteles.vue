@@ -1,103 +1,249 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
-import { useToast } from 'primevue/usetoast';
-import { FilterMatchMode } from '@primevue/core/api';
-import FileUpload from 'primevue/fileupload';
-import Toast from 'primevue/toast';
-import Dropdown from 'primevue/dropdown';
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { Head } from "@inertiajs/vue3";
+import { ref, onMounted } from "vue";
+import { useToast } from "primevue/usetoast";
+import { FilterMatchMode } from "@primevue/core/api";
+import FileUpload from "primevue/fileupload";
+import Toast from "primevue/toast";
+import Select from "primevue/select";
+import axios from "axios";
+import Carousel from "primevue/carousel";
 
 const toast = useToast();
 
-const hoteles = ref([]);  
-const hotel = ref({ id: null, nombre: '', direccion: '', descripcion: '', estado: '', pais: '', provincia: '', categoria: '', imagenes: [] });
+const hoteles = ref([]);
+const hotel = ref({
+    id: null,
+    nombre: "",
+    direccion: "",
+    descripcion: "",
+    estado: "",
+    provincia: null,
+    categoria: null,
+    imagenes: [],
+});
+
 const imagenPreviewList = ref([]);
+const imagenFiles = ref([]);
+const removedImages = ref([]);
 const selectedHoteles = ref();
 const dialog = ref(false);
 const deleteDialog = ref(false);
 const submitted = ref(false);
 const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
 });
-const btnTitle = ref('Guardar');
+const btnTitle = ref("Guardar");
+const url = "/api/hoteles";
+const IMAGE_PATH = "/images/hoteles/";
+const paises = ref([]);
+const provincias = ref([]);
+const categoriasHoteles = ref([]);
+const estados = ref([
+    { label: "Activo", value: "activo" },
+    { label: "Inactivo", value: "inactivo" },
+]);
+const showImageDialog = ref(false);
+const selectedImages = ref([]);
 
 onMounted(() => {
     fetchHoteles();
+    fetchPaises();
+    fetchProvincias();
+    fetchCategoriasHoteles();
 });
 
 const fetchHoteles = async () => {
-    hoteles.value = [
-        { id: 1, nombre: 'Hotel Sol de Oro', direccion:'Hotel Sol de Oro, Av. Pardo Miraflores Calle San Martín 610', pais: 'Peru', provincia: 'Lima', imagenes: [] },
-        { id: 2, nombre: 'Hotel B', imagenes: [] },
-        { id: 3, nombre: 'Hotel C', imagenes: [] },
-        { id: 4, nombre: 'Hotel D', imagenes: [] },
-        { id: 5, nombre: 'Hotel E', imagenes: [] },
-    ];
+    try {
+        const response = await axios.get(url);
+        // Mapear imágenes para cada hotel, SOLO nombres de archivo
+        hoteles.value = response.data.map((hotel) => ({
+            ...hotel,
+            imagenes: (hotel.imagenes || []).map((img) =>
+                typeof img === "string" ? img : img.nombre
+            ),
+        }));
+    } catch (err) {
+        toast.add({
+            severity: "error",
+            summary: "Error",
+            detail: "No se pudieron cargar los hoteles",
+            life: 4000,
+        });
+    }
+};
+
+const fetchPaises = async () => {
+    try {
+        const response = await axios.get("/api/paises");
+        paises.value = response.data;
+    } catch (err) {
+        toast.add({
+            severity: "error",
+            summary: "Error",
+            detail: "No se pudieron cargar los países",
+            life: 4000,
+        });
+    }
+};
+
+const fetchProvincias = async () => {
+    try {
+        const response = await axios.get("/api/provincias");
+        provincias.value = response.data;
+    } catch (err) {
+        toast.add({
+            severity: "error",
+            summary: "Error",
+            detail: "No se pudieron cargar las provincias",
+            life: 4000,
+        });
+    }
+};
+
+const fetchCategoriasHoteles = async () => {
+    try {
+        const response = await axios.get("/api/categorias-hoteles");
+        categoriasHoteles.value = response.data;
+        console.log("categoriasHoteles cargadas:", categoriasHoteles.value);
+    } catch (err) {
+        toast.add({
+            severity: "error",
+            summary: "Error",
+            detail: "No se pudieron cargar las categorías",
+            life: 4000,
+        });
+    }
 };
 
 const openNew = () => {
-    hotel.value = { id: null, nombre: '', direccion: '', descripcion: '', estado: '', pais: '', provincia: '', categoria: '', imagenes: [] };
+    hotel.value = {
+        id: null,
+        nombre: "",
+        direccion: "",
+        descripcion: "",
+        estado: "",
+        provincia: null,
+        categoria: null,
+        imagenes: [],
+    };
     imagenPreviewList.value = [];
+    imagenFiles.value = [];
+    removedImages.value = [];
     submitted.value = false;
-    btnTitle.value = 'Guardar';
+    btnTitle.value = "Guardar";
     dialog.value = true;
 };
 
 const editHotel = (h) => {
     hotel.value = { ...h };
-    imagenPreviewList.value = h.imagenes || [];
-    btnTitle.value = 'Actualizar';
+    hotel.value.categoria = h.categoria_hotel ? h.categoria_hotel.id : null;
+    hotel.value.provincia = h.provincia ? h.provincia.id : null;
+    imagenPreviewList.value = Array.isArray(h.imagenes)
+        ? h.imagenes.map((img) => (typeof img === "string" ? img : img.nombre))
+        : [];
+
+    imagenFiles.value = [];
+    removedImages.value = [];
+    btnTitle.value = "Actualizar";
     dialog.value = true;
 };
 
-const saveOrUpdate = () => {
+const saveOrUpdate = async () => {
     submitted.value = true;
 
+    // Validación de campos obligatorios
     if (
         !hotel.value.nombre ||
         !hotel.value.direccion ||
         !hotel.value.descripcion ||
         !hotel.value.estado ||
-        !hotel.value.pais ||
         !hotel.value.provincia ||
-        !hotel.value.categoria ||
-        imagenPreviewList.value.length === 0
-    ) return;
+        !hotel.value.categoria
+    ) {
+        return;
+    }
 
-    // Verificar si ya existe un hotel con el mismo nombre (excepto en edición del mismo)
-    const nombreExiste = hoteles.value.some(h =>
-        h.nombre.toLowerCase().trim() === hotel.value.nombre.toLowerCase().trim() &&
-        h.id !== hotel.value.id
-    );
-
-    if (nombreExiste) {
+    if (imagenPreviewList.value.length === 0) {
         toast.add({
-            severity: 'error',
-            summary: 'Nombre duplicado',
-            detail: `Ya tienes un hotel con el nombre "${hotel.value.nombre}".`,
-            life: 4000
+            severity: "error",
+            summary: "Error",
+            detail: "Debes subir al menos una imagen.",
+            life: 4000,
         });
         return;
     }
 
-    hotel.value.imagenes = [...imagenPreviewList.value];
+    try {
+        const formData = new FormData();
+        formData.append("nombre", hotel.value.nombre);
+        formData.append("direccion", hotel.value.direccion);
+        formData.append("descripcion", hotel.value.descripcion);
+        formData.append("estado", hotel.value.estado);
+        formData.append("provincia_id", hotel.value.provincia);
+        formData.append("categoria_id", hotel.value.categoria);
 
-    if (hotel.value.id === null) {
-        hotel.value.id = Date.now();
-        hoteles.value.push({ ...hotel.value });
-        toast.add({ severity: 'success', summary: 'Hotel agregado', life: 3000 });
-    } else {
-        const index = hoteles.value.findIndex(h => h.id === hotel.value.id);
-        if (index !== -1) {
-            hoteles.value[index] = { ...hotel.value };
-            toast.add({ severity: 'info', summary: 'Hotel actualizado', life: 3000 });
+        // Solo archivos válidos para nuevas imágenes
+        imagenFiles.value.forEach((file) => {
+            if (file instanceof File) {
+                formData.append("imagenes[]", file);
+            }
+        });
+
+        // Solo nombres de imágenes guardadas para eliminar
+        removedImages.value.forEach((img) => {
+            formData.append("removed_images[]", img.split("/").pop());
+        });
+
+        let response;
+        if (!hotel.value.id) {
+            response = await axios.post(url, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            toast.add({
+                severity: "success",
+                summary: "Hotel agregado",
+                life: 3000,
+            });
+        } else {
+            formData.append("_method", "PUT");
+            response = await axios.post(`${url}/${hotel.value.id}`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            toast.add({
+                severity: "info",
+                summary: "Hotel actualizado",
+                life: 3000,
+            });
         }
-    }
 
-    dialog.value = false;
-    hotel.value = { id: null, nombre: '', direccion: '', descripcion: '', estado: '', pais: '', provincia: '', categoria: '', imagenes: [] };
-    imagenPreviewList.value = [];
+        await fetchHoteles();
+        dialog.value = false;
+        // limpia valores
+        hotel.value = {
+            id: null,
+            nombre: "",
+            direccion: "",
+            descripcion: "",
+            estado: "",
+            provincia: null,
+            categoria: null,
+            imagenes: [],
+        };
+        imagenPreviewList.value = [];
+        imagenFiles.value = [];
+        removedImages.value = [];
+        submitted.value = false;
+    } catch (err) {
+        toast.add({
+            severity: "error",
+            summary: "Error",
+            detail: "No se pudo guardar el hotel.",
+            life: 4000,
+        });
+    }
+    console.log("Hotel enviado:", hotel.value);
 };
 
 const confirmDeleteHotel = (h) => {
@@ -105,194 +251,357 @@ const confirmDeleteHotel = (h) => {
     deleteDialog.value = true;
 };
 
-const deleteHotel = () => {
-    hoteles.value = hoteles.value.filter(h => h.id !== hotel.value.id);
-    deleteDialog.value = false;
-    toast.add({ severity: 'warn', summary: 'Hotel eliminado', life: 3000 });
+const deleteHotel = async () => {
+    try {
+        await axios.delete(`${url}/${hotel.value.id}`);
+        fetchHoteles();
+        deleteDialog.value = false;
+        toast.add({ severity: "warn", summary: "Hotel eliminado", life: 3000 });
+    } catch (err) {
+        toast.add({
+            severity: "error",
+            summary: "Error",
+            detail: "No se pudo eliminar el hotel.",
+            life: 4000,
+        });
+    }
 };
 
 const hideDialog = () => {
     dialog.value = false;
+    imagenPreviewList.value = [];
+    imagenFiles.value = [];
+    removedImages.value = [];
+    submitted.value = false;
 };
 
 const onImageSelect = (event) => {
     for (const file of event.files) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            imagenPreviewList.value.push(e.target.result);
-        };
-        reader.readAsDataURL(file);
+        if (file instanceof File) {
+            imagenFiles.value.push(file);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagenPreviewList.value.push(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
     }
 };
 
 const removeImage = (index) => {
-    imagenPreviewList.value.splice(index, 1);
+    const removed = imagenPreviewList.value[index];
+    if (typeof removed === "string" && removed.startsWith("data:image")) {
+        imagenPreviewList.value.splice(index, 1);
+        imagenFiles.value.splice(index, 1); // Elimina el archivo correspondiente
+    } else {
+        removedImages.value.push(removed);
+        imagenPreviewList.value.splice(index, 1);
+    }
 };
 
-const paises = ref([
-    { nombre: 'Peru' },
-    { nombre: 'Argentina' },
-    { nombre: 'Chile' },
-    { nombre: 'Colombia' },
-    { nombre: 'México' },
-    { nombre: 'España' },
-    // Agrega más países según necesidad
-]);
-
-const provincias = ref([
-    { nombre: 'Lima' },
-    { nombre: 'Buenos Aires' },
-    { nombre: 'Santiago' },
-    { nombre: 'Bogotá' },
-    { nombre: 'CDMX' },
-    { nombre: 'Madrid' },
-    // Agrega más provincias según necesidad
-]);
+function getEstadoLabel(estado) {
+    const found = estados.value.find((e) => e.value === estado);
+    return found ? found.label : "";
+}
 
 function sanitizeDropdownInput(value) {
-    // Solo letras, tildes y sin espacios iniciales
-    return value.replace(/^\s+/, '').replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, '');
+    return value.replace(/^\s+/, "").replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]/g, "");
 }
 
 function onInputDropdown(field, event) {
-    if (typeof event === 'string') {
+    if (typeof event === "string") {
         hotel.value[field] = sanitizeDropdownInput(event);
     }
 }
-
 function onFilterDropdown(field, event) {
     if (event && event.value) {
         event.value = sanitizeDropdownInput(event.value);
     }
 }
+
+const viewImages = (imagenesHotel) => {
+    selectedImages.value = (imagenesHotel || []).map(
+        (img) => IMAGE_PATH + (typeof img === "string" ? img : img.nombre)
+    );
+    showImageDialog.value = true;
+};
 </script>
 
 <template>
     <Head title="Hoteles" />
     <AuthenticatedLayout>
-    <Toast />
+        <Toast />
         <div class="py-6 px-7 mt-10 mx-auto bg-red-100 shadow-md rounded-lg">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold">Catálogo hoteles</h3>
-                <Button label="Agregar hotel" icon="pi pi-plus" class="p-button-sm p-button-danger" @click="openNew" />
+                <Button
+                    label="Agregar hotel"
+                    icon="pi pi-plus"
+                    class="p-button-sm p-button-danger"
+                    @click="openNew"
+                />
             </div>
 
-            <DataTable :value="hoteles" v-model:selection="selectedHoteles" dataKey="id" :filters="filters" :paginator="true" :rows="4" class="overflow-x-auto max-w-full" style="display:block; max-width:84vw;">
+            <DataTable
+                :value="hoteles"
+                v-model:selection="selectedHoteles"
+                dataKey="id"
+                :filters="filters"
+                :paginator="true"
+                :rows="10"
+                class="overflow-x-auto max-w-full"
+                style="display: block; max-width: 84vw"
+            >
                 <template #header>
-                    <InputText v-model="filters['global'].value" placeholder="Buscar..." class="w-full" />
+                    <InputText
+                        v-model="filters['global'].value"
+                        placeholder="Buscar..."
+                        class="w-full"
+                    />
                 </template>
                 <Column field="nombre" header="Nombre" sortable />
                 <Column field="direccion" header="Dirección">
                     <template #body="slotProps">
-                       <div style="max-height: 80px; width: 300px; overflow-y: auto; overflow-x: auto; background: #fff; border-radius: 4px; padding: 4px 8px; font-size: 0.95em; box-shadow: 0 1px 2px rgba(0,0,0,0.03); white-space: pre-line; word-break: break-word; scrollbar-width: thin;">
-                            {{ slotProps.data.direccion }}
-                        </div>
+                        {{ slotProps.data.direccion }}
                     </template>
                 </Column>
                 <Column field="descripcion" header="Descripción">
                     <template #body="slotProps">
-                        <div style="max-height: 80px; width: 300px; overflow-y: auto; overflow-x: auto; background: #fff; border-radius: 4px; padding: 4px 8px; font-size: 0.95em; box-shadow: 0 1px 2px rgba(0,0,0,0.03); white-space: pre-line; word-break: break-word; scrollbar-width: thin;">
-                            {{ slotProps.data.descripcion }}
-                        </div>
+                        {{ slotProps.data.descripcion || "" }}
                     </template>
                 </Column>
-                <Column field="estado" header="Estado" />
-                <Column field="categoria" header="Categoría" />
-                <Column field="pais" header="País" />
-                <Column field="provincia" header="Provincia" />
-                <Column header="Imágenes">
+                <Column field="estado" header="Estado">
                     <template #body="slotProps">
-                        <div class="flex gap-1">
-                            <img v-for="(img, index) in slotProps.data.imagenes" :key="index" :src="img" alt="img" class="w-10 h-10 object-cover rounded" />
-                        </div>
+                        {{ getEstadoLabel(slotProps.data.estado) }}
+                    </template>
+                </Column>
+                <Column header="Categoría">
+                    <template #body="slotProps">
+                        {{ slotProps.data.categoria_hotel?.nombre || "" }}
+                    </template>
+                </Column>
+                <Column field="pais" header="País">
+                    <template #body="slotProps">
+                        {{ slotProps.data.provincia?.pais?.nombre || "" }}
+                    </template>
+                </Column>
+                <Column header="Provincia">
+                    <template #body="slotProps">
+                        {{ slotProps.data.provincia?.nombre || "" }}
                     </template>
                 </Column>
                 <Column header="Acciones" :exportable="false">
                     <template #body="slotProps">
                         <div class="flex gap-2">
-                         <Button icon="pi pi-pencil" class="p-button-rounded p-button-warn p-button-md" @click="editHotel(slotProps.data)" />
-                         <Button icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-md" @click="confirmDeleteHotel(slotProps.data)" />
+                            <Button
+                                icon="pi pi-eye"
+                                class="p-button-rounded p-button-info p-button-md"
+                                @click="viewImages(slotProps.data.imagenes)"
+                            />
+                            <Button
+                                icon="pi pi-pencil"
+                                class="p-button-rounded p-button-warn p-button-md"
+                                @click="editHotel(slotProps.data)"
+                            />
+                            <Button
+                                icon="pi pi-trash"
+                                class="p-button-rounded p-button-danger p-button-md"
+                                @click="confirmDeleteHotel(slotProps.data)"
+                            />
                         </div>
                     </template>
                 </Column>
             </DataTable>
 
-            <Dialog v-model:visible="dialog" :header="btnTitle + ' Hotel'" :modal="true" :style="{ width: '500px' }">
+            <Dialog
+                v-model:visible="dialog"
+                :header="btnTitle + ' Hotel'"
+                :modal="true"
+                :style="{ width: '500px' }"
+            >
                 <div class="space-y-4">
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
                             <label for="nombre" class="w-24">Nombre:</label>
-                            <InputText v-model.trim="hotel.nombre" id="nombre" :class="{ 'p-invalid': submitted && !hotel.nombre }" class="flex-1" />
+                            <InputText
+                                v-model.trim="hotel.nombre"
+                                id="nombre"
+                                :class="{
+                                    'p-invalid': submitted && !hotel.nombre,
+                                }"
+                                class="flex-1"
+                            />
                         </div>
-                         <small class="text-red-500 ml-28" v-if="submitted && !hotel.nombre">El nombre es obligatorio.</small>
+                        <small
+                            class="text-red-500 ml-28"
+                            v-if="submitted && !hotel.nombre"
+                            >El nombre es obligatorio.</small
+                        >
                     </div>
 
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
-                            <label for="direccion" class="w-24">Dirección:</label>
-                            <textarea v-model.trim="hotel.direccion" id="direccion" :class="{ 'p-invalid': submitted && !hotel.direccion }" class="flex-1" />
+                            <label for="direccion" class="w-24"
+                                >Dirección:</label
+                            >
+                            <textarea
+                                v-model.trim="hotel.direccion"
+                                id="direccion"
+                                :class="{
+                                    'p-invalid': submitted && !hotel.direccion,
+                                }"
+                                class="flex-1"
+                            />
                         </div>
-                        <small class="text-red-500 ml-28" v-if="submitted && !hotel.direccion">La dirección es obligatoria.</small>
+                        <small
+                            class="text-red-500 ml-28"
+                            v-if="submitted && !hotel.direccion"
+                            >La dirección es obligatoria.</small
+                        >
                     </div>
 
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
-                            <label for="descripcion" class="w-24">Descripción:</label>
-                            <textarea v-model.trim="hotel.descripcion" id="descripcion" :class="{ 'p-invalid': submitted && !hotel.descripcion }" class="flex-1" />
+                            <label for="descripcion" class="w-24"
+                                >Descripción:</label
+                            >
+                            <textarea
+                                v-model.trim="hotel.descripcion"
+                                id="descripcion"
+                                :class="{
+                                    'p-invalid':
+                                        submitted && !hotel.descripcion,
+                                }"
+                                class="flex-1"
+                            />
                         </div>
-                        <small class="text-red-500 ml-28" v-if="submitted && !hotel.descripcion">La descripción es obligatoria.</small>
+                        <small
+                            class="text-red-500 ml-28"
+                            v-if="submitted && !hotel.descripcion"
+                            >La descripción es obligatoria.</small
+                        >
                     </div>
 
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
                             <label for="estado" class="w-24">Estado:</label>
-                            <InputText v-model.trim="hotel.estado" id="estado" :class="{ 'p-invalid': submitted && !hotel.estado }" class="flex-1" />
+                            <Select
+                                v-model="hotel.estado"
+                                :options="estados"
+                                option-label="label"
+                                option-value="value"
+                                id="estado"
+                                class="flex-1"
+                                placeholder="Selecciona un estado"
+                                :class="{
+                                    'p-invalid': submitted && !hotel.estado,
+                                }"
+                            />
                         </div>
-                        <small class="text-red-500 ml-28" v-if="submitted && !hotel.estado">El estado es obligatorio.</small>
+                        <small
+                            class="text-red-500 ml-28"
+                            v-if="submitted && !hotel.estado"
+                            >El estado es obligatorio.</small
+                        >
                     </div>
 
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
-                            <label for="categoria" class="w-24">Categoría:</label>
-                            <InputText v-model.trim="hotel.categoria" id="categoria" :class="{ 'p-invalid': submitted && !hotel.categoria }" class="flex-1" />
+                            <label for="categoria" class="w-24"
+                                >Categoría:</label
+                            >
+                            <Select
+                                v-model="hotel.categoria"
+                                :options="categoriasHoteles"
+                                option-label="nombre"
+                                option-value="id"
+                                id="categoria"
+                                class="flex-1"
+                                placeholder="Selecciona una categoría"
+                                :class="{
+                                    'p-invalid': submitted && !hotel.categoria,
+                                }"
+                            />
                         </div>
-                        <small class="text-red-500 ml-28" v-if="submitted && !hotel.categoria">La categoría es obligatoria.</small>
+                        <small
+                            class="text-red-500 ml-28"
+                            v-if="submitted && !hotel.categoria"
+                            >La categoría es obligatoria.</small
+                        >
                     </div>
 
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
-                            <label for="pais" class="w-24">País:</label>
-                            <Dropdown v-model="hotel.pais" :options="paises" optionLabel="nombre" optionValue="nombre" id="pais" :filter="true" filterPlaceholder="Buscar país..." :showClear="true" :class="{ 'p-invalid': submitted && !hotel.pais }" class="flex-1" placeholder="Selecciona un país"
-    @input="onInputDropdown('pais', $event)"
-    @filter="onFilterDropdown('pais', $event)"
-/>
+                            <label for="provincia" class="w-24"
+                                >Provincia:</label
+                            >
+                            <Select
+                                v-model="hotel.provincia"
+                                :options="provincias"
+                                option-label="nombre"
+                                option-value="id"
+                                id="provincia"
+                                :filter="true"
+                                filterPlaceholder="Buscar provincia..."
+                                :showClear="true"
+                                :class="{
+                                    'p-invalid': submitted && !hotel.provincia,
+                                }"
+                                class="flex-1"
+                                placeholder="Selecciona una provincia"
+                                @input="onInputDropdown('provincia', $event)"
+                                @filter="onFilterDropdown('provincia', $event)"
+                            />
                         </div>
-                        <small class="text-red-500 ml-28" v-if="submitted && !hotel.pais">El país es obligatorio.</small>
-                    </div>
-
-                    <div class="w-full flex flex-col">
-                        <div class="flex items-center gap-4">
-                            <label for="provincia" class="w-24">Provincia:</label>
-                            <Dropdown v-model="hotel.provincia" :options="provincias" optionLabel="nombre" optionValue="nombre" id="provincia" :filter="true" filterPlaceholder="Buscar provincia..." :showClear="true" :class="{ 'p-invalid': submitted && !hotel.provincia }" class="flex-1" placeholder="Selecciona una provincia"
-    @input="onInputDropdown('provincia', $event)"
-    @filter="onFilterDropdown('provincia', $event)"
-/>
-                        </div>
-                        <small class="text-red-500 ml-28" v-if="submitted && !hotel.provincia">La provincia es obligatoria.</small>
+                        <small
+                            class="text-red-500 ml-28"
+                            v-if="submitted && !hotel.provincia"
+                            >La provincia es obligatoria.</small
+                        >
                     </div>
 
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
                             <label for="imagen" class="w-24">Imágenes:</label>
-                            <FileUpload mode="basic" name="imagenes[]" accept="image/*" :auto="true" chooseLabel="Seleccionar imágenes"  @select="onImageSelect" :customUpload="true" :multiple="true" class="flex-1  p-button-rounded p-button-warn p-button-md mr-2" />
+                            <FileUpload
+                                mode="basic"
+                                name="imagenes[]"
+                                accept="image/*"
+                                :auto="true"
+                                chooseLabel="Seleccionar imágenes"
+                                @select="onImageSelect"
+                                :customUpload="true"
+                                :multiple="true"
+                                class="flex-1 p-button-rounded p-button-warn p-button-md mr-2"
+                            />
                         </div>
-                        <small class="text-red-500 ml-28" v-if="submitted && imagenPreviewList.length === 0">Al menos una imagen es obligatoria.</small>
+                        <small
+                            class="text-red-500 ml-28"
+                            v-if="submitted && imagenPreviewList.length === 0"
+                            >Al menos una imagen es obligatoria.</small
+                        >
                     </div>
 
                     <div class="flex gap-4 flex-wrap mt-4 ml-28">
-                        <div v-for="(img, index) in imagenPreviewList" :key="index" class="relative w-32 h-32">
-                            <img :src="img" alt="Vista previa" class="w-full h-full object-cover rounded border" />
-                            <button @click="removeImage(index)" class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow" style="transform: translate(50%, -50%)">
+                        <div
+                            v-for="(img, index) in imagenPreviewList"
+                            :key="index"
+                            class="relative w-32 h-32"
+                        >
+                            <img
+                                :src="
+                                    img.startsWith('data:image')
+                                        ? img
+                                        : IMAGE_PATH + img
+                                "
+                                alt="Vista previa"
+                                class="w-full h-full object-cover rounded border"
+                            />
+                            <button
+                                @click="removeImage(index)"
+                                class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow"
+                                style="transform: translate(50%, -50%)"
+                            >
                                 <i class="pi pi-times text-xs"></i>
                             </button>
                         </div>
@@ -301,17 +610,95 @@ function onFilterDropdown(field, event) {
 
                 <template #footer>
                     <div class="flex justify-center gap-4 w-full">
-                        <Button label="Cancelar" icon="pi pi-times" class="p-button-rounded p-button-danger p-button-md mr-2" text @click="hideDialog" />
-                        <Button :label="btnTitle" icon="pi pi-check"  class="p-button-rounded p-button-warn p-button-md mr-2" @click="saveOrUpdate" />
+                        <Button
+                            label="Cancelar"
+                            icon="pi pi-times"
+                            class="p-button-rounded p-button-danger p-button-md mr-2"
+                            text
+                            @click="hideDialog"
+                        />
+                        <Button
+                            :label="btnTitle"
+                            icon="pi pi-check"
+                            class="p-button-rounded p-button-warn p-button-md mr-2"
+                            @click="saveOrUpdate"
+                        />
                     </div>
                 </template>
             </Dialog>
 
-            <Dialog v-model:visible="deleteDialog" header="Confirmar" :modal="true" :style="{ width: '350px' }">
-                <span>¿Eliminar el hotel <b>{{ hotel.nombre }}</b>?</span>
+            <Dialog
+                v-model:visible="deleteDialog"
+                header="Confirmar"
+                :modal="true"
+                :style="{ width: '350px' }"
+            >
+                <span
+                    >¿Eliminar el hotel <b>{{ hotel.nombre }}</b
+                    >?</span
+                >
                 <template #footer>
-                    <Button label="No" icon="pi pi-times" text @click="deleteDialog = false" class="p-button-rounded p-button-warn p-button-md mr-2" />
-                    <Button label="Sí" icon="pi pi-check" severity="danger" @click="deleteHotel" />
+                    <Button
+                        label="No"
+                        icon="pi pi-times"
+                        text
+                        @click="deleteDialog = false"
+                        class="p-button-rounded p-button-warn p-button-md mr-2"
+                    />
+                    <Button
+                        label="Sí"
+                        icon="pi pi-check"
+                        severity="danger"
+                        @click="deleteHotel"
+                    />
+                </template>
+            </Dialog>
+
+            <Dialog
+                v-model:visible="showImageDialog"
+                header="Imágenes del hotel"
+                :modal="true"
+                :style="{ width: '700px' }"
+            >
+                <div
+                    v-if="selectedImages.length"
+                    class="flex flex-col items-center justify-center"
+                >
+                    <!-- Carousel for images -->
+                    <Carousel
+                        :value="selectedImages"
+                        :numVisible="1"
+                        :numScroll="1"
+                        :circular="true"
+                        v-model:page="carouselIndex"
+                        class="w-full"
+                        :showIndicators="selectedImages.length > 1"
+                        :showNavigators="selectedImages.length > 1"
+                        style="max-width: 610px"
+                    >
+                        <template #item="slotProps">
+                            <div
+                                class="flex justify-center items-center w-full h-96"
+                            >
+                                <img
+                                    :src="slotProps.data"
+                                    alt="Imagen hotel"
+                                    class="w-auto h-full max-h-96 object-contain rounded shadow"
+                                />
+                            </div>
+                        </template>
+                    </Carousel>
+                </div>
+                <div v-else class="text-center text-gray-500 py-8">
+                    No hay imágenes para este hotel.
+                </div>
+                <template #footer>
+                    <Button
+                        label="Cerrar"
+                        icon="pi pi-times"
+                        class="p-button-rounded-md p-button-danger"
+                        @click="showImageDialog = false"
+                    />
                 </template>
             </Dialog>
         </div>
