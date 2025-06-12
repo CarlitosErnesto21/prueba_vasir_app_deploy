@@ -9,6 +9,8 @@ use function PHPUnit\Framework\returnSelf;
 
 class CategoriaHotel extends Model
 {
+    protected $table = 'categorias_hoteles';
+    
     use HasFactory;
     protected $fillable = ['estrella'];
 

@@ -8,6 +8,8 @@ use NunoMaduro\Collision\Provider;
 
 class Pais extends Model
 {
+    protected $table = 'paises';
+    
    use HasFactory;
    protected $fillable = ['nombre'];
 

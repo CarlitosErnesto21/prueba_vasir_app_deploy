@@ -2,19 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Imagen extends Model
 {
     protected $table = 'imagenes';
     
-    use HasFactory;
+    protected $fillable = [
+        'imageable_id',
+        'imageable_type',
+        'nombre'
+    ];
 
-    protected $fillable = ['producto_id', 'nombre'];
-
-    public function producto() {
-        return $this->belongsTo(Producto::class);
+    public function imageable()
+    {
+        return $this->morphTo();
     }
 }
-
