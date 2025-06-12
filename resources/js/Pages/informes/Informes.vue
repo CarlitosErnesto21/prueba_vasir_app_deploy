@@ -30,35 +30,24 @@ function generarMeses() {
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ]
-  const fechaInicio = new Date(2022, 0, 1)
+  let fecha = new Date(2022, 0, 1)
   const hoy = new Date()
-  let anio = fechaInicio.getFullYear()
-  let mes = fechaInicio.getMonth()
-  while (anio < hoy.getFullYear() || (anio === hoy.getFullYear() && mes <= hoy.getMonth())) {
-    const value = `${anio}-${(mes + 1).toString().padStart(2, '0')}`
-    const label = `${nombres[mes]} ${anio}`
+  while (fecha <= hoy) {
+    const value = `${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2, '0')}`
+    const label = `${nombres[fecha.getMonth()]} ${fecha.getFullYear()}`
     meses.push({ value, label })
-    mes++
-    if (mes > 11) {
-      mes = 0
-      anio++
-    }
+    fecha.setMonth(fecha.getMonth() + 1)
   }
   return meses
 }
 
 const mesesDisponibles = generarMeses()
-
 const desde = ref(null)
 const hasta = ref(null)
 const today = new Date()
 
-function formatMonth(date) {
-  if (!date) return ''
-  const year = date.getFullYear()
-  const month = (date.getMonth() + 1).toString().padStart(2, '0')
-  return `${year}-${month}`
-}
+const formatMonth = date =>
+  date ? `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}` : ''
 
 const mesesFiltrados = computed(() => {
   if (!desde.value || !hasta.value) return []
@@ -71,75 +60,54 @@ const mesesFiltrados = computed(() => {
 })
 
 const pdfUrl = ref(null)
+const toast = useToast()
+const modoSeleccion = ref('unico')
+const mesUnico = ref(null)
+const activarFechas = computed({
+  get: () => modoSeleccion.value === 'rango',
+  set: val => { if (val) modoSeleccion.value = 'rango' }
+})
+const puedeGenerar = computed(() =>
+  modoSeleccion.value === 'unico' ? !!mesUnico.value : !!(desde.value && hasta.value)
+)
 
 function descargarPDF() {
+  let params = new URLSearchParams()
+  let meses = []
   if (modoSeleccion.value === 'unico') {
     if (!mesUnico.value) {
       toast.add({ severity: 'error', summary: 'Error', detail: 'Seleccione un mes para generar el informe.', life: 3500 })
       return
     }
-    toast.add({ severity: 'info', summary: 'Generando informe', detail: 'Por favor espere mientras se genera el PDF.', life: 2000 })
-    const params = new URLSearchParams()
-    // El formato debe ser YYYY-MM
-    const year = mesUnico.value.getFullYear()
-    const month = (mesUnico.value.getMonth() + 1).toString().padStart(2, '0')
-    params.append('meses[]', `${year}-${month}`)
-    pdfUrl.value = `/descargar-informe?${params.toString()}`
-    setTimeout(() => {
-      toast.add({ severity: 'success', summary: 'Vista previa lista', detail: 'El informe PDF se ha generado y está listo para visualizar.', life: 2500 })
-    }, 1200)
-    return
+    meses = [formatMonth(mesUnico.value)]
+  } else {
+    if (!desde.value || !hasta.value) {
+      toast.add({ severity: 'error', summary: 'Error', detail: 'Seleccione un rango válido de meses para generar el informe.', life: 3500 })
+      return
+    }
+    const desdeStr = formatMonth(desde.value)
+    const hastaStr = formatMonth(hasta.value)
+    const desdeIdx = mesesDisponibles.findIndex(m => m.value === desdeStr)
+    const hastaIdx = mesesDisponibles.findIndex(m => m.value === hastaStr)
+    if (desdeIdx === -1 || hastaIdx === -1 || desdeIdx > hastaIdx) {
+      toast.add({ severity: 'error', summary: 'Error', detail: 'Seleccione un rango válido de meses para generar el informe.', life: 3500 })
+      return
+    }
+    meses = mesesFiltrados.value
   }
-  // modoSeleccion.value === 'rango'
-  if (!desde.value || !hasta.value) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'Seleccione un rango válido de meses para generar el informe.', life: 3500 })
-    return
-  }
-  const desdeStr = formatMonth(desde.value)
-  const hastaStr = formatMonth(hasta.value)
-  const desdeIdx = mesesDisponibles.findIndex(m => m.value === desdeStr)
-  const hastaIdx = mesesDisponibles.findIndex(m => m.value === hastaStr)
-  if (desdeIdx === -1 || hastaIdx === -1 || desdeIdx > hastaIdx) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'Seleccione un rango válido de meses para generar el informe.', life: 3500 })
-    return
-  }
-  toast.add({ severity: 'info', summary: 'Generando informe', detail: 'Por favor espere mientras se genera el PDF.', life: 2000 })
-  const params = new URLSearchParams()
-  mesesFiltrados.value.forEach(mes => params.append('meses[]', mes))
+  meses.forEach(mes => params.append('meses[]', mes))
+  toast.add({ severity: 'info', summary: 'Generando informe', life: 2000 })
   pdfUrl.value = `/descargar-informe?${params.toString()}`
   setTimeout(() => {
-    toast.add({ severity: 'success', summary: 'Vista previa lista', detail: 'El informe PDF se ha generado y está listo para visualizar.', life: 2500 })
+    toast.add({ severity: 'success', summary: 'Vista previa lista', life: 2500 })
   }, 1200)
 }
 
-const toast = useToast()
-
-// Estado para controlar qué modo está activo: 'unico' o 'rango'
-const modoSeleccion = ref('unico') // 'unico' o 'rango'
-
-// Nuevo estado para el calendario único
-const mesUnico = ref(null)
-
-// Nuevo estado para activar/desactivar los calendarios de rango
-const activarFechas = computed({
-  get: () => modoSeleccion.value === 'rango',
-  set: val => { if (val) modoSeleccion.value = 'rango' }
-})
-
-// Habilitar el botón Vista previa PDF si hay selección válida en el modo correspondiente
-const puedeGenerar = computed(() => {
-  if (modoSeleccion.value === 'unico') {
-    return !!mesUnico.value
-  }
-  // modoSeleccion.value === 'rango'
-  return !!(desde.value && hasta.value)
-})
-
-// Función para limpiar las fechas seleccionadas
 function limpiarFechas() {
   mesUnico.value = null
   desde.value = null
   hasta.value = null
+  pdfUrl.value = null
 }
 </script>
 
@@ -244,6 +212,7 @@ function limpiarFechas() {
               placeholder="Seleccione mes"
               :manualInput="false"
               :maxDate="today"
+              :minDate="desde"
               :locale="esLocale"
               :disabled="modoSeleccion !== 'rango'"
             />

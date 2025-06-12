@@ -72,7 +72,6 @@ class InformePDFController extends Controller
 
         $fecha_emision = Carbon::now('America/El_Salvador')->format('d/m/Y');
         $fecha_hora = Carbon::now('America/El_Salvador')->format('Ymd_His');
-        $correlativo = uniqid();
 
         $data = [
             'titulo' => 'Informe de Cupos Vendidos Mensuales por Tour',
@@ -84,7 +83,7 @@ class InformePDFController extends Controller
         // Establecer el locale de Carbon a español
         Carbon::setLocale('es');
 
-        $nombreArchivo = "informe_{$correlativo}_{$fecha_hora}.pdf";
+        $nombreArchivo = "informe_{$fecha_hora}.pdf";
 
         $pdf = Pdf::loadView('informes.informe', $data);
         return $pdf->stream($nombreArchivo);
