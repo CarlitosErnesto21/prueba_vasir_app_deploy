@@ -17,11 +17,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
 
 Route::get('catalogos/Productos', function () {
     return Inertia::render('catalogos/Productos');
     })->middleware(['auth', 'verified'])->name('productos');
+});
 
 Route::get('catalogos/Hoteles', function () {
     return Inertia::render('catalogos/Hoteles');
@@ -67,7 +67,6 @@ Route::get('/informes', function () {
     return Inertia::render('informes/Informes');
 })->middleware(['auth', 'verified'])->name('informes');
 
-// Ruta para descargar el informe PDF
 Route::get('/descargar-informe', [InformePDFController::class, 'descargarInforme']);
 
 
