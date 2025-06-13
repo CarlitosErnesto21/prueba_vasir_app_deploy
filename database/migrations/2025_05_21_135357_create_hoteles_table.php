@@ -20,7 +20,11 @@ return new class extends Migration
             // llave foraneas a categorias_hoteles y provincias
             $table->unsignedBigInteger('provincia_id');
             $table->foreign('provincia_id')->references('id')->on('provincias')->onDelete('cascade');
+
             $table->unsignedBigInteger('categoria_id');
+
+            $table->unsignedBigInteger('categoria_id');
+
             $table->foreign('categoria_id')->references('id')->on('categorias_hoteles')->onDelete('cascade');
             $table->timestamps();
         });

@@ -18,8 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        //
+        // Mueve tu alias aquí:
+        $middleware->alias([
+            'admin' => RutasAdmin::class,
+        ]);
     })
-    ->withExceptions(function (Middleware $middleware) {
-        $middleware->alias(['admin' => RutasAdmin::class]);
-    })->create();
+    ->withExceptions(function (Exceptions $exceptions) {
+
+    })
+    ->create();
