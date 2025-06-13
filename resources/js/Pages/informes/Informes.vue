@@ -6,7 +6,7 @@ import { useToast } from 'primevue/usetoast'
 import Toast from 'primevue/toast'
 import DatePicker from 'primevue/datepicker'
 
-// Configuración de locale español para PrimeVue DatePicker
+// Locale español para PrimeVue DatePicker
 const esLocale = {
   firstDayOfWeek: 1,
   dayNames: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
@@ -45,6 +45,13 @@ const mesesDisponibles = generarMeses()
 const desde = ref(null)
 const hasta = ref(null)
 const today = new Date()
+const modoSeleccion = ref('unico')
+const mesUnico = ref(null)
+const pdfUrl = ref(null)
+const toast = useToast()
+
+// Fecha mínima para el DatePicker de mes único (marzo 2019)
+const minMesUnico = new Date(2019, 2, 1) // Mes 2 = marzo (0-indexed)
 
 const formatMonth = date =>
   date ? `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}` : ''
@@ -59,47 +66,35 @@ const mesesFiltrados = computed(() => {
   return mesesDisponibles.slice(desdeIdx, hastaIdx + 1).map(m => m.value)
 })
 
-const pdfUrl = ref(null)
-const toast = useToast()
-const modoSeleccion = ref('unico')
-const mesUnico = ref(null)
-const activarFechas = computed({
-  get: () => modoSeleccion.value === 'rango',
-  set: val => { if (val) modoSeleccion.value = 'rango' }
-})
 const puedeGenerar = computed(() =>
-  modoSeleccion.value === 'unico' ? !!mesUnico.value : !!(desde.value && hasta.value)
+  modoSeleccion.value === 'unico' ? !!mesUnico.value : !!(desde.value && hasta.value && mesesFiltrados.value.length)
 )
+
+function showToast(type, summary, detail, life = 3500) {
+  toast.add({ severity: type, summary, detail, life })
+}
 
 function descargarPDF() {
   let params = new URLSearchParams()
   let meses = []
   if (modoSeleccion.value === 'unico') {
     if (!mesUnico.value) {
-      toast.add({ severity: 'error', summary: 'Error', detail: 'Seleccione un mes para generar el informe.', life: 3500 })
+      showToast('error', 'Error', 'Seleccione un mes para generar el informe.')
       return
     }
     meses = [formatMonth(mesUnico.value)]
   } else {
-    if (!desde.value || !hasta.value) {
-      toast.add({ severity: 'error', summary: 'Error', detail: 'Seleccione un rango válido de meses para generar el informe.', life: 3500 })
-      return
-    }
-    const desdeStr = formatMonth(desde.value)
-    const hastaStr = formatMonth(hasta.value)
-    const desdeIdx = mesesDisponibles.findIndex(m => m.value === desdeStr)
-    const hastaIdx = mesesDisponibles.findIndex(m => m.value === hastaStr)
-    if (desdeIdx === -1 || hastaIdx === -1 || desdeIdx > hastaIdx) {
-      toast.add({ severity: 'error', summary: 'Error', detail: 'Seleccione un rango válido de meses para generar el informe.', life: 3500 })
+    if (!puedeGenerar.value) {
+      showToast('error', 'Error', 'Seleccione un rango válido de meses para generar el informe.')
       return
     }
     meses = mesesFiltrados.value
   }
   meses.forEach(mes => params.append('meses[]', mes))
-  toast.add({ severity: 'info', summary: 'Generando informe', life: 2000 })
+  showToast('info', 'Generando informe', '', 2000)
   pdfUrl.value = `/descargar-informe?${params.toString()}`
   setTimeout(() => {
-    toast.add({ severity: 'success', summary: 'Vista previa lista', life: 2500 })
+    showToast('success', 'Vista previa lista', '', 2500)
   }, 1200)
 }
 
@@ -148,8 +143,6 @@ function limpiarFechas() {
           <button
             @click="limpiarFechas"
             class="px-4 py-1 bg-gray-200 text-gray-700 rounded-lg shadow hover:bg-gray-300 transition font-semibold text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            :disabled="false"
-            :class="{ 'opacity-60 cursor-pointer': false }"
           >
             Limpiar fechas
           </button>
@@ -167,6 +160,7 @@ function limpiarFechas() {
             placeholder="Seleccione un mes"
             :manualInput="false"
             :maxDate="today"
+            :minDate="minMesUnico"
             :locale="esLocale"
             :disabled="modoSeleccion !== 'unico'"
           />
