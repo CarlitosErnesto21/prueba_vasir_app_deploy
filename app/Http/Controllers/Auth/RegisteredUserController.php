@@ -43,11 +43,8 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // Obtener el rol de cliente desde la base de datos
-        $clienteRole = Role::where('name', 'cliente')->first();
-        if ($clienteRole) {
-            $user->roles()->sync([$clienteRole->id]);
-        }
+        // Asignar el rol de cliente al usuario
+        $user->assignRole('cliente');
 
         event(new Registered($user));
 
