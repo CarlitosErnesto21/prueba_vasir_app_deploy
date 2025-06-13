@@ -16,14 +16,23 @@ class RutasAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = Auth::user();
-
-        // Si no está autenticado o no tiene rol admin, redirige
-        if (!$user || !$user->roles->first()?->name === 'admin') {
-            return redirect('/');
+        if (!Auth::check()) {
+            abort(403, 'No autenticado.');
         }
 
-        return $next($request);
-    }
+        $user = Auth::user();
 
+        // Si el usuario tiene rol admin, permite el acceso
+        if ($user->hasRole('admin')) {
+            return $next($request);
+        }
+
+        // Si el usuario tiene rol cliente, redirige a la página de inicio
+        if ($user->hasRole('cliente')) {
+            return redirect('/');   
+        }
+
+        // Para otros casos, aborta con error 403
+        abort(403, 'No tienes permiso para acceder a esta página.');
+    }
 }
