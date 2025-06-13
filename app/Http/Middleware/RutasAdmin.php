@@ -17,11 +17,13 @@ class RutasAdmin
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
-        $user->permissions;
-        if ($user->roles[0]->name != "admin") {
+
+        // Si no está autenticado o no tiene rol admin, redirige
+        if (!$user || !$user->roles->first()?->name === 'admin') {
             return redirect('/');
         }
 
         return $next($request);
     }
+
 }
