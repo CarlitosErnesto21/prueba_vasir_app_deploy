@@ -31,19 +31,23 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         return array_merge(parent::share($request), [
+            // Compartir información de autenticación con todas las vistas de Inertia
             'auth' => [
+                // 'user' será una función que retorna los datos del usuario autenticado
                 'user' => fn () => (
-                    $user = Auth::user()
+                    $user = Auth::user() // Obtiene el usuario autenticado, si existe
                 ) ? array_merge(
                     [
+                        // Datos básicos del usuario
                         'id' => $user->id,
                         'name' => $user->name,
                         'email' => $user->email,
                     ],
                     [
+                        // Obtiene el primer rol del usuario (puede tener varios)
                         'role' => $user->roles->pluck('name')->first()
                     ]
-                ) : null,
+                ) : null, // Si no hay usuario autenticado, retorna null
             ],
         ]);
     }

@@ -34,7 +34,6 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
-        // Verificar si el usuario tiene el rol admin usando Spatie
         if ($user && $user->hasRole('admin')) {
             return redirect()->route('dashboard');
         } else {

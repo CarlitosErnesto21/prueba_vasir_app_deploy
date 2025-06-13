@@ -175,6 +175,9 @@
         </div>
     </div>
     <!-- Data Tables -->
+    @php
+        $totalGeneral = 0;
+    @endphp
     @foreach($mesesData as $mesData)
         <div class="tabla-separador">
             <div class="mes-titulo">
@@ -193,32 +196,38 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @php $totalMes = 0; @endphp
                     @foreach($mesData['tours'] as $tour)
+                    @php
+                        $cuposVendidos = rand(10, 14);
+                        $menores = rand(0, $cuposVendidos);
+                        $mayores = $cuposVendidos - $menores;
+                        $subtotal = $cuposVendidos * $tour['precio'];
+                        $totalMes += $subtotal;
+                    @endphp
                     <tr>
                         <td class="td-informe">{{ $tour['fecha'] }}</td>
                         <td class="td-informe">{{ $tour['nombre'] }}</td>
-                        <td class="td-informe">{{ $tour['menores'] }}</td>
-                        <td class="td-informe">{{ $tour['mayores'] }}</td>
-                        <td class="td-informe">{{ $tour['cupos_vendidos'] }}</td>
+                        <td class="td-informe">{{ $menores }}</td>
+                        <td class="td-informe">{{ $mayores }}</td>
+                        <td class="td-informe">{{ $cuposVendidos }}</td>
                         <td class="td-informe">${{ number_format($tour['precio'], 2) }}</td>
-                        <td class="td-informe">${{ number_format($tour['subtotal'], 2) }}</td>
+                        <td class="td-informe">${{ number_format($subtotal, 2) }}</td>
                     </tr>
                     @endforeach
                 </tbody>
                 <tfoot>
                     <tr>
                         <td class="td-informe-total" colspan="6">Total</td>
-                        <td class="td-informe-total">${{ number_format($mesData['total'], 2) }}</td>
+                        <td class="td-informe-total">${{ number_format($totalMes, 2) }}</td>
                     </tr>
                 </tfoot>
             </table>
+            @php $totalGeneral += $totalMes; @endphp
         </div>
     @endforeach
 
     {{-- Tabla de total general --}}
-    @php
-        $totalGeneral = array_sum(array_column($mesesData, 'total'));
-    @endphp
     <div class="tabla-total-general">
         <table class="tabla-informe">
             <thead>
