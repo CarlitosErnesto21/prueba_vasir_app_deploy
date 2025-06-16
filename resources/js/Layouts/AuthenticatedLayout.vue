@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { usePage, Link } from '@inertiajs/vue3';
 import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
 import { faList, faTags, faRoute, faDoorOpen, faFileAlt, faLayerGroup, faCircleXmark, faUserCircle, 
@@ -93,17 +93,62 @@ function handleProfileMenuClick(e) {
     }
 }
 
+const isConfigDropdownOpen = ref(false);
+const configDropdownTrigger = ref(null);
+const configDropdownMenu = ref(null);
+
+function toggleConfigDropdown() {
+    isConfigDropdownOpen.value = !isConfigDropdownOpen.value;
+}
+function closeConfigDropdown() {
+    isConfigDropdownOpen.value = false;
+}
+
+// Cierra el dropdown de configuración al colapsar el aside
+watch(isSidebarCollapsed, (newVal) => {
+    if (newVal) isConfigDropdownOpen.value = false;
+});
+
+// Cierra el dropdown de configuración al hacer clic fuera
+function handleConfigDropdownClickOutside(e) {
+    if (
+        isConfigDropdownOpen.value &&
+        configDropdownTrigger.value &&
+        !configDropdownTrigger.value.contains(e.target) &&
+        configDropdownMenu.value &&
+        !configDropdownMenu.value.contains(e.target)
+    ) {
+        isConfigDropdownOpen.value = false;
+    }
+}
+
 onMounted(() => {
     window.addEventListener('resize', handleResize);
     handleResize();
     document.addEventListener('click', handleGlobalClick, true);
     document.addEventListener('click', handleProfileMenuClick, true);
+    document.addEventListener('click', handleConfigDropdownClickOutside, true);
 });
 onBeforeUnmount(() => {
     window.removeEventListener('resize', handleResize);
     document.removeEventListener('click', handleGlobalClick, true);
     document.removeEventListener('click', handleProfileMenuClick, true);
+    document.removeEventListener('click', handleConfigDropdownClickOutside, true);
 });
+
+function goToProfile() {
+    isConfigDropdownOpen.value = false;
+    $inertia.visit(route('profile'));
+}
+function logoutConfig() {
+    isConfigDropdownOpen.value = false;
+    logout();
+}
+function backupDatabase() {
+    isConfigDropdownOpen.value = false;
+    // Aquí puedes poner la lógica para el respaldo, por ejemplo:
+    $inertia.visit(route('backup'));
+}
 </script>
 
 <template>
@@ -152,7 +197,7 @@ onBeforeUnmount(() => {
                                 </div>
                                 <!-- Elimina los hr y la sección vacía de "Otros perfiles" -->
                                 <!-- Acciones de perfil -->
-                                <div class="py-3 px-4 flex flex-col gap-2 border-t border-gray-200 my-1">
+                                <!--<div class="py-3 px-4 flex flex-col gap-2 border-t border-gray-200 my-1">
                                     <button class="flex items-center gap-3 text-left w-full hover:bg-red-50 rounded px-3 py-2 text-gray-700 transition">
                                         <FontAwesomeIcon :icon="faUserCircle" class="text-violet-500" /> Añadir perfil
                                     </button>
@@ -160,9 +205,9 @@ onBeforeUnmount(() => {
                                         <FontAwesomeIcon :icon="faUser" class="text-gray-500" /> Perfil de invitado abierto
                                     </button>
                                     <button class="flex items-center gap-3 text-left w-full hover:bg-red-50 rounded px-3 py-2 text-gray-700 transition">
-                                        <FontAwesomeIcon :icon="faTags" class="text-green-500" /> Gestionar perfiles
+                                        <FontAwesomeIcon :icon="faTags" class="text-green-500" />Copia de seguridad de Base de datos
                                     </button>
-                                </div>
+                                </div>-->
                                 <hr class="border-t border-gray-200 my-1" />
                                 <!-- Cerrar sesión -->
                                 <div class="py-3 px-4">
@@ -308,7 +353,7 @@ onBeforeUnmount(() => {
                                 </ul>
                             </transition>
                         </li>
-                        <li
+                        <!--<li
                             class="px-4 py-3 hover:bg-red-600 flex items-center cursor-pointer"
                             :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
                             @click="$inertia.visit(route('dashboard'))"
@@ -317,7 +362,7 @@ onBeforeUnmount(() => {
                             title="Otros">
                             <FontAwesomeIcon :icon="faTags" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Otros</span>
-                        </li>
+                        </li>-->
                         <li
                             class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
                             :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
@@ -328,7 +373,7 @@ onBeforeUnmount(() => {
                             <FontAwesomeIcon :icon="faClipboardList" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Reservaciones</span>
                         </li>
-                        <li
+                        <!--<li
                             class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
                             :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
                             @click="$inertia.visit(route('dashboard'))"
@@ -347,7 +392,7 @@ onBeforeUnmount(() => {
                             title="Modificar datos">
                             <FontAwesomeIcon :icon="faFileAlt" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Modificar</span>
-                        </li>
+                        </li>-->
                         <li
                             class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
                             :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
@@ -363,26 +408,62 @@ onBeforeUnmount(() => {
                 <!-- Configuración al pie del aside expandido -->
                 <ul v-if="!isSidebarCollapsed" class="absolute bottom-0 left-0 w-full">
                     <li
-                        class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
+                        class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer relative"
                         :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
-                        @click="$inertia.visit(route('dashboard'))"
+                        @click="toggleConfigDropdown"
                         tabindex="0"
-                        @keydown.enter="$inertia.visit(route('dashboard'))"
-                        title="Modificar datos">
+                        @keydown.enter="toggleConfigDropdown"
+                        title="Configuración"
+                        ref="configDropdownTrigger"
+                    >
                         <FontAwesomeIcon :icon="faGear" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
                         <span v-if="!isSidebarCollapsed">Configuración</span>
+                        <transition name="fade">
+                            <div
+                                v-if="isConfigDropdownOpen"
+                                class="absolute left-0 bottom-14 w-full flex justify-start z-50"
+                                ref="configDropdownMenu"
+                            >
+                                <button
+                                    @click.stop="backupDatabase"
+                                    class="w-full bg-white text-red-700 rounded-md shadow-lg flex items-center px-5 py-3 hover:bg-red-600 hover:text-white transition font-semibold text-base gap-3 border border-gray-200 whitespace-normal break-words"
+                                    style="min-width: 180px; max-width: 260px;"
+                                >
+                                    <FontAwesomeIcon :icon="faFileArchive" size="lg" class="drop-shadow-md"/>
+                                    <span class="text-left break-words whitespace-normal">Respaldo de base de datos</span>
+                                </button>
+                            </div>
+                        </transition>
                     </li>
                 </ul>
                 <!-- Configuración al pie del aside colapsado -->
                 <ul v-else class="absolute bottom-0 left-0 w-full flex flex-col items-center">
                     <li
-                        class="w-full flex justify-center py-4 cursor-pointer hover:bg-red-600"
-                        @click="$inertia.visit(route('dashboard'))"
+                        class="w-full flex justify-center py-4 cursor-pointer hover:bg-red-600 relative"
+                        @click="toggleConfigDropdown"
                         tabindex="0"
-                        @keydown.enter="$inertia.visit(route('dashboard'))"
+                        @keydown.enter="toggleConfigDropdown"
                         title="Configuración"
+                        ref="configDropdownTrigger"
                     >
                         <FontAwesomeIcon :icon="faGear" class="h-6 drop-shadow-md" />
+                        <transition name="fade">
+                            <div
+                                v-if="isConfigDropdownOpen"
+                                class="absolute left-full -top-8 flex flex-col items-center z-50"
+                                ref="configDropdownMenu"
+                                style="min-width: 180px;"
+                            >
+                                <button
+                                    @click.stop="backupDatabase"
+                                    class="bg-white text-red-700 rounded-full shadow-lg flex items-center px-6 py-3 hover:bg-red-600 hover:text-white transition font-semibold text-base gap-3"
+                                    style="min-width: 180px;"
+                                >
+                                    <FontAwesomeIcon :icon="faFileArchive" size="lg" class="drop-shadow-md"/>
+                                    <span class="whitespace-nowrap text-left">Respaldo<br>de base de datos</span>
+                                </button>
+                            </div>
+                        </transition>
                     </li>
                 </ul>
             </aside>
