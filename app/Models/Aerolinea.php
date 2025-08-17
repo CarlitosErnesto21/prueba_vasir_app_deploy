@@ -14,4 +14,9 @@ class Aerolinea extends Model
     {
         return $this->hasMany(DetalleReservaAerolinea::class, 'aerolinea_id');
     }
+
+    public function imagenes()
+    {
+        return $this->morphMany(\App\Models\Imagen::class, 'imageable');
+    }
 }
