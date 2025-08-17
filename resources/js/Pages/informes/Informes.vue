@@ -6,7 +6,7 @@ import { useToast } from 'primevue/usetoast'
 import Toast from 'primevue/toast'
 import DatePicker from 'primevue/datepicker'
 
-// Configuración de locale español para PrimeVue DatePicker
+// Locale español para PrimeVue DatePicker
 const esLocale = {
   firstDayOfWeek: 1,
   dayNames: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
@@ -30,35 +30,31 @@ function generarMeses() {
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ]
-  const fechaInicio = new Date(2022, 0, 1)
+  let fecha = new Date(2022, 0, 1)
   const hoy = new Date()
-  let anio = fechaInicio.getFullYear()
-  let mes = fechaInicio.getMonth()
-  while (anio < hoy.getFullYear() || (anio === hoy.getFullYear() && mes <= hoy.getMonth())) {
-    const value = `${anio}-${(mes + 1).toString().padStart(2, '0')}`
-    const label = `${nombres[mes]} ${anio}`
+  while (fecha <= hoy) {
+    const value = `${fecha.getFullYear()}-${(fecha.getMonth() + 1).toString().padStart(2, '0')}`
+    const label = `${nombres[fecha.getMonth()]} ${fecha.getFullYear()}`
     meses.push({ value, label })
-    mes++
-    if (mes > 11) {
-      mes = 0
-      anio++
-    }
+    fecha.setMonth(fecha.getMonth() + 1)
   }
   return meses
 }
 
 const mesesDisponibles = generarMeses()
-
 const desde = ref(null)
 const hasta = ref(null)
 const today = new Date()
+const modoSeleccion = ref('unico')
+const mesUnico = ref(null)
+const pdfUrl = ref(null)
+const toast = useToast()
 
-function formatMonth(date) {
-  if (!date) return ''
-  const year = date.getFullYear()
-  const month = (date.getMonth() + 1).toString().padStart(2, '0')
-  return `${year}-${month}`
-}
+// Fecha mínima para el DatePicker de mes único (marzo 2019)
+const minMesUnico = new Date(2019, 2, 1) // Mes 2 = marzo (0-indexed)
+
+const formatMonth = date =>
+  date ? `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}` : ''
 
 const mesesFiltrados = computed(() => {
   if (!desde.value || !hasta.value) return []
@@ -70,76 +66,43 @@ const mesesFiltrados = computed(() => {
   return mesesDisponibles.slice(desdeIdx, hastaIdx + 1).map(m => m.value)
 })
 
-const pdfUrl = ref(null)
+const puedeGenerar = computed(() =>
+  modoSeleccion.value === 'unico' ? !!mesUnico.value : !!(desde.value && hasta.value && mesesFiltrados.value.length)
+)
+
+function showToast(type, summary, detail, life = 3500) {
+  toast.add({ severity: type, summary, detail, life })
+}
 
 function descargarPDF() {
+  let params = new URLSearchParams()
+  let meses = []
   if (modoSeleccion.value === 'unico') {
     if (!mesUnico.value) {
-      toast.add({ severity: 'error', summary: 'Error', detail: 'Seleccione un mes para generar el informe.', life: 3500 })
+      showToast('error', 'Error', 'Seleccione un mes para generar el informe.')
       return
     }
-    toast.add({ severity: 'info', summary: 'Generando informe', detail: 'Por favor espere mientras se genera el PDF.', life: 2000 })
-    const params = new URLSearchParams()
-    // El formato debe ser YYYY-MM
-    const year = mesUnico.value.getFullYear()
-    const month = (mesUnico.value.getMonth() + 1).toString().padStart(2, '0')
-    params.append('meses[]', `${year}-${month}`)
-    pdfUrl.value = `/descargar-informe?${params.toString()}`
-    setTimeout(() => {
-      toast.add({ severity: 'success', summary: 'Vista previa lista', detail: 'El informe PDF se ha generado y está listo para visualizar.', life: 2500 })
-    }, 1200)
-    return
+    meses = [formatMonth(mesUnico.value)]
+  } else {
+    if (!puedeGenerar.value) {
+      showToast('error', 'Error', 'Seleccione un rango válido de meses para generar el informe.')
+      return
+    }
+    meses = mesesFiltrados.value
   }
-  // modoSeleccion.value === 'rango'
-  if (!desde.value || !hasta.value) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'Seleccione un rango válido de meses para generar el informe.', life: 3500 })
-    return
-  }
-  const desdeStr = formatMonth(desde.value)
-  const hastaStr = formatMonth(hasta.value)
-  const desdeIdx = mesesDisponibles.findIndex(m => m.value === desdeStr)
-  const hastaIdx = mesesDisponibles.findIndex(m => m.value === hastaStr)
-  if (desdeIdx === -1 || hastaIdx === -1 || desdeIdx > hastaIdx) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'Seleccione un rango válido de meses para generar el informe.', life: 3500 })
-    return
-  }
-  toast.add({ severity: 'info', summary: 'Generando informe', detail: 'Por favor espere mientras se genera el PDF.', life: 2000 })
-  const params = new URLSearchParams()
-  mesesFiltrados.value.forEach(mes => params.append('meses[]', mes))
+  meses.forEach(mes => params.append('meses[]', mes))
+  showToast('info', 'Generando informe', '', 2000)
   pdfUrl.value = `/descargar-informe?${params.toString()}`
   setTimeout(() => {
-    toast.add({ severity: 'success', summary: 'Vista previa lista', detail: 'El informe PDF se ha generado y está listo para visualizar.', life: 2500 })
+    showToast('success', 'Vista previa lista', '', 2500)
   }, 1200)
 }
 
-const toast = useToast()
-
-// Estado para controlar qué modo está activo: 'unico' o 'rango'
-const modoSeleccion = ref('unico') // 'unico' o 'rango'
-
-// Nuevo estado para el calendario único
-const mesUnico = ref(null)
-
-// Nuevo estado para activar/desactivar los calendarios de rango
-const activarFechas = computed({
-  get: () => modoSeleccion.value === 'rango',
-  set: val => { if (val) modoSeleccion.value = 'rango' }
-})
-
-// Habilitar el botón Vista previa PDF si hay selección válida en el modo correspondiente
-const puedeGenerar = computed(() => {
-  if (modoSeleccion.value === 'unico') {
-    return !!mesUnico.value
-  }
-  // modoSeleccion.value === 'rango'
-  return !!(desde.value && hasta.value)
-})
-
-// Función para limpiar las fechas seleccionadas
 function limpiarFechas() {
   mesUnico.value = null
   desde.value = null
   hasta.value = null
+  pdfUrl.value = null
 }
 </script>
 
@@ -180,8 +143,6 @@ function limpiarFechas() {
           <button
             @click="limpiarFechas"
             class="px-4 py-1 bg-gray-200 text-gray-700 rounded-lg shadow hover:bg-gray-300 transition font-semibold text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            :disabled="false"
-            :class="{ 'opacity-60 cursor-pointer': false }"
           >
             Limpiar fechas
           </button>
@@ -199,6 +160,7 @@ function limpiarFechas() {
             placeholder="Seleccione un mes"
             :manualInput="false"
             :maxDate="today"
+            :minDate="minMesUnico"
             :locale="esLocale"
             :disabled="modoSeleccion !== 'unico'"
           />
@@ -244,6 +206,7 @@ function limpiarFechas() {
               placeholder="Seleccione mes"
               :manualInput="false"
               :maxDate="today"
+              :minDate="desde"
               :locale="esLocale"
               :disabled="modoSeleccion !== 'rango'"
             />

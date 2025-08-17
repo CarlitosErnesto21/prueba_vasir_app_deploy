@@ -59,7 +59,7 @@ const toggleForm = () => {
             </div>
             <div class="flex justify-center mb-6">
                 <Link href="/">
-                    <img src="../../../../imagenes/logo.jpg" alt="Logo" class="h-10 w-auto cursor-pointer" title="Ir a catálogo"/>
+                    <img src="../../../../imagenes/logo.png" alt="Logo" class="h-10 w-auto cursor-pointer" title="Ir a catálogo"/>
                 </Link>
             </div>
 
