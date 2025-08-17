@@ -89,7 +89,7 @@ const slides = computed(() =>
           <div class="text-center mt-8 px-2 sm:px-6">
             <h1 class="text-2xl sm:text-3xl font-bold text-red-700 mb-4">¡Bienvenido a Vasir!</h1>
             <p class="text-base sm:text-lg text-gray-700 mb-6">
-              Descubre los mejores paquetes turísticos, tours y experiencias únicas en El Salvador. 
+              Descubre los mejores paquetes turísticos, tours y experiencias únicas en El Salvador.<br/> 
               Reserva fácil, seguro y rápido con nosotros.
             </p>
             <Link :href="route('paquetes')">
