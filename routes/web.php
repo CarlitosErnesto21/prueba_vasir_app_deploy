@@ -35,6 +35,10 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
         return Inertia::render('catalogos/Aerolineas');
     })->name('aerolineas');
 
+    Route::get('catalogos/ControlCategorias', function () {
+        return Inertia::render('catalogos/ControlCategorias');
+    })->middleware(['auth', 'verified'])->name('categorias');
+
     //Ruta para los informes de la aplicacion
     Route::get('/informes', function () {
         return Inertia::render('informes/Informes');
