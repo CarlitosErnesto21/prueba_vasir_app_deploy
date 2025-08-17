@@ -19,7 +19,7 @@ import axios from 'axios';
 import { route } from 'ziggy-js';
 
 const page = usePage();
-const user = page.props.auth?.user || { name: 'Usuario', email: 'correo@ejemplo.com', role: 'Invitado' };
+const user = page.props.auth?.user; //|| { name: 'Usuario', email: 'correo@ejemplo.com', role: 'Invitado' };
 const isSidebarOpen = ref(false);
 const isSidebarCollapsed = ref(true); // Colapsado por defecto
 const anioCurrent = ref(new Date().getFullYear());
