@@ -403,6 +403,16 @@ function backupDatabase() {
                             <FontAwesomeIcon :icon="faFileInvoice" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Informes</span>
                         </li>
+                        <li
+                            class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
+                            :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
+                            @click="$inertia.visit(route('categorias'))"
+                            tabindex="0"
+                            @keydown.enter="$inertia.visit(route('categorias'))"
+                            title="Control de categorias">
+                            <FontAwesomeIcon :icon="faFileInvoice" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
+                            <span v-if="!isSidebarCollapsed">Categorías</span>
+                        </li>
                     </ul>
                 </nav>
                 <!-- Configuración al pie del aside expandido -->
