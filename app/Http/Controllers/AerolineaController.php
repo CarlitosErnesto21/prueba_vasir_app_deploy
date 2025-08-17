@@ -12,18 +12,9 @@ class AerolineaController extends Controller
      */
     public function index()
     {
-        // Obtener todas las aerolíneas
-        $aerolineas = Aerolinea::all();
+        // Obtener todas las aerolíneas con sus imágenes
+        $aerolineas = Aerolinea::with('imagenes')->get();
         return response()->json($aerolineas);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        // Retornar una vista para crear una nueva aerolínea
-        return view('aerolineas.create');
     }
 
     /**
@@ -35,33 +26,34 @@ class AerolineaController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|max:50',
             'fecha' => 'required|date',
+            'imagenes' => 'nullable|array',
+            'imagenes.*' => 'image|max:2048',
         ]);
 
         // Crear una nueva aerolínea
         $aerolinea = Aerolinea::create($validated);
 
+        // Guardar imágenes
+        if ($request->hasFile('imagenes')) {
+            foreach ($request->file('imagenes') as $imagen) {
+                if ($imagen instanceof \Illuminate\Http\UploadedFile && $imagen->isValid()) {
+                    $nombreArchivo = uniqid() . '_' . $imagen->getClientOriginalName();
+                    $destino = public_path('images/aerolinea');
+                    if (!file_exists($destino)) {
+                        mkdir($destino, 0755, true);
+                    }
+                    $imagen->move($destino, $nombreArchivo);
+                    $aerolinea->imagenes()->create([
+                        'nombre' => $nombreArchivo
+                    ]);
+                }
+            }
+        }
+
         return response()->json([
             'message' => 'Aerolínea creada exitosamente',
-            'aerolinea' => $aerolinea,
+            'aerolinea' => $aerolinea->load('imagenes'),
         ]);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Aerolinea $aerolinea)
-    {
-        // Mostrar los detalles de una aerolínea específica
-        return response()->json($aerolinea);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Aerolinea $aerolinea)
-    {
-        // Retornar una vista para editar una aerolínea
-        return view('aerolineas.edit', compact('aerolinea'));
     }
 
     /**
@@ -73,23 +65,74 @@ class AerolineaController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|max:50',
             'fecha' => 'required|date',
+            'imagenes' => 'nullable|array',
+            'imagenes.*' => 'image|max:2048',
         ]);
 
         // Actualizar la aerolínea
         $aerolinea->update($validated);
 
+        // Agregar nuevas imágenes
+        if ($request->hasFile('imagenes')) {
+            foreach ($request->file('imagenes') as $imagen) {
+                if ($imagen instanceof \Illuminate\Http\UploadedFile && $imagen->isValid()) {
+                    $nombreArchivo = uniqid() . '_' . $imagen->getClientOriginalName();
+                    $destino = public_path('images/aerolinea');
+                    if (!file_exists($destino)) {
+                        mkdir($destino, 0755, true);
+                    }
+                    $imagen->move($destino, $nombreArchivo);
+                    $aerolinea->imagenes()->create([
+                        'nombre' => $nombreArchivo
+                    ]);
+                }
+            }
+        }
+
+        // Eliminar imágenes seleccionadas
+        if ($request->has('removed_images')) {
+            foreach ($request->input('removed_images') as $imageName) {
+                $imagen = $aerolinea->imagenes()->where('nombre', $imageName)->first();
+                if ($imagen) {
+                    $rutaImagen = public_path('images/aerolinea/' . $imagen->nombre);
+                    if (file_exists($rutaImagen)) {
+                        unlink($rutaImagen);
+                    }
+                    $imagen->forceDelete();
+                }
+            }
+        }
+
         return response()->json([
             'message' => 'Aerolínea actualizada exitosamente',
-            'aerolinea' => $aerolinea,
+            'aerolinea' => $aerolinea->load('imagenes'),
         ]);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Aerolinea $aerolinea)
+    {
+        // Mostrar los detalles de una aerolínea específica con sus imágenes
+        return response()->json($aerolinea->load('imagenes'));
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Aerolinea $aerolinea)
+    public function destroy($id)
     {
-        // Eliminar la aerolínea
+        $aerolinea = Aerolinea::with('imagenes')->findOrFail($id);
+
+        foreach ($aerolinea->imagenes as $imagen) {
+            $rutaImagen = public_path('images/aerolinea/' . $imagen->nombre);
+            if (file_exists($rutaImagen)) {
+                unlink($rutaImagen);
+            }
+            $imagen->forceDelete();
+        }
+
         $aerolinea->delete();
 
         return response()->json([
