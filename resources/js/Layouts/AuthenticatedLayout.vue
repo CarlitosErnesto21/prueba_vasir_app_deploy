@@ -4,8 +4,8 @@ import { usePage, Link, router } from '@inertiajs/vue3';
 import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
 import  { faRoute, faDoorOpen, faCircleXmark, faUserCircle, 
     faChevronCircleDown, faUser, faHotel, faPlaneDeparture, faGear, faBoxesStacked, 
-    faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,
-    faFileInvoice} from "@fortawesome/free-solid-svg-icons";
+    faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,faListCheck,
+    faFileInvoice} from "@fortawesome/free-solid-svg-icons";   
 import axios from 'axios';
 import { route } from 'ziggy-js';
 
