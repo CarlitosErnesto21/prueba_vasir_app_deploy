@@ -3,8 +3,6 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InformePDFController;
 use App\Http\Controllers\RoleController;
-use App\Http\Controllers\ClienteController;
-use App\Http\Controllers\TipoDocumentoController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Middleware\RutasAdmin;
@@ -70,24 +68,14 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
     })->name('settings');
     
     // Gestión de Clientes
-    Route::get('/configuracion/clientes', [ClienteController::class, 'index'])->name('clientes');
+    Route::get('/configuracion/clientes', function () {
+        return Inertia::render('Configuracion/Clientes');
+    })->name('clientes');
     
     // API routes for client management
-    Route::get('/api/clientes', [ClienteController::class, 'getClientes']);
-    Route::post('/api/clientes', [ClienteController::class, 'store']);
-    Route::put('/api/clientes/{cliente}', [ClienteController::class, 'update']);
-    Route::patch('/api/clientes/{cliente}/toggle-status', [ClienteController::class, 'toggleStatus']);
-    Route::delete('/api/clientes/{cliente}', [ClienteController::class, 'destroy']);
-    Route::get('/api/tipos-documento', [ClienteController::class, 'getTiposDocumento']);
-    
-    // Gestión de Tipos de Documento
-    Route::get('/configuracion/tipos-documento', [TipoDocumentoController::class, 'index'])->name('tipos-documento');
-    
-    // API routes for document types management
-    Route::get('/api/tipos-documento', [TipoDocumentoController::class, 'index']);
-    Route::post('/api/tipos-documento', [TipoDocumentoController::class, 'store']);
-    Route::put('/api/tipos-documento/{tipoDocumento}', [TipoDocumentoController::class, 'update']);
-    Route::delete('/api/tipos-documento/{tipoDocumento}', [TipoDocumentoController::class, 'destroy']);
+    Route::post('/api/clientes', [RoleController::class, 'createCliente']);
+    Route::put('/api/clientes/{user}', [RoleController::class, 'updateCliente']);
+    Route::get('/api/clientes', [RoleController::class, 'getClientes']);
     /////////////////////////////////////////////////////////////////
 
     //Ruta para los informes de la aplicacion
