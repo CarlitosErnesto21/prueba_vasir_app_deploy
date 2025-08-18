@@ -4,11 +4,14 @@
     <Toast />
     <div class="py-6 px-2 sm:px-4 md:px-6 mt-10 mx-auto bg-red-50 shadow-md rounded-lg max-w-full">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-bold text-center w-full">Control de Países y Provincias</h3>
-        <Button :label="`Agregar ${modoSeleccionado}`" icon="pi pi-plus" class="p-button-danger" @click="abrirModalAgregar" />
+        <h3 class="text-xl font-bold">Control de Países y Provincias</h3>
+        <Button :label="`Agregar ${modoSeleccionado}`" 
+              icon="pi pi-plus"
+              class="p-button-danger" 
+              @click="abrirModalAgregar" />
       </div>
 
-      <!-- Selector de modo y buscador -->
+        <!-- Selector de modo y buscador -->
       <div class="flex flex-col md:flex-row items-center gap-4 mt-6 mb-2">
         <label for="tipo-estado" class="font-semibold mb-0">Ver:</label>
         <select
@@ -60,8 +63,21 @@
           />
         </div>
         <template #footer>
-          <Button label="Guardar" icon="pi pi-check" @click="guardarItem" :disabled="!nuevoItem.nombre" />
-          <Button label="Cerrar" icon="pi pi-times" class="p-button-danger" @click="modalAgregar=false" />
+         <Button 
+          label="Cancelar" 
+          icon="pi pi-times"
+          class="p-button-rounded p-button-danger p-button-sm mr-2"
+          @click="modalAgregar=false" 
+        />
+
+         <Button 
+          label="Guardar" 
+          icon="pi pi-check" 
+          class="p-button-rounded p-button-warn p-button-sm mr-2" 
+          @click="guardarItem" 
+          :disabled="!nuevoItem.nombre" 
+        />
+
         </template>
       </Dialog>
 
@@ -81,18 +97,19 @@
         </div>
         <template #footer>
           <Button 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-rounded p-button-danger p-button-md mr-2"
+            @click="modalEditar=false" 
+            />
+          <Button 
             label="Actualizar" 
             icon="pi pi-check" 
+            class="p-button-rounded p-button-warn p-button-md mr-2"
             @click="actualizarItem"
             :disabled="!itemEdit.nombre" 
             />
-          <Button 
-            label="Cerrar" 
-            icon="pi pi-times" 
-            class="p-button-warn" 
-            @click="modalEditar=false" 
-            />
-        </template>
+        </template> 
       </Dialog>
 
       <!-- Confirmar eliminar -->
@@ -100,16 +117,16 @@
         <div class="mb-4">¿Seguro que deseas eliminar <b>{{ itemEliminar?.nombre }}</b>?</div>
         <template #footer>
           <Button
-            label="Eliminar" 
-            icon="pi pi-trash"
-            class="p-button-danger"
-            @click="eliminarItem"
-            />
-          <Button
             label="Cancelar" 
             icon="pi pi-times"
-            class="p-button-warn"
+            class="p-button-rounded p-button-danger p-button-md mr-2"
             @click="modalEliminar=false" 
+            />
+          <Button
+            label="Eliminar" 
+            icon="pi pi-trash"
+            class="p-button-rounded p-button-warn p-button-md mr-2"
+            @click="eliminarItem"
             />
         </template>
       </Dialog>
