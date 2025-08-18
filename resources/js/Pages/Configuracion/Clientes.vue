@@ -356,7 +356,7 @@ const loadClientes = async () => {
 
 const loadTiposDocumento = async () => {
     try {
-        const response = await axios.get('/api/tipos-documento');
+        const response = await axios.get('/api/tipos-documento-options');
         if (response.data.success) {
             tiposDocumento.value = response.data.tipos;
         }

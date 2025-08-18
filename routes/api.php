@@ -27,12 +27,10 @@ Route::get('/user', function (Request $request) {
 // routes/api.php
 Route::apiResource('productos', ProductoController::class);
 Route::apiResource('aerolineas', AerolineaController::class);
-Route::apiResource('clientes', ClienteController::class);
 Route::apiResource('empleados', EmpleadoController::class);
 Route::apiResource('hoteles', HotelController::class);
 Route::apiResource('metodos-pago', MetodoPagoController::class);
 Route::apiResource('reservas', ReservaController::class);
-Route::apiResource('tipos-documentos', TipoDocumentoController::class);
 Route::apiResource('tours', TourController::class);
 Route::apiResource('ventas', VentaController::class);
 Route::apiResource('categorias-hoteles', CategoriaHotelController::class);
