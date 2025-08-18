@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InformePDFController;
+use App\Http\Controllers\RoleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Middleware\RutasAdmin;
@@ -37,7 +38,36 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
 
     Route::get('catalogos/ControlCategorias', function () {
         return Inertia::render('catalogos/ControlCategorias');
-    })->middleware(['auth', 'verified'])->name('categorias');
+    })->name('categorias');
+
+    /////////////////////////////////////////////////////////////////
+    // Respaldo de Base de Datos
+    Route::get('/configuracion/backup', function () {
+        return Inertia::render('Configuracion/Backup');
+    })->name('backup');
+    
+    // Asignación de Roles - Solo para Administradores
+    Route::get('/configuracion/roles', [RoleController::class, 'index'])->name('roles')->middleware('role:admin');
+    
+    // API routes for role management - Solo para Administradores
+    Route::post('/roles/users/{user}/update-roles', [RoleController::class, 'updateUserRoles'])->middleware('role:admin');
+    Route::post('/roles/users/{user}/assign-role', [RoleController::class, 'assignRole'])->middleware('role:admin');
+    Route::post('/roles/users/{user}/remove-role', [RoleController::class, 'removeRole'])->middleware('role:admin');
+    Route::get('/roles/users/{user}/permissions', [RoleController::class, 'getUserPermissions'])->middleware('role:admin');
+    Route::post('/roles/users/{user}/assign-permission', [RoleController::class, 'assignPermission'])->middleware('role:admin');
+    Route::post('/roles/users/{user}/remove-permission', [RoleController::class, 'removePermission'])->middleware('role:admin');
+    Route::post('/roles/create-user', [RoleController::class, 'createInternalUser'])->middleware('role:admin');
+    
+    // Configuración del Sistema
+    Route::get('/configuracion/settings', function () {
+        return Inertia::render('Configuracion/Settings');
+    })->name('settings');
+    
+    // Gestión de Usuarios
+    Route::get('/configuracion/users', function () {
+        return Inertia::render('Configuracion/Users');
+    })->name('users');
+    /////////////////////////////////////////////////////////////////
 
     //Ruta para los informes de la aplicacion
     Route::get('/informes', function () {
