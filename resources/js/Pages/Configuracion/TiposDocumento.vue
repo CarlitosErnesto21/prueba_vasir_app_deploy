@@ -1,5 +1,7 @@
 <template>
     <AuthenticatedLayout>
+        <Toast />
+        <ConfirmDialog />
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Gestión de Tipos de Documento
@@ -22,7 +24,7 @@
                                 @click="showCreateModal = true"
                                 class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2"
                             >
-                                <FontAwesomeIcon :icon="faPlus" />
+                                <i class="pi pi-plus"></i>
                                 Agregar Tipo
                             </button>
                         </div>
@@ -118,6 +120,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <FontAwesomeIcon :icon="faIdCard" class="h-5 w-5 text-gray-400 mr-2" />
+
                                                 <div class="text-sm font-medium text-gray-900">
                                                     {{ tipo.nombre }}
                                                 </div>
@@ -130,17 +133,17 @@
                                             <div class="flex space-x-2">
                                                 <button 
                                                     @click="editTipo(tipo)"
-                                                    class="text-blue-600 hover:text-blue-900"
+                                                    class="text-blue-600 hover:text-blue-900 p-1"
                                                     title="Editar"
                                                 >
-                                                    <FontAwesomeIcon :icon="faEdit" />
+                                                    <i class="pi pi-pencil"></i>
                                                 </button>
                                                 <button 
                                                     @click="deleteTipo(tipo)"
-                                                    class="text-red-600 hover:text-red-900"
+                                                    class="text-red-600 hover:text-red-900 p-1"
                                                     title="Eliminar"
                                                 >
-                                                    <FontAwesomeIcon :icon="faTrash" />
+                                                    <i class="pi pi-trash"></i>
                                                 </button>
                                             </div>
                                         </td>
@@ -204,22 +207,29 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { useToast } from 'primevue/usetoast';
+import { useConfirm } from 'primevue/useconfirm';
+import Toast from 'primevue/toast';
+import ConfirmDialog from 'primevue/confirmdialog';
 import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { 
     faIdCard, 
     faUsers,
-    faFileAlt,
-    faPlus,
-    faEdit, 
-    faTrash 
+    faFileAlt
 } from '@fortawesome/free-solid-svg-icons';
 
 // Props desde el controller
 const props = defineProps({
     tiposDocumentos: Array
 });
+
+// Toast para notificaciones
+const toast = useToast();
+
+// Confirm para diálogos de confirmación
+const confirm = useConfirm();
 
 // Variables reactivas
 const searchTerm = ref('');
@@ -253,8 +263,12 @@ const loadTipos = async () => {
             tipos.value = response.data.tipos;
         }
     } catch (error) {
-        console.error('Error loading tipos:', error);
-        alert('Error al cargar los tipos de documento');
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Error al cargar los tipos de documento',
+            life: 3000
+        });
     }
 };
 
@@ -266,11 +280,20 @@ const createTipo = async () => {
         if (response.data.success) {
             tipos.value.push(response.data.tipo_documento);
             closeModals();
-            alert('Tipo de documento creado exitosamente');
+            toast.add({
+                severity: 'success',
+                summary: 'Éxito',
+                detail: 'Tipo de documento creado exitosamente',
+                life: 3000
+            });
         }
     } catch (error) {
-        console.error('Error al crear tipo:', error);
-        alert(error.response?.data?.message || 'Error al crear el tipo de documento');
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: error.response?.data?.message || 'Error al crear el tipo de documento',
+            life: 3000
+        });
     } finally {
         loading.value = false;
     }
@@ -295,32 +318,58 @@ const updateTipo = async () => {
                 tipos.value[index] = response.data.tipo_documento;
             }
             closeModals();
-            alert('Tipo de documento actualizado exitosamente');
+            toast.add({
+                severity: 'success',
+                summary: 'Éxito',
+                detail: 'Tipo de documento actualizado exitosamente',
+                life: 3000
+            });
         }
     } catch (error) {
-        console.error('Error al actualizar tipo:', error);
-        alert(error.response?.data?.message || 'Error al actualizar el tipo de documento');
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: error.response?.data?.message || 'Error al actualizar el tipo de documento',
+            life: 3000
+        });
     } finally {
         loading.value = false;
     }
 };
 
 const deleteTipo = async (tipo) => {
-    if (confirm('¿Está seguro de eliminar este tipo de documento? Esta acción no se puede deshacer.')) {
-        try {
-            const response = await axios.delete(`/api/tipos-documento/${tipo.id}`);
-            if (response.data.success) {
-                const index = tipos.value.findIndex(t => t.id === tipo.id);
-                if (index !== -1) {
-                    tipos.value.splice(index, 1);
+    confirm.require({
+        message: '¿Está seguro de eliminar este tipo de documento? Esta acción no se puede deshacer.',
+        header: 'Confirmación de Eliminación',
+        icon: 'pi pi-exclamation-triangle',
+        acceptClass: 'p-button-danger',
+        acceptLabel: 'Aceptar',
+        rejectLabel: 'Cancelar',
+        accept: async () => {
+            try {
+                const response = await axios.delete(`/api/tipos-documento/${tipo.id}`);
+                if (response.data.success) {
+                    const index = tipos.value.findIndex(t => t.id === tipo.id);
+                    if (index !== -1) {
+                        tipos.value.splice(index, 1);
+                    }
+                    toast.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: 'Tipo de documento eliminado exitosamente',
+                        life: 3000
+                    });
                 }
-                alert('Tipo de documento eliminado exitosamente');
+            } catch (error) {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: error.response?.data?.message || 'Error al eliminar el tipo de documento',
+                    life: 3000
+                });
             }
-        } catch (error) {
-            console.error('Error al eliminar tipo:', error);
-            alert(error.response?.data?.message || 'Error al eliminar el tipo de documento');
         }
-    }
+    });
 };
 
 const closeModals = () => {

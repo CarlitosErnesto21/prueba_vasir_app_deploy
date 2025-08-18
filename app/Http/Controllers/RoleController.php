@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use App\Models\Empleado;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Inertia\Inertia;
@@ -280,6 +282,46 @@ class RoleController extends Controller
     }
 
     /**
+     * Sync all permissions for a user
+     */
+    public function syncPermissions(Request $request, User $user)
+    {
+        $request->validate([
+            'permissions' => 'required|array',
+            'permissions.*' => 'string|exists:permissions,name',
+        ]);
+
+        try {
+            // Sync all permissions at once
+            $user->syncPermissions($request->permissions);
+            
+            // Update the timestamp
+            $user->touch();
+
+            $directPermissions = $user->getDirectPermissions()->pluck('name')->toArray();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Permisos sincronizados correctamente',
+                'permissions' => $directPermissions,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'roles' => $user->roles->pluck('name')->toArray(),
+                    'created_at' => $user->created_at->format('d/m/Y'),
+                    'updated_at' => $user->updated_at->format('d/m/Y'),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al sincronizar permisos: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Create a new internal user (employee or admin)
      */
     public function createInternalUser(Request $request)
@@ -289,11 +331,15 @@ class RoleController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|in:admin,empleado',
+            'cargo' => 'required|string|max:25',
+            'telefono' => 'required|string|size:8',
             'permissions' => 'array',
             'permissions.*' => 'string|exists:permissions,name'
         ]);
 
         try {
+            DB::beginTransaction();
+
             // Crear el usuario
             $user = User::create([
                 'name' => $request->name,
@@ -310,9 +356,18 @@ class RoleController extends Controller
                 $user->syncPermissions($request->permissions);
             }
 
+            // Crear el registro en la tabla empleados
+            $empleado = Empleado::create([
+                'cargo' => $request->cargo,
+                'telefono' => $request->telefono,
+                'user_id' => $user->id,
+            ]);
+
+            DB::commit();
+
             return response()->json([
                 'success' => true,
-                'message' => 'Usuario creado correctamente con ' . (count($request->permissions ?? []) . ' permisos asignados'),
+                'message' => 'Usuario y empleado creados correctamente con ' . (count($request->permissions ?? []) . ' permisos asignados'),
                 'user' => [
                     'id' => $user->id,
                     'name' => $user->name,
@@ -320,12 +375,87 @@ class RoleController extends Controller
                     'roles' => $user->roles->pluck('name')->toArray(),
                     'created_at' => $user->created_at->format('d/m/Y'),
                     'updated_at' => $user->updated_at->format('d/m/Y'),
+                ],
+                'empleado' => [
+                    'id' => $empleado->id,
+                    'cargo' => $empleado->cargo,
+                    'telefono' => $empleado->telefono,
+                    'user_id' => $empleado->user_id,
                 ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear el usuario y empleado: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get employee data for a user
+     */
+    public function getEmployeeData(User $user)
+    {
+        try {
+            $empleado = Empleado::where('user_id', $user->id)->first();
+            
+            return response()->json([
+                'success' => true,
+                'employee' => $empleado ? [
+                    'id' => $empleado->id,
+                    'cargo' => $empleado->cargo,
+                    'telefono' => $empleado->telefono,
+                    'user_id' => $empleado->user_id,
+                ] : null
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al crear el usuario: ' . $e->getMessage()
+                'message' => 'Error al obtener los datos del empleado: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update employee data for a user
+     */
+    public function updateEmployeeData(Request $request, User $user)
+    {
+        $request->validate([
+            'cargo' => 'required|string|max:25',
+            'telefono' => 'required|string|size:8',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Buscar o crear el empleado
+            $empleado = Empleado::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'cargo' => $request->cargo,
+                    'telefono' => $request->telefono,
+                ]
+            );
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Datos del empleado actualizados correctamente',
+                'employee' => [
+                    'id' => $empleado->id,
+                    'cargo' => $empleado->cargo,
+                    'telefono' => $empleado->telefono,
+                    'user_id' => $empleado->user_id,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar los datos del empleado: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -127,7 +127,7 @@ const redes = [
                     <button
                         class="px-5 py-2 rounded-xl hover:scale-105 transition-transform duration-300 flex items-center focus:outline-none focus:ring-2 focus:ring-red-200 tracking-wide"
                         :class=" [
-                            (toursOpen || route().current('paquetes') || route().current('reservaciones'))
+                            (toursOpen || route().current('tours-nacionales') || route().current('tours-internacionales'))
                                 ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
                                 : 'hover:bg-gradient-to-r hover:from-red-600 hover:to-red-400 hover:text-white'
                         ]"
@@ -141,23 +141,23 @@ const redes = [
                         class="absolute left-0 mt-2 w-56 bg-white/95 border border-red-100 rounded-2xl z-50 transition-all"
                         v-show="toursOpen">
                         <Link
-                            :href="route('paquetes')"
+                            :href="route('tours-nacionales')"
                             :class=" [
                                 'block px-6 py-3 text-black rounded-xl hover:scale-105 transition-transform duration-300',
-                                route().current('paquetes')
+                                route().current('tours-nacionales')
                                     ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
                                     : 'hover:bg-gradient-to-r hover:from-red-600 hover:to-red-400 hover:text-white'
                             ]"
-                        >Paquetes turísticos</Link>
+                        >Tours Nacionales</Link>
                         <Link
-                            :href="route('reservaciones')"
+                            :href="route('tours-internacionales')"
                             :class=" [
                                 'block px-6 py-3 text-black rounded-xl hover:scale-105 transition-transform duration-300',
-                                route().current('reservaciones')
+                                route().current('tours-internacionales')
                                     ? 'bg-gradient-to-r from-red-600 to-red-400 text-white font-bold scale-105'
                                     : 'hover:bg-gradient-to-r hover:from-red-600 hover:to-red-400 hover:text-white'
                             ]"
-                        >Reservaciones</Link>
+                        >Tours Internacionales</Link>
                     </div>
                 </div>
                 <!--Termina el desplegable de Tours-->  
@@ -329,7 +329,7 @@ const redes = [
             <button
               @click="toursOpenAside = !toursOpenAside"
               class="w-full flex items-center justify-between py-2 px-3 rounded-lg transition-all duration-200 focus:outline-none hover:bg-red-50"
-              :class="{ 'bg-gradient-to-r from-red-600 to-red-500 text-white': toursOpenAside || route().current('paquetes') || route().current('reservaciones') }"
+              :class="{ 'bg-gradient-to-r from-red-600 to-red-500 text-white': toursOpenAside || route().current('tours-nacionales') || route().current('tours-internacionales') }"
             >
               Tours
               <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -338,21 +338,21 @@ const redes = [
             </button>
             <div v-show="toursOpenAside" class="ml-2 mt-1 flex flex-col space-y-1">
               <Link
-                :href="route('paquetes')"
+                :href="route('tours-nacionales')"
                 :class=" [
                   'py-2 px-3 rounded-lg transition-all duration-200',
-                  route().current('paquetes') ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+                  route().current('tours-nacionales') ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
                 ]"
                 @click="isSidebarOpen = false"
-              >Paquetes turísticos</Link>
+              >Tours Nacionales</Link>
               <Link
-                :href="route('reservaciones')"
+                :href="route('tours-internacionales')"
                 :class=" [
                   'py-2 px-3 rounded-lg transition-all duration-200',
-                  route().current('reservaciones') ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
+                  route().current('tours-internacionales') ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow' : 'hover:bg-red-50 hover:text-red-700'
                 ]"
                 @click="isSidebarOpen = false"
-              >Reservaciones</Link>
+              >Tours Internacionales</Link>
             </div>
           </div>
           <!--Termina el desplegable de Tours-->
