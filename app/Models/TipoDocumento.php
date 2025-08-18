@@ -8,9 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class TipoDocumento extends Model
 {
     use HasFactory;
+    
+    protected $table = 'tipos_documentos';
+    
     protected $fillable = [
         'nombre',
     ];
+    
     public function clientes()
     {
         return $this->hasMany(Cliente::class, 'tipo_documento_id');

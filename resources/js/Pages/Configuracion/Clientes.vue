@@ -8,24 +8,33 @@
                         <div>
                             <h1 class="text-2xl font-bold text-white flex items-center">
                                 <FontAwesomeIcon :icon="faUsers" class="mr-3" />
-                                Gestión de Usuarios
+                                Gestión de Clientes
                             </h1>
-                            <p class="text-red-100 mt-2">Administre usuarios, perfiles y accesos del sistema</p>
+                            <p class="text-red-100 mt-2">Administre clientes, perfiles y accesos del sistema</p>
                         </div>
-                        <button 
-                            @click="showCreateModal = true"
-                            class="bg-white text-red-600 px-4 py-2 rounded-lg font-semibold hover:bg-red-50 transition-colors duration-200 flex items-center"
-                        >
-                            <FontAwesomeIcon :icon="faUserPlus" class="mr-2" />
-                            Nuevo Usuario
-                        </button>
+                        <div class="flex space-x-3">
+                            <button 
+                                @click="goToTiposDocumento"
+                                class="bg-white text-red-600 px-4 py-2 rounded-lg font-semibold hover:bg-red-50 transition-colors duration-200 flex items-center"
+                            >
+                                <FontAwesomeIcon :icon="faIdCard" class="mr-2" />
+                                Tipos de Documentos
+                            </button>
+                            <button 
+                                @click="showCreateModal = true"
+                                class="bg-white text-red-600 px-4 py-2 rounded-lg font-semibold hover:bg-red-50 transition-colors duration-200 flex items-center"
+                            >
+                                <FontAwesomeIcon :icon="faUserPlus" class="mr-2" />
+                                Agregar Cliente
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Content -->
                 <div class="p-6">
                     <!-- Filtros y Búsqueda -->
-                    <div class="mb-6 flex flex-wrap gap-4">
+                    <div class="mb-6">
                         <div class="flex-1 min-w-64">
                             <input 
                                 v-model="searchTerm"
@@ -34,24 +43,6 @@
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                             />
                         </div>
-                        <select 
-                            v-model="statusFilter"
-                            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                        >
-                            <option value="">Todos los estados</option>
-                            <option value="active">Activo</option>
-                            <option value="inactive">Inactivo</option>
-                            <option value="pending">Pendiente</option>
-                        </select>
-                        <select 
-                            v-model="roleFilter"
-                            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                        >
-                            <option value="">Todos los roles</option>
-                            <option value="admin">Administrador</option>
-                            <option value="empleado">Empleado</option>
-                            <option value="cliente">Cliente</option>
-                        </select>
                     </div>
 
                     <!-- Estadísticas -->
@@ -60,8 +51,8 @@
                             <div class="flex items-center">
                                 <FontAwesomeIcon :icon="faUsers" class="text-blue-500 text-2xl mr-3" />
                                 <div>
-                                    <p class="text-blue-600 text-sm font-medium">Total Usuarios</p>
-                                    <p class="text-2xl font-bold text-blue-800">{{ totalUsers }}</p>
+                                    <p class="text-blue-600 text-sm font-medium">Total Clientes</p>
+                                    <p class="text-2xl font-bold text-blue-800">{{ totalClientes }}</p>
                                 </div>
                             </div>
                         </div>
@@ -70,7 +61,7 @@
                                 <FontAwesomeIcon :icon="faUserCheck" class="text-green-500 text-2xl mr-3" />
                                 <div>
                                     <p class="text-green-600 text-sm font-medium">Activos</p>
-                                    <p class="text-2xl font-bold text-green-800">{{ activeUsers }}</p>
+                                    <p class="text-2xl font-bold text-green-800">{{ activeClientes }}</p>
                                 </div>
                             </div>
                         </div>
@@ -79,7 +70,7 @@
                                 <FontAwesomeIcon :icon="faUserClock" class="text-yellow-500 text-2xl mr-3" />
                                 <div>
                                     <p class="text-yellow-600 text-sm font-medium">Pendientes</p>
-                                    <p class="text-2xl font-bold text-yellow-800">{{ pendingUsers }}</p>
+                                    <p class="text-2xl font-bold text-yellow-800">{{ pendingClientes }}</p>
                                 </div>
                             </div>
                         </div>
@@ -88,13 +79,13 @@
                                 <FontAwesomeIcon :icon="faUserSlash" class="text-red-500 text-2xl mr-3" />
                                 <div>
                                     <p class="text-red-600 text-sm font-medium">Inactivos</p>
-                                    <p class="text-2xl font-bold text-red-800">{{ inactiveUsers }}</p>
+                                    <p class="text-2xl font-bold text-red-800">{{ inactiveClientes }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Tabla de Usuarios -->
+                    <!-- Tabla de Clientes -->
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white border border-gray-200 rounded-lg">
                             <thead class="bg-gray-50">
@@ -120,12 +111,12 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
-                                <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-50">
+                                <tr v-for="user in filteredClientes" :key="user.id" class="hover:bg-gray-50">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 h-10 w-10">
                                                 <img 
-                                                    :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=ed1c24&color=fff&size=40`"
+                                                    :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=dc2626&color=fff&size=40`"
                                                     class="h-10 w-10 rounded-full"
                                                     :alt="user.name"
                                                 />
@@ -156,21 +147,21 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex space-x-2">
                                             <button 
-                                                @click="editUser(user)"
-                                                class="text-blue-600 hover:text-blue-900"
+                                                @click="editCliente(user)"
+                                                class="text-red-600 hover:text-red-900"
                                                 title="Editar"
                                             >
                                                 <FontAwesomeIcon :icon="faEdit" />
                                             </button>
                                             <button 
-                                                @click="toggleUserStatus(user)"
+                                                @click="toggleClienteStatus(user)"
                                                 :class="user.status === 'active' ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'"
                                                 :title="user.status === 'active' ? 'Desactivar' : 'Activar'"
                                             >
                                                 <FontAwesomeIcon :icon="user.status === 'active' ? faUserSlash : faUserCheck" />
                                             </button>
                                             <button 
-                                                @click="deleteUser(user)"
+                                                @click="deleteCliente(user)"
                                                 class="text-red-600 hover:text-red-900"
                                                 title="Eliminar"
                                             >
@@ -185,14 +176,14 @@
                 </div>
             </div>
 
-            <!-- Modal Crear/Editar Usuario -->
+        <!-- Modal Crear/Editar Cliente -->
             <div v-if="showCreateModal || showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div class="bg-white rounded-lg p-6 w-96 max-w-full mx-4 max-h-screen overflow-y-auto">
                     <h3 class="text-lg font-semibold mb-4">
-                        {{ showCreateModal ? 'Crear Nuevo Usuario' : 'Editar Usuario' }}
+                        {{ showCreateModal ? 'Crear Nuevo Cliente' : 'Editar Cliente' }}
                     </h3>
                     
-                    <form @submit.prevent="showCreateModal ? createUser() : updateUser()" class="space-y-4">
+                    <form @submit.prevent="showCreateModal ? createCliente() : updateCliente()" class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
                             <input 
@@ -228,20 +219,55 @@
                             <input 
                                 v-model="userForm.phone"
                                 type="tel"
+                                required
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                             />
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Rol</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                            <input 
+                                v-model="userForm.address"
+                                type="text"
+                                required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento</label>
+                            <input 
+                                v-model="userForm.birth_date"
+                                type="date"
+                                required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Género</label>
                             <select 
-                                v-model="userForm.role"
+                                v-model="userForm.gender"
                                 required
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                             >
-                                <option value="admin">Administrador</option>
-                                <option value="empleado">Empleado</option>
-                                <option value="cliente">Cliente</option>
+                                <option value="">Seleccione género</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Femenino">Femenino</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Documento</label>
+                            <select 
+                                v-model="userForm.tipo_documento_id"
+                                required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            >
+                                <option value="">Seleccione tipo de documento</option>
+                                <option v-for="tipo in tiposDocumento" :key="tipo.id" :value="tipo.id">
+                                    {{ tipo.nombre }}
+                                </option>
                             </select>
                         </div>
                         
@@ -265,9 +291,10 @@
                             </button>
                             <button 
                                 type="submit"
-                                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                                :disabled="loading"
+                                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 transition-colors duration-200"
                             >
-                                {{ showCreateModal ? 'Crear' : 'Actualizar' }}
+                                {{ loading ? 'Guardando...' : (showCreateModal ? 'Crear Cliente' : 'Actualizar Cliente') }}
                             </button>
                         </div>
                     </form>
@@ -278,92 +305,89 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { router } from '@inertiajs/vue3';
+import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { 
     faUsers, 
-    faUserPlus, 
+    faUserPlus,
     faUserCheck, 
     faUserSlash, 
     faUserClock, 
     faEdit, 
-    faTrash 
+    faTrash,
+    faIdCard
 } from '@fortawesome/free-solid-svg-icons';
 
 const searchTerm = ref('');
-const statusFilter = ref('');
-const roleFilter = ref('');
 const showCreateModal = ref(false);
 const showEditModal = ref(false);
 const editingUser = ref(null);
+const loading = ref(false);
+const clientes = ref([]);
+const tiposDocumento = ref([]);
 
 const userForm = ref({
     name: '',
     email: '',
     identification: '',
     phone: '',
-    role: 'cliente',
+    address: '',
+    birth_date: '',
+    gender: '',
+    tipo_documento_id: '',
     password: ''
 });
 
-// Datos de ejemplo - reemplazar con datos reales del backend
-const users = ref([
-    {
-        id: 1,
-        name: 'Carlos Ernesto',
-        email: 'carlos@vasir.com',
-        identification: '001-010195-1001A',
-        phone: '+505 8888-8888',
-        role: 'admin',
-        status: 'active',
-        lastLogin: '2025-08-17 14:30'
-    },
-    {
-        id: 2,
-        name: 'Maria González',
-        email: 'maria@vasir.com',
-        identification: '001-050290-1002B',
-        phone: '+505 7777-7777',
-        role: 'empleado',
-        status: 'active',
-        lastLogin: '2025-08-17 10:15'
-    },
-    {
-        id: 3,
-        name: 'Juan Pérez',
-        email: 'juan@cliente.com',
-        identification: '001-120185-1003C',
-        phone: '+505 6666-6666',
-        role: 'cliente',
-        status: 'pending',
-        lastLogin: null
+// Cargar datos desde el backend
+const loadClientes = async () => {
+    try {
+        const response = await axios.get('/api/clientes');
+        if (response.data.success) {
+            clientes.value = response.data.clientes;
+        }
+    } catch (error) {
+        console.error('Error loading clientes:', error);
+        alert('Error al cargar los clientes');
     }
-]);
+};
 
-const filteredUsers = computed(() => {
-    return users.value.filter(user => {
-        const matchesSearch = !searchTerm.value || 
-            user.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-            user.identification.toLowerCase().includes(searchTerm.value.toLowerCase());
-        
-        const matchesStatus = !statusFilter.value || user.status === statusFilter.value;
-        const matchesRole = !roleFilter.value || user.role === roleFilter.value;
-        
-        return matchesSearch && matchesStatus && matchesRole;
+const loadTiposDocumento = async () => {
+    try {
+        const response = await axios.get('/api/tipos-documento-options');
+        if (response.data.success) {
+            tiposDocumento.value = response.data.tipos;
+        }
+    } catch (error) {
+        console.error('Error loading tipos documento:', error);
+    }
+};
+
+// Cargar datos al montar el componente
+onMounted(() => {
+    loadClientes();
+    loadTiposDocumento();
+});
+
+const filteredClientes = computed(() => {
+    return clientes.value.filter(cliente => {
+        return !searchTerm.value || 
+            cliente.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+            cliente.email.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+            cliente.identification.toLowerCase().includes(searchTerm.value.toLowerCase());
     });
 });
 
-const totalUsers = computed(() => users.value.length);
-const activeUsers = computed(() => users.value.filter(u => u.status === 'active').length);
-const pendingUsers = computed(() => users.value.filter(u => u.status === 'pending').length);
-const inactiveUsers = computed(() => users.value.filter(u => u.status === 'inactive').length);
+const totalClientes = computed(() => clientes.value.length);
+const activeClientes = computed(() => clientes.value.filter(c => c.status === 'active').length);
+const pendingClientes = computed(() => clientes.value.filter(c => c.status === 'pending').length);
+const inactiveClientes = computed(() => clientes.value.filter(c => c.status === 'inactive').length);
 
 const getRoleClass = (role) => {
     const classes = {
-        admin: 'bg-red-100 text-red-800',
+        admin: 'bg-purple-100 text-purple-800',
         empleado: 'bg-blue-100 text-blue-800',
         cliente: 'bg-green-100 text-green-800'
     };
@@ -397,45 +421,97 @@ const getStatusLabel = (status) => {
     return labels[status] || status;
 };
 
-const createUser = () => {
-    // Lógica para crear usuario
-    const newUser = {
-        id: users.value.length + 1,
-        ...userForm.value,
-        status: 'pending',
-        lastLogin: null
-    };
-    users.value.push(newUser);
-    closeModals();
-    alert('Usuario creado exitosamente');
+// Función para navegar a tipos de documento
+const goToTiposDocumento = () => {
+    router.visit('/configuracion/tipos-documento');
 };
 
-const editUser = (user) => {
-    editingUser.value = user;
-    userForm.value = { ...user };
+// Función para crear nuevo cliente
+const createCliente = async () => {
+    loading.value = true;
+    try {
+        const response = await axios.post('/api/clientes', {
+            ...userForm.value,
+            role: 'cliente' // Los clientes siempre tienen rol 'cliente'
+        });
+        
+        if (response.data.success) {
+            // Agregar el nuevo cliente a la lista
+            clientes.value.push(response.data.cliente);
+            closeModals();
+            alert('Cliente creado exitosamente');
+        }
+    } catch (error) {
+        console.error('Error al crear cliente:', error);
+        alert(error.response?.data?.message || 'Error al crear el cliente');
+    } finally {
+        loading.value = false;
+    }
+};
+
+const editCliente = (cliente) => {
+    editingUser.value = cliente;
+    userForm.value = { 
+        ...cliente,
+        tipo_documento_id: cliente.tipo_documento_id || ''
+    };
     showEditModal.value = true;
 };
 
-const updateUser = () => {
-    if (editingUser.value) {
-        Object.assign(editingUser.value, userForm.value);
-        closeModals();
-        alert('Usuario actualizado exitosamente');
+const updateCliente = async () => {
+    if (!editingUser.value) return;
+    
+    loading.value = true;
+    try {
+        const response = await axios.put(`/api/clientes/${editingUser.value.id}`, userForm.value);
+        
+        if (response.data.success) {
+            // Actualizar el cliente en la lista
+            const index = clientes.value.findIndex(u => u.id === editingUser.value.id);
+            if (index !== -1) {
+                clientes.value[index] = response.data.cliente;
+            }
+            closeModals();
+            alert('Cliente actualizado exitosamente');
+        }
+    } catch (error) {
+        console.error('Error al actualizar cliente:', error);
+        alert(error.response?.data?.message || 'Error al actualizar el cliente');
+    } finally {
+        loading.value = false;
     }
 };
 
-const toggleUserStatus = (user) => {
-    const action = user.status === 'active' ? 'desactivar' : 'activar';
-    if (confirm(`¿Está seguro de ${action} este usuario?`)) {
-        user.status = user.status === 'active' ? 'inactive' : 'active';
+const toggleClienteStatus = async (cliente) => {
+    const action = cliente.status === 'active' ? 'desactivar' : 'activar';
+    if (confirm(`¿Está seguro de ${action} este cliente?`)) {
+        try {
+            const response = await axios.patch(`/api/clientes/${cliente.id}/toggle-status`);
+            if (response.data.success) {
+                cliente.status = response.data.cliente.status;
+                alert(`Cliente ${action}do exitosamente`);
+            }
+        } catch (error) {
+            console.error('Error al cambiar estado del cliente:', error);
+            alert('Error al cambiar el estado del cliente');
+        }
     }
 };
 
-const deleteUser = (user) => {
-    if (confirm('¿Está seguro de eliminar este usuario? Esta acción no se puede deshacer.')) {
-        const index = users.value.findIndex(u => u.id === user.id);
-        if (index !== -1) {
-            users.value.splice(index, 1);
+const deleteCliente = async (cliente) => {
+    if (confirm('¿Está seguro de eliminar este cliente? Esta acción no se puede deshacer.')) {
+        try {
+            const response = await axios.delete(`/api/clientes/${cliente.id}`);
+            if (response.data.success) {
+                const index = clientes.value.findIndex(u => u.id === cliente.id);
+                if (index !== -1) {
+                    clientes.value.splice(index, 1);
+                }
+                alert('Cliente eliminado exitosamente');
+            }
+        } catch (error) {
+            console.error('Error al eliminar cliente:', error);
+            alert('Error al eliminar el cliente');
         }
     }
 };
@@ -444,12 +520,16 @@ const closeModals = () => {
     showCreateModal.value = false;
     showEditModal.value = false;
     editingUser.value = null;
+    loading.value = false;
     userForm.value = {
         name: '',
         email: '',
         identification: '',
         phone: '',
-        role: 'cliente',
+        address: '',
+        birth_date: '',
+        gender: '',
+        tipo_documento_id: '',
         password: ''
     };
 };

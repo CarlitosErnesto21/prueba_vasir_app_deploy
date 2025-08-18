@@ -3,6 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InformePDFController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\TipoDocumentoController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Middleware\RutasAdmin;
@@ -40,6 +42,10 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
         return Inertia::render('catalogos/ControlCategorias');
     })->name('categorias');
 
+    Route::get('catalogos/ControlPaisesProvincias', function () {
+        return Inertia::render('catalogos/ControlPaisesProvincias');
+    })->name('paisescategorias');
+
     /////////////////////////////////////////////////////////////////
     // Respaldo de Base de Datos
     Route::get('/configuracion/backup', function () {
@@ -63,10 +69,25 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
         return Inertia::render('Configuracion/Settings');
     })->name('settings');
     
-    // Gestión de Usuarios
-    Route::get('/configuracion/users', function () {
-        return Inertia::render('Configuracion/Users');
-    })->name('users');
+    // Gestión de Clientes
+    Route::get('/configuracion/clientes', [ClienteController::class, 'index'])->name('clientes');
+    
+    // API routes for client management
+    Route::get('/api/clientes', [ClienteController::class, 'getClientes']);
+    Route::post('/api/clientes', [ClienteController::class, 'store']);
+    Route::put('/api/clientes/{cliente}', [ClienteController::class, 'update']);
+    Route::patch('/api/clientes/{cliente}/toggle-status', [ClienteController::class, 'toggleStatus']);
+    Route::delete('/api/clientes/{cliente}', [ClienteController::class, 'destroy']);
+    Route::get('/api/tipos-documento-options', [ClienteController::class, 'getTiposDocumento']);
+
+    // Gestión de Tipos de Documento
+    Route::get('/configuracion/tipos-documento', [TipoDocumentoController::class, 'index'])->name('tipos-documento');
+    
+    // API routes for document types management
+    Route::get('/api/tipos-documento', [TipoDocumentoController::class, 'index']);
+    Route::post('/api/tipos-documento', [TipoDocumentoController::class, 'store']);
+    Route::put('/api/tipos-documento/{tipoDocumento}', [TipoDocumentoController::class, 'update']);
+    Route::delete('/api/tipos-documento/{tipoDocumento}', [TipoDocumentoController::class, 'destroy']);
     /////////////////////////////////////////////////////////////////
 
     //Ruta para los informes de la aplicacion
