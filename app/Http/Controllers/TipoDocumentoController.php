@@ -4,17 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Models\TipoDocumento;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class TipoDocumentoController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Obtener todos los tipos de documentos
-        $tiposDocumentos = TipoDocumento::all();
-        return response()->json($tiposDocumentos);
+        // Si es una petición AJAX, devolver JSON
+        if ($request->expectsJson()) {
+            $tiposDocumentos = TipoDocumento::orderBy('nombre')->get();
+            return response()->json([
+                'success' => true,
+                'tipos' => $tiposDocumentos
+            ]);
+        }
+
+        // Si es una petición normal, devolver la vista Inertia
+        $tiposDocumentos = TipoDocumento::orderBy('nombre')->get();
+        return Inertia::render('Configuracion/TiposDocumento', [
+            'tiposDocumentos' => $tiposDocumentos
+        ]);
     }
 
     /**
@@ -32,16 +44,24 @@ class TipoDocumentoController extends Controller
     {
         // Validar los datos del formulario
         $validated = $request->validate([
-            'nombre' => 'required|string|max:20',
+            'nombre' => 'required|string|max:20|unique:tipos_documentos,nombre',
         ]);
 
-        // Crear un nuevo tipo de documento
-        $tipoDocumento = TipoDocumento::create($validated);
+        try {
+            // Crear un nuevo tipo de documento
+            $tipoDocumento = TipoDocumento::create($validated);
 
-        return response()->json([
-            'message' => 'Tipo de documento creado exitosamente',
-            'tipo_documento' => $tipoDocumento,
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Tipo de documento creado exitosamente',
+                'tipo_documento' => $tipoDocumento,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear el tipo de documento: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -68,16 +88,24 @@ class TipoDocumentoController extends Controller
     {
         // Validar los datos del formulario
         $validated = $request->validate([
-            'nombre' => 'required|string|max:20',
+            'nombre' => 'required|string|max:20|unique:tipos_documentos,nombre,' . $tipoDocumento->id,
         ]);
 
-        // Actualizar el tipo de documento
-        $tipoDocumento->update($validated);
+        try {
+            // Actualizar el tipo de documento
+            $tipoDocumento->update($validated);
 
-        return response()->json([
-            'message' => 'Tipo de documento actualizado exitosamente',
-            'tipo_documento' => $tipoDocumento,
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Tipo de documento actualizado exitosamente',
+                'tipo_documento' => $tipoDocumento,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar el tipo de documento: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -85,11 +113,27 @@ class TipoDocumentoController extends Controller
      */
     public function destroy(TipoDocumento $tipoDocumento)
     {
-        // Eliminar el tipo de documento
-        $tipoDocumento->delete();
+        try {
+            // Verificar si hay clientes usando este tipo de documento
+            if ($tipoDocumento->clientes()->count() > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se puede eliminar este tipo de documento porque está siendo usado por clientes.'
+                ], 400);
+            }
 
-        return response()->json([
-            'message' => 'Tipo de documento eliminado exitosamente',
-        ]);
+            // Eliminar el tipo de documento
+            $tipoDocumento->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Tipo de documento eliminado exitosamente',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar el tipo de documento: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
