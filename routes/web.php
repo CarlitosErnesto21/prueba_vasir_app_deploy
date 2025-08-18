@@ -62,7 +62,10 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
     Route::get('/roles/users/{user}/permissions', [RoleController::class, 'getUserPermissions'])->middleware('role:admin');
     Route::post('/roles/users/{user}/assign-permission', [RoleController::class, 'assignPermission'])->middleware('role:admin');
     Route::post('/roles/users/{user}/remove-permission', [RoleController::class, 'removePermission'])->middleware('role:admin');
+    Route::put('/roles/users/{user}/sync-permissions', [RoleController::class, 'syncPermissions'])->middleware('role:admin');
     Route::post('/roles/create-user', [RoleController::class, 'createInternalUser'])->middleware('role:admin');
+    Route::get('/roles/users/{user}/employee', [RoleController::class, 'getEmployeeData'])->middleware('role:admin');
+    Route::put('/roles/users/{user}/employee', [RoleController::class, 'updateEmployeeData'])->middleware('role:admin');
     
     // Configuración del Sistema
     Route::get('/configuracion/settings', function () {
@@ -113,6 +116,14 @@ Route::get('/paquetes', function () {
 Route::get('/reservaciones', function () {
     return Inertia::render('vistasClientes/Reservaciones');
 })->name('reservaciones');
+
+Route::get('/tours-nacionales', function () {
+    return Inertia::render('vistasClientes/ToursNacionales');
+})->name('tours-nacionales');
+
+Route::get('/tours-internacionales', function () {
+    return Inertia::render('vistasClientes/ToursInternacionales');
+})->name('tours-internacionales');
 
 Route::get('/tienda', function () {
     return Inertia::render('vistasClientes/Tienda');

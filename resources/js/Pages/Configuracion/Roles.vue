@@ -266,12 +266,40 @@
                 <div class="bg-white rounded-lg p-6 w-[600px] max-w-full mx-4 max-h-[90vh] overflow-y-auto">
                     <h3 class="text-lg font-semibold mb-4 flex items-center">
                         <FontAwesomeIcon :icon="faEdit" class="mr-2 text-red-600" />
-                        Editar Roles y Permisos de Usuario
+                        {{ editModalTitle }}
                     </h3>
                     
                     <div class="mb-6">
                         <p class="text-gray-600 mb-1">Usuario: <strong>{{ currentUser?.name }}</strong></p>
                         <p class="text-gray-600 mb-3">Email: <strong>{{ currentUser?.email }}</strong></p>
+                        
+                        <!-- Campos editables del empleado -->
+                        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                            <h4 class="text-sm font-medium text-gray-800 mb-3">Información del Empleado</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Cargo</label>
+                                    <input 
+                                        v-model="currentEmployeeData.cargo"
+                                        type="text"
+                                        maxlength="25"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                                        placeholder="Ej: Ejecutivo de ventas, Administrador, etc."
+                                    />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                                    <input 
+                                        v-model="currentEmployeeData.telefono"
+                                        type="tel"
+                                        maxlength="8"
+                                        pattern="[0-9]{8}"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
+                                        placeholder="12345678"
+                                    />
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- Mostrar rol actual -->
                         <div class="mb-4 p-3 bg-blue-50 rounded-lg">
@@ -375,21 +403,20 @@
                         </div>
                     </div>
                     
-                    <div class="flex justify-end space-x-3">
+                                        <div class="flex justify-end space-x-3">
                         <button 
-                            @click="closeEditRolesAndPermissionsModal"
+                            @click="attemptCloseEditModal"
                             class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                         >
                             Cerrar
                         </button>
                         <button 
-                            @click="updateUserRoles"
-                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-                            :disabled="loading || !selectedUserRole"
-                            v-if="selectedUserRole !== (currentUser?.roles?.[0] || '')"
+                            @click="saveAllChanges"
+                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            :disabled="loading || !hasChanges"
                         >
-                            <span v-if="loading">Actualizando...</span>
-                            <span v-else>Actualizar Rol</span>
+                            <span v-if="loading">Guardando...</span>
+                            <span v-else>{{ saveButtonText }}</span>
                         </button>
                     </div>
                 </div>
@@ -497,6 +524,34 @@
                             <option value="empleado">Empleado</option>
                             <option value="admin">Administrador</option>
                         </select>
+                    </div>
+
+                    <!-- Campos adicionales para empleados -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Cargo</label>
+                            <input 
+                                v-model="newUserForm.cargo"
+                                type="text"
+                                required
+                                maxlength="25"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                placeholder="Ej: Ejecutivo de ventas, Administrador, etc."
+                            />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                            <input 
+                                v-model="newUserForm.telefono"
+                                type="tel"
+                                required
+                                maxlength="8"
+                                pattern="[0-9]{8}"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                placeholder="12345678"
+                            />
+                        </div>
                     </div>
 
                     <!-- Sección de Permisos -->
@@ -705,6 +760,37 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal de Confirmación para Cerrar -->
+        <div v-if="showConfirmCloseModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+                <div class="p-6">
+                    <div class="flex items-center mb-4">
+                        <FontAwesomeIcon :icon="faWarning" class="h-6 w-6 text-amber-500 mr-3" />
+                        <h3 class="text-lg font-semibold text-gray-900">Cambios sin guardar</h3>
+                    </div>
+                    
+                    <p class="text-gray-600 mb-6">
+                        Hay cambios sin guardar. ¿Deseas salir? Se perderán los datos que modificaste.
+                    </p>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <button
+                            @click="showConfirmCloseModal = false"
+                            class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+                        >
+                            Seguir Editando
+                        </button>
+                        <button
+                            @click="closeEditRolesAndPermissionsModal"
+                            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                        >
+                            Salir sin Guardar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </AuthenticatedLayout>
 </template>
 
@@ -737,10 +823,16 @@ const showEditRolesAndPermissionsModal = ref(false);
 const showPermissionsModal = ref(false);
 const showManagePermissionsModal = ref(false);
 const showCreateUserModal = ref(false);
+const showConfirmCloseModal = ref(false);
 const currentUser = ref(null);
 const currentUserPermissions = ref([]);
+const originalUserPermissions = ref([]);
+const currentEmployeeData = ref(null);
+const originalEmployeeData = ref(null);
+const originalUserRole = ref('');
 const availablePermissionsForUser = ref([]);
 const loading = ref(false);
+const permissionLoading = ref(false);
 
 // Pagination
 const currentPage = ref(1);
@@ -756,6 +848,8 @@ const newUserForm = ref({
     email: '',
     password: '',
     role: 'empleado',
+    cargo: '',
+    telefono: '',
     selectedPermissions: []  // Array simple de permisos seleccionados manualmente
 });
 
@@ -805,6 +899,45 @@ const availableRoles = computed(() => {
     return ['admin', 'empleado'];
 });
 
+const editModalTitle = computed(() => {
+    if (!currentUser.value || !currentUser.value.roles || currentUser.value.roles.length === 0) {
+        return 'Editar datos del usuario';
+    }
+    
+    const userRole = currentUser.value.roles[0];
+    if (userRole === 'admin') {
+        return 'Editar datos del administrador';
+    } else if (userRole === 'empleado') {
+        return 'Editar datos del empleado';
+    }
+    
+    return 'Editar datos del usuario';
+});
+
+const hasChanges = computed(() => {
+    // Verificar cambios en el rol
+    const roleChanged = selectedUserRole.value !== originalUserRole.value;
+    
+    // Verificar cambios en los datos del empleado
+    const employeeDataChanged = currentEmployeeData.value && originalEmployeeData.value && (
+        currentEmployeeData.value.cargo !== originalEmployeeData.value.cargo ||
+        currentEmployeeData.value.telefono !== originalEmployeeData.value.telefono
+    );
+    
+    // Verificar cambios en permisos
+    const permissionsChanged = originalUserPermissions.value.length > 0 && (
+        currentUserPermissions.value.length !== originalUserPermissions.value.length ||
+        !currentUserPermissions.value.every(permission => originalUserPermissions.value.includes(permission)) ||
+        !originalUserPermissions.value.every(permission => currentUserPermissions.value.includes(permission))
+    );
+    
+    return roleChanged || employeeDataChanged || permissionsChanged;
+});
+
+const saveButtonText = computed(() => {
+    return 'Actualizar';
+});
+
 const visiblePages = computed(() => {
     const pages = [];
     const total = totalPages.value;
@@ -849,25 +982,54 @@ watch([searchTerm, selectedRole], () => {
 const openEditRolesAndPermissionsModal = async (user) => {
     currentUser.value = { ...user };
     selectedUserRole.value = user.roles[0] || '';
+    originalUserRole.value = user.roles[0] || '';
+    
+    // Inicializar permisos
+    currentUserPermissions.value = [];
+    originalUserPermissions.value = [];
+    
+    // Inicializar datos del empleado
+    currentEmployeeData.value = {
+        cargo: '',
+        telefono: ''
+    };
+    originalEmployeeData.value = {
+        cargo: '',
+        telefono: ''
+    };
     
     loading.value = true;
     showEditRolesAndPermissionsModal.value = true;
     
     try {
         await loadUserPermissions(user);
+        await loadEmployeeData(user);
     } catch (error) {
-        console.error('Error loading user permissions:', error);
-        showErrorMessage('Error al cargar los permisos del usuario');
+        console.error('Error loading user data:', error);
+        showErrorMessage('Error al cargar los datos del usuario');
     } finally {
         loading.value = false;
     }
 };
 
+const attemptCloseEditModal = () => {
+    if (hasChanges.value) {
+        showConfirmCloseModal.value = true;
+    } else {
+        closeEditRolesAndPermissionsModal();
+    }
+};
+
 const closeEditRolesAndPermissionsModal = () => {
     showEditRolesAndPermissionsModal.value = false;
+    showConfirmCloseModal.value = false;
     currentUser.value = null;
     selectedUserRole.value = '';
+    originalUserRole.value = '';
     currentUserPermissions.value = [];
+    originalUserPermissions.value = [];
+    currentEmployeeData.value = null;
+    originalEmployeeData.value = null;
     availablePermissionsForUser.value = [];
 };
 
@@ -875,7 +1037,8 @@ const loadUserPermissions = async (user) => {
     try {
         const response = await axios.get(`/roles/users/${user.id}/permissions`);
         if (response.data.success) {
-            currentUserPermissions.value = response.data.permissions;
+            currentUserPermissions.value = [...response.data.permissions];
+            originalUserPermissions.value = [...response.data.permissions];
             
             // Calculate available permissions (permissions not yet assigned)
             availablePermissionsForUser.value = permissions.value.filter(
@@ -888,84 +1051,62 @@ const loadUserPermissions = async (user) => {
     }
 };
 
-const assignPermissionToUser = async (permissionName) => {
-    if (!currentUser.value || loading.value) return;
-    
-    loading.value = true;
-    
+const loadEmployeeData = async (user) => {
     try {
-        const response = await axios.post(`/roles/users/${currentUser.value.id}/assign-permission`, {
-            permission: permissionName
-        });
-        
-        if (response.data.success) {
-            // Update permissions from server response
-            currentUserPermissions.value = response.data.permissions;
-            
-            // Update available permissions
-            availablePermissionsForUser.value = permissions.value.filter(
-                permission => !currentUserPermissions.value.includes(permission.name)
-            );
-            
-            // Update user in the main list
-            const userIndex = users.value.findIndex(u => u.id === currentUser.value.id);
-            if (userIndex !== -1) {
-                users.value[userIndex] = response.data.user;
-            }
-            
-            showSuccessMessage(`Permiso "${permissionName}" asignado correctamente`);
+        const response = await axios.get(`/roles/users/${user.id}/employee`);
+        if (response.data.success && response.data.employee) {
+            const employeeData = {
+                cargo: response.data.employee.cargo || '',
+                telefono: response.data.employee.telefono || ''
+            };
+            currentEmployeeData.value = { ...employeeData };
+            originalEmployeeData.value = { ...employeeData };
+        } else {
+            // Si no existe registro de empleado, mantener valores vacíos
+            const emptyData = { cargo: '', telefono: '' };
+            currentEmployeeData.value = { ...emptyData };
+            originalEmployeeData.value = { ...emptyData };
         }
     } catch (error) {
-        console.error('Error assigning permission:', error);
-        showErrorMessage(error.response?.data?.message || 'Error al asignar el permiso');
-    } finally {
-        // Add a small delay to prevent rapid-fire requests
-        setTimeout(() => {
-            loading.value = false;
-        }, 300);
+        console.error('Error fetching employee data:', error);
+        // No lanzar el error, solo mantener valores vacíos
+        const emptyData = { cargo: '', telefono: '' };
+        currentEmployeeData.value = { ...emptyData };
+        originalEmployeeData.value = { ...emptyData };
+    }
+};
+
+const assignPermissionToUser = async (permissionName) => {
+    if (!currentUser.value || permissionLoading.value) return;
+    
+    // Solo modificar el array temporal, NO enviar al servidor
+    if (!currentUserPermissions.value.includes(permissionName)) {
+        currentUserPermissions.value.push(permissionName);
+        
+        // Actualizar permisos disponibles
+        availablePermissionsForUser.value = permissions.value.filter(
+            permission => !currentUserPermissions.value.includes(permission.name)
+        );
     }
 };
 
 const removePermissionFromUser = async (permissionName) => {
-    if (!currentUser.value || loading.value) return;
+    if (!currentUser.value || permissionLoading.value) return;
     
     if (currentUserPermissions.value.length === 1) {
         showErrorMessage('No se puede eliminar el último permiso. El usuario debe tener al menos uno.');
         return;
     }
     
-    loading.value = true;
-    
-    try {
-        const response = await axios.post(`/roles/users/${currentUser.value.id}/remove-permission`, {
-            permission: permissionName
-        });
+    // Solo modificar el array temporal, NO enviar al servidor
+    const index = currentUserPermissions.value.indexOf(permissionName);
+    if (index > -1) {
+        currentUserPermissions.value.splice(index, 1);
         
-        if (response.data.success) {
-            // Update permissions from server response
-            currentUserPermissions.value = response.data.permissions;
-            
-            // Update available permissions
-            availablePermissionsForUser.value = permissions.value.filter(
-                permission => !currentUserPermissions.value.includes(permission.name)
-            );
-            
-            // Update user in the main list
-            const userIndex = users.value.findIndex(u => u.id === currentUser.value.id);
-            if (userIndex !== -1) {
-                users.value[userIndex] = response.data.user;
-            }
-            
-            showSuccessMessage(`Permiso "${permissionName}" eliminado correctamente`);
-        }
-    } catch (error) {
-        console.error('Error removing permission:', error);
-        showErrorMessage(error.response?.data?.message || 'Error al eliminar el permiso');
-    } finally {
-        // Add a small delay to prevent rapid-fire requests
-        setTimeout(() => {
-            loading.value = false;
-        }, 300);
+        // Actualizar permisos disponibles
+        availablePermissionsForUser.value = permissions.value.filter(
+            permission => !currentUserPermissions.value.includes(permission.name)
+        );
     }
 };
 
@@ -1004,27 +1145,11 @@ const showUserPermissions = async (user) => {
     currentUser.value = user;
     loading.value = true;
     
-    // Show loading toast
-    toast.add({
-        severity: 'info',
-        summary: 'Cargando',
-        detail: 'Obteniendo permisos del usuario...',
-        life: 3000
-    });
-    
     try {
         const response = await axios.get(`/roles/users/${user.id}/permissions`);
         if (response.data.success) {
             currentUserPermissions.value = response.data.permissions || [];
             showPermissionsModal.value = true;
-            
-            // Show success toast
-            toast.add({
-                severity: 'success',
-                summary: 'Permisos cargados',
-                detail: `Se encontraron ${response.data.permissions?.length || 0} permisos para ${user.name}`,
-                life: 3000
-            });
         }
     } catch (error) {
         console.error('Error fetching permissions:', error);
@@ -1088,8 +1213,160 @@ const selectAllPermissions = () => {
     newUserForm.value.selectedPermissions = permissions.value.map(p => p.name);
 };
 
+// Update employee data function
+const updateEmployeeData = async () => {
+    if (!currentUser.value || !currentEmployeeData.value?.cargo || !currentEmployeeData.value?.telefono) {
+        showErrorMessage('Por favor complete todos los campos del empleado');
+        return;
+    }
+
+    loading.value = true;
+
+    try {
+        const response = await axios.put(`/roles/users/${currentUser.value.id}/employee`, {
+            cargo: currentEmployeeData.value.cargo,
+            telefono: currentEmployeeData.value.telefono
+        });
+
+        if (response.data.success) {
+            showSuccessMessage('Datos del empleado actualizados correctamente');
+            // Cerrar el modal después de la actualización exitosa
+            closeEditRolesAndPermissionsModal();
+        }
+    } catch (error) {
+        console.error('Error updating employee data:', error);
+        if (error.response?.status === 422) {
+            const errors = error.response.data.errors;
+            if (errors.cargo) {
+                showErrorMessage('Error en el campo cargo: ' + errors.cargo[0]);
+            } else if (errors.telefono) {
+                showErrorMessage('Error en el campo teléfono: ' + errors.telefono[0]);
+            } else {
+                showErrorMessage('Por favor revise los datos ingresados');
+            }
+        } else {
+            showErrorMessage(error.response?.data?.message || 'Error al actualizar los datos del empleado');
+        }
+    } finally {
+        loading.value = false;
+    }
+};
+
+// Save all changes function
+const saveAllChanges = async () => {
+    if (!currentUser.value) {
+        showErrorMessage('Error: No hay usuario seleccionado');
+        return;
+    }
+
+    const roleChanged = selectedUserRole.value !== originalUserRole.value;
+    const employeeDataChanged = currentEmployeeData.value && originalEmployeeData.value && (
+        currentEmployeeData.value.cargo !== originalEmployeeData.value.cargo ||
+        currentEmployeeData.value.telefono !== originalEmployeeData.value.telefono
+    );
+    const permissionsChanged = originalUserPermissions.value.length > 0 && (
+        currentUserPermissions.value.length !== originalUserPermissions.value.length ||
+        !currentUserPermissions.value.every(permission => originalUserPermissions.value.includes(permission)) ||
+        !originalUserPermissions.value.every(permission => currentUserPermissions.value.includes(permission))
+    );
+
+    if (!roleChanged && !employeeDataChanged && !permissionsChanged) {
+        showErrorMessage('No hay cambios para guardar');
+        return;
+    }
+
+    loading.value = true;
+
+    try {
+        let promises = [];
+        let successMessages = [];
+
+        // Actualizar datos del empleado si han cambiado
+        if (employeeDataChanged) {
+            if (!currentEmployeeData.value?.cargo || !currentEmployeeData.value?.telefono) {
+                showErrorMessage('Por favor complete todos los campos del empleado');
+                loading.value = false;
+                return;
+            }
+            
+            promises.push(
+                axios.put(`/roles/users/${currentUser.value.id}/employee`, {
+                    cargo: currentEmployeeData.value.cargo,
+                    telefono: currentEmployeeData.value.telefono
+                }).then(() => {
+                    successMessages.push('Datos del empleado actualizados');
+                })
+            );
+        }
+
+        // Actualizar rol si ha cambiado
+        if (roleChanged) {
+            promises.push(
+                axios.post(`/roles/users/${currentUser.value.id}/update-roles`, {
+                    roles: [selectedUserRole.value]
+                }).then((response) => {
+                    if (response.data.success) {
+                        // Actualizar usuario en la lista principal
+                        const userIndex = users.value.findIndex(u => u.id === currentUser.value.id);
+                        if (userIndex !== -1) {
+                            users.value[userIndex] = response.data.user;
+                        }
+                        successMessages.push('Rol actualizado');
+                    }
+                })
+            );
+        }
+
+        // Actualizar permisos si han cambiado
+        if (permissionsChanged) {
+            promises.push(
+                axios.put(`/roles/users/${currentUser.value.id}/sync-permissions`, {
+                    permissions: currentUserPermissions.value
+                }).then((response) => {
+                    if (response.data.success) {
+                        // Actualizar usuario en la lista principal
+                        const userIndex = users.value.findIndex(u => u.id === currentUser.value.id);
+                        if (userIndex !== -1) {
+                            users.value[userIndex] = response.data.user;
+                        }
+                        successMessages.push('Permisos actualizados');
+                    }
+                })
+            );
+        }
+
+        // Ejecutar todas las promesas
+        await Promise.all(promises);
+
+        // Mostrar mensaje de éxito y cerrar modal
+        showSuccessMessage(successMessages.join(' y ') + ' correctamente');
+        closeEditRolesAndPermissionsModal();
+
+    } catch (error) {
+        console.error('Error saving changes:', error);
+        if (error.response?.status === 422) {
+            const errors = error.response.data.errors;
+            if (errors.cargo) {
+                showErrorMessage('Error en el campo cargo: ' + errors.cargo[0]);
+            } else if (errors.telefono) {
+                showErrorMessage('Error en el campo teléfono: ' + errors.telefono[0]);
+            } else if (errors.roles) {
+                showErrorMessage('Error en el rol seleccionado');
+            } else if (errors.permissions) {
+                showErrorMessage('Error en los permisos seleccionados');
+            } else {
+                showErrorMessage('Por favor revise los datos ingresados');
+            }
+        } else {
+            showErrorMessage(error.response?.data?.message || 'Error al guardar los cambios');
+        }
+    } finally {
+        loading.value = false;
+    }
+};
+
 const createInternalUser = async () => {
-    if (!newUserForm.value.name || !newUserForm.value.email || !newUserForm.value.password) {
+    if (!newUserForm.value.name || !newUserForm.value.email || !newUserForm.value.password || !newUserForm.value.cargo || !newUserForm.value.telefono) {
         showErrorMessage('Por favor complete todos los campos');
         return;
     }
@@ -1108,6 +1385,8 @@ const createInternalUser = async () => {
             email: newUserForm.value.email,
             password: newUserForm.value.password,
             role: newUserForm.value.role,
+            cargo: newUserForm.value.cargo,
+            telefono: newUserForm.value.telefono,
             permissions: newUserForm.value.selectedPermissions
         });
 
@@ -1147,6 +1426,8 @@ const closeCreateUserModal = () => {
         email: '',
         password: '',
         role: 'empleado',
+        cargo: '',
+        telefono: '',
         selectedPermissions: []
     };
 };
