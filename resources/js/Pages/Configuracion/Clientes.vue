@@ -8,9 +8,9 @@
                         <div>
                             <h1 class="text-2xl font-bold text-white flex items-center">
                                 <FontAwesomeIcon :icon="faUsers" class="mr-3" />
-                                Gestión de Usuarios
+                                Gestión de Clientes
                             </h1>
-                            <p class="text-red-100 mt-2">Administre usuarios, perfiles y accesos del sistema</p>
+                            <p class="text-red-100 mt-2">Administre clientes, perfiles y accesos del sistema</p>
                         </div>
                         <button 
                             @click="showCreateModal = true"
@@ -60,7 +60,7 @@
                             <div class="flex items-center">
                                 <FontAwesomeIcon :icon="faUsers" class="text-blue-500 text-2xl mr-3" />
                                 <div>
-                                    <p class="text-blue-600 text-sm font-medium">Total Usuarios</p>
+                                    <p class="text-blue-600 text-sm font-medium">Total Clientes</p>
                                     <p class="text-2xl font-bold text-blue-800">{{ totalUsers }}</p>
                                 </div>
                             </div>
@@ -94,7 +94,7 @@
                         </div>
                     </div>
 
-                    <!-- Tabla de Usuarios -->
+                    <!-- Tabla de Clientes -->
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white border border-gray-200 rounded-lg">
                             <thead class="bg-gray-50">
