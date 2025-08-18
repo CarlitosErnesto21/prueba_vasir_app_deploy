@@ -2,7 +2,7 @@
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { usePage, Link, router } from '@inertiajs/vue3';
 import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
-import { faRoute, faDoorOpen, faCircleXmark, faUserCircle, 
+import  { faRoute, faDoorOpen, faCircleXmark, faUserCircle, 
     faChevronCircleDown, faUser, faHotel, faPlaneDeparture, faGear, faBoxesStacked, 
     faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,
     faFileInvoice} from "@fortawesome/free-solid-svg-icons";   
