@@ -14,7 +14,8 @@ import { faList, faTags, faRoute, faDoorOpen, faFileAlt, faLayerGroup, faCircleX
     faChartGantt,
     faChartArea,
     faFileCircleCheck,
-    faFileArchive} from "@fortawesome/free-solid-svg-icons";
+    faFileArchive,
+    faListCheck } from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
 import { route } from 'ziggy-js';
 
@@ -366,7 +367,7 @@ function manageUsers() {
                             tabindex="0"
                             @keydown.enter="$inertia.visit(route('categorias'))"
                             title="Control de categorias">
-                            <FontAwesomeIcon :icon="faFileInvoice" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
+                            <FontAwesomeIcon :icon="faListCheck" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Categorías</span>
                         </li>
                     </ul>

@@ -4,8 +4,8 @@
     <Toast />
     <div class="py-6 px-2 sm:px-4 md:px-6 mt-10 mx-auto bg-red-50 shadow-md rounded-lg max-w-full">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-bold text-center w-full">Control de Categorias</h3>
-        <Button label="Agregar Categoria" icon="pi pi-plus" class="p-button-success" @click="abrirModalAgregar" />
+  <h3 class="text-xl font-bold">Control de Categorias</h3>
+  <Button label="Agregar Categoria" icon="pi pi-plus" class="p-button-sm p-button-danger ml-4" @click="abrirModalAgregar" />
       </div>
       <div class="flex flex-col md:flex-row items-center gap-4 mt-10 mb-2">
         <label for="tipo-estado" class="font-semibold mb-0">Ver categorias:</label>
@@ -35,11 +35,10 @@
        
       </div>
       <DataTable :value="categoriasFiltradas" class="mb-4 min-w-[400px] w-full" :rows="8" :paginator="categoriasFiltradas.length > 8" :rowsPerPageOptions="[8, 16]">
-        <Column field="nombre" header="Nombre" />
-        <Column field="tipo" header="Tipo" />
+  <Column field="nombre" header="Nombre" />
         <Column header="Acciones">
           <template #body="slotProps">
-            <Button label="Editar" icon="pi pi-pencil" class="p-button-sm p-button-info mr-2" @click="abrirModalEditar(slotProps.data)" />
+            <Button label="Editar" icon="pi pi-pencil" class="p-button-sm p-button-secondary mr-2" @click="abrirModalEditar(slotProps.data)" style="border: none; color: #2563eb; --icon-color: #2563eb;" />
             <Button label="Eliminar" icon="pi pi-trash" class="p-button-sm p-button-danger" @click="confirmarEliminar(slotProps.data)" />
           </template>
         </Column>
@@ -77,89 +76,6 @@
       </Dialog>
 
       <!-- Modal único para categorias por tour/hotel/aerolínea -->
-      <Dialog
-        v-model:visible="mostrarModalCategoriasTour"
-        modal
-        header="Categorias"
-        :style="{ width: '98vw', maxWidth: '1100px' }"
-        :draggable="false"
-        :position="'center'"
-      >
-        <div>
-          <!-- Buscador en el modal -->
-          <div class="flex flex-col md:flex-row gap-2 mb-3">
-            <InputText
-              id="busqueda-modal-cliente"
-              name="busqueda-modal-cliente"
-              v-model="busquedaModalCliente"
-              placeholder="Buscar por cliente"
-              class="w-full md:w-1/2"
-            />
-            <DatePicker
-              id="busqueda-modal-fecha"
-              name="busqueda-modal-fecha"
-              v-model="busquedaModalFecha"
-              placeholder="Buscar por fecha"
-              dateFormat="dd/mm/yy"
-              class="w-full md:w-1/2"
-              showIcon
-            />
-          </div>
-          <div class="overflow-y-auto" style="max-height: 350px;">
-            <DataTable
-              :value="categoriasFiltradasModal"
-              class="min-w-[350px] w-full"
-              :rows="5"
-              :paginator="categoriasFiltradasModal.length > 5"
-              :rowsPerPageOptions="[5, 10]"
-              scrollable
-              scrollHeight="320px"
-              v-if="categoriasFiltradasModal.length"
-            >
-              <Column header="Acción">
-                <template #body="slotProps">
-                  <Button
-                    v-if="slotProps.data.estado === 'Pendiente'"
-                    label="Confirmar"
-                    icon="pi pi-check"
-                    class="p-button-xs p-button-success ml-2"
-                    @click="confirmarCategoria(slotProps.data)"
-                  />
-                  <Button
-                    v-if="slotProps.data.estado === 'Pendiente'"
-                    label="Rechazar"
-                    icon="pi pi-times"
-                    class="p-button-xs p-button-danger ml-2"
-                    @click="cambiarEstado(slotProps.data, 'Rechazada')"
-                  />
-                </template>
-              </Column>
-            </DataTable>
-            <div v-else class="text-gray-500 text-center py-4">No hay categorias para este elemento.</div>
-          </div>
-        </div>
-      </Dialog>
-      <!-- Modal para reprogramar reserva -->
-      <Dialog
-        v-model:visible="mostrarModalReprogramar"
-        modal
-        header="Reprogramar reserva"
-        :style="{ width: '350px' }"
-        :draggable="false"
-        :position="'center'"
-      >
-        <div v-if="reservaAReprogramar">
-          <div class="mb-4">
-            <label class="block font-semibold mb-1" for="cliente-reprogramar">Cliente:</label>
-            <span id="cliente-reprogramar">{{ reservaAReprogramar.cliente }}</span>
-          </div>
-        </div>
-        <div class="flex justify-end gap-2 mt-4">
-          <Button label="Cerrar" icon="pi pi-times" class="p-button-danger" @click="cerrarModalReprogramar" />
-          <Button label="Guardar" icon="pi pi-save" class="p-button-warn" @click="guardarReprogramacion" :disabled="!nuevaFechaReprogramar" />
-        </div>
-      </Dialog>
-      
     </div>
   </AuthenticatedLayout>
 </template>
@@ -172,43 +88,9 @@ import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import DatePicker from 'primevue/datepicker'
 import InputText from 'primevue/inputtext'
 import Toast from 'primevue/toast'
-import { useToast } from 'primevue/usetoast'
 
-// Filtros
-const filtroDesde = ref(null)
-const filtroHasta = ref(null)
-const filtroTipo = ref('tours')
-
-
-// Variables para el modal de categorias
-const mostrarModalCategoriasTour = ref(false)
-const categoriasTourSeleccionado = ref([])
-
-// Usa useToast correctamente
-const toast = useToast()
-
-// Variables para búsqueda en el modal
-const busquedaModalCliente = ref('')
-const busquedaModalFecha = ref('')
-
-// Computed para filtrar las categorias del modal según búsqueda
-const categoriasFiltradasModal = computed(() => {
-  let lista = categoriasTourSeleccionado.value || []
-  if (busquedaModalCliente.value) {
-    lista = lista.filter(r =>
-      r.cliente.toLowerCase().includes(busquedaModalCliente.value.toLowerCase())
-    )
-  }
-  if (busquedaModalFecha.value) {
-    lista = lista.filter(r =>
-      r.fecha.includes(busquedaModalFecha.value)
-    )
-  }
-  return lista
-})
 
 // Simulación de categorias de distintos tipos y tours
 const categorias = ref([
@@ -234,12 +116,12 @@ const categoriaEliminar = ref(null);
 const tipoEstadoSeleccionado = ref('tours');
 const busquedaNombreGeneral = ref('');
 
-const categoriasFiltradas = computed(() => {
-  return categorias.value.filter(cat =>
-    cat.tipo === tipoEstadoSeleccionado.value &&
-    (!busquedaNombreGeneral.value || cat.nombre.toLowerCase().includes(busquedaNombreGeneral.value.toLowerCase()))
-  );
-});
+  const categoriasFiltradas = computed(() => {
+    return categorias.value.filter(cat =>
+      cat.tipo === tipoEstadoSeleccionado.value &&
+      (!busquedaNombreGeneral.value || cat.nombre.toLowerCase().includes(busquedaNombreGeneral.value.toLowerCase()))
+    );
+  });
 
 function abrirModalAgregar() {
   nuevaCategoria.value = { tipo: tipoEstadoSeleccionado.value, nombre: '' };
@@ -269,22 +151,4 @@ function eliminarCategoria() {
   categorias.value = categorias.value.filter(c => c.id !== categoriaEliminar.value.id);
   modalEliminar.value = false;
 }
-// Buscador global por nombre de tour/hotel/aerolínea
-
-
-
-
 </script>
-
-<style scoped>
-th, td {
-  border: 1px solid #ccc;
-  word-break: break-word;
-}
-@media (max-width: 768px) {
-  th, td {
-    font-size: 0.95rem;
-    padding: 0.25rem 0.5rem;
-  }
-}
-</style>
