@@ -2,19 +2,10 @@
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { usePage, Link, router } from '@inertiajs/vue3';
 import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
-import { faList, faTags, faRoute, faDoorOpen, faFileAlt, faLayerGroup, faCircleXmark, faUserCircle, 
+import { faRoute, faDoorOpen, faCircleXmark, faUserCircle, 
     faChevronCircleDown, faUser, faHotel, faPlaneDeparture, faGear, faBoxesStacked, 
     faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,
-    faFileInvoice,
-    faChartBar,
-    faFileLines,
-    faChartColumn,
-    faChartLine,
-    faChartDiagram,
-    faChartGantt,
-    faChartArea,
-    faFileCircleCheck,
-    faFileArchive} from "@fortawesome/free-solid-svg-icons";
+    faFileInvoice} from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
 import { route } from 'ziggy-js';
 
@@ -22,7 +13,6 @@ const page = usePage();
 const user = page.props.auth?.user;
 const isSidebarOpen = ref(false);
 const isSidebarCollapsed = ref(true);
-const anioCurrent = ref(new Date().getFullYear());
 const isOpen = ref(false);
 const toggleDropdown = () => { isOpen.value = !isOpen.value; };
 const toggleSidebar = () => {
@@ -130,21 +120,6 @@ onBeforeUnmount(() => {
     document.removeEventListener('click', handleConfigDropdownClickOutside, true);
 });
 
-function goToProfile() {
-    isConfigDropdownOpen.value = false;
-    $inertia.visit(route('profile'));
-}
-function logoutConfig() {
-    isConfigDropdownOpen.value = false;
-    logout();
-}
-function backupDatabase() {
-    isConfigDropdownOpen.value = false;
-    isSidebarCollapsed.value = true;
-    isSidebarOpen.value = false;
-    router.visit(route('backup'));
-
-}
 function assignRoles() {
     isConfigDropdownOpen.value = false;
     isSidebarCollapsed.value = true;
@@ -158,11 +133,11 @@ function systemSettings() {
     router.visit(route('settings'));
 
 }
-function manageUsers() {
+function manageClientes() {
     isConfigDropdownOpen.value = false;
     isSidebarCollapsed.value = true;
     isSidebarOpen.value = false;
-    router.visit(route('users'));
+    router.visit(route('clientes'));
 }
 </script>
 
@@ -369,6 +344,16 @@ function manageUsers() {
                             <FontAwesomeIcon :icon="faFileInvoice" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Categorías</span>
                         </li>
+                        <li
+                            class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
+                            :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
+                            @click="$inertia.visit(route('paisescategorias'))"
+                            tabindex="0"
+                            @keydown.enter="$inertia.visit(route('paisescategorias'))"
+                            title="Control de paises y provincias">
+                            <FontAwesomeIcon :icon="faFileInvoice" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
+                            <span v-if="!isSidebarCollapsed">Categorías</span>
+                        </li>
                     </ul>
                 </nav>
                 <ul class="absolute bottom-0 left-0 w-full flex flex-col items-center">
@@ -395,19 +380,19 @@ function manageUsers() {
                             >
                                 <div class="py-2">
                                     <button
-                                        @click.stop="backupDatabase"
-                                        class="w-full flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors duration-200 text-left"
-                                    >
-                                        <FontAwesomeIcon :icon="faFileArchive" class="text-red-600 mr-3 w-5 h-5"/>
-                                        <span class="text-sm font-medium">Respaldo de base de datos</span>
-                                    </button>
-                                    <button
                                         v-if="user?.role === 'admin'"
                                         @click.stop="assignRoles"
                                         class="w-full flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors duration-200 text-left"
                                     >
                                         <FontAwesomeIcon :icon="faUserCircle" class="text-red-600 mr-3 w-5 h-5"/>
-                                        <span class="text-sm font-medium">Asignación de roles</span>
+                                        <span class="text-sm font-medium">Gestión de usuarios internos</span>
+                                    </button>
+                                    <button
+                                        @click.stop="manageClientes"
+                                        class="w-full flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors duration-200 text-left"
+                                    >
+                                        <FontAwesomeIcon :icon="faUser" class="text-red-600 mr-3 w-5 h-5"/>
+                                        <span class="text-sm font-medium">Gestión de clientes</span>
                                     </button>
                                     <button
                                         @click.stop="systemSettings"
@@ -416,13 +401,7 @@ function manageUsers() {
                                         <FontAwesomeIcon :icon="faGear" class="text-red-600 mr-3 w-5 h-5"/>
                                         <span class="text-sm font-medium">Configuración del sistema</span>
                                     </button>
-                                    <button
-                                        @click.stop="manageUsers"
-                                        class="w-full flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors duration-200 text-left"
-                                    >
-                                        <FontAwesomeIcon :icon="faUser" class="text-red-600 mr-3 w-5 h-5"/>
-                                        <span class="text-sm font-medium">Gestión de usuarios</span>
-                                    </button>
+
                                 </div>
                             </div>
                         </transition>

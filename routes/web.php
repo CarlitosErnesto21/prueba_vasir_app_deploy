@@ -40,6 +40,10 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
         return Inertia::render('catalogos/ControlCategorias');
     })->name('categorias');
 
+    Route::get('catalogos/ControlPaisesProvincias', function () {
+        return Inertia::render('catalogos/ControlPaisesProvincias');
+    })->name('paisescategorias');
+
     /////////////////////////////////////////////////////////////////
     // Respaldo de Base de Datos
     Route::get('/configuracion/backup', function () {
@@ -63,10 +67,10 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
         return Inertia::render('Configuracion/Settings');
     })->name('settings');
     
-    // Gestión de Usuarios
-    Route::get('/configuracion/users', function () {
-        return Inertia::render('Configuracion/Users');
-    })->name('users');
+    // Gestión de Clientes
+    Route::get('/configuracion/clientes', function () {
+        return Inertia::render('Configuracion/Clientes');
+    })->name('clientes');
     /////////////////////////////////////////////////////////////////
 
     //Ruta para los informes de la aplicacion

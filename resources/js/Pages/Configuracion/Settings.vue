@@ -158,6 +158,41 @@
                         </div>
                     </div>
 
+                    <!-- Gestión de Base de Datos -->
+                    <div class="mb-8 border-t pt-8">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                            <FontAwesomeIcon :icon="faDatabase" class="mr-2 text-red-600" />
+                            Gestión de Base de Datos
+                        </h2>
+                        <div class="bg-gray-50 rounded-lg p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-800 mb-2">Respaldo de Base de Datos</h3>
+                                    <p class="text-sm text-gray-600 mb-4">
+                                        Cree un respaldo completo de la base de datos para proteger su información.
+                                    </p>
+                                    <button 
+                                        @click="goToBackup"
+                                        class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center shadow-lg"
+                                    >
+                                        <FontAwesomeIcon :icon="faFileArchive" class="mr-2" />
+                                        Crear Respaldo
+                                    </button>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-800 mb-2">Información de la Base de Datos</h3>
+                                    <div class="space-y-2 text-sm text-gray-600">
+                                        <p><span class="font-medium">Último respaldo:</span> {{ lastBackupDate }}</p>
+                                        <p><span class="font-medium">Estado:</span> 
+                                            <span class="text-green-600 font-medium">Operacional</span>
+                                        </p>
+                                        <p><span class="font-medium">Tamaño aproximado:</span> {{ dbSize }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Botones de Acción -->
                     <div class="flex justify-end space-x-4">
                         <button 
@@ -188,9 +223,10 @@
 <script setup>
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { route } from 'ziggy-js';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faGear, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faGear, faSpinner, faFileArchive, faDatabase } from '@fortawesome/free-solid-svg-icons';
 
 const isSaving = ref(false);
 
@@ -213,6 +249,10 @@ const settings = ref({
 // Configuraciones originales para restablecer
 const originalSettings = ref({...settings.value});
 
+// Información de la base de datos
+const lastBackupDate = ref('15 de agosto, 2025 - 14:30');
+const dbSize = ref('245 MB');
+
 const saveSettings = async () => {
     isSaving.value = true;
     try {
@@ -231,5 +271,9 @@ const resetSettings = () => {
     if (confirm('¿Está seguro de restablecer todos los cambios?')) {
         settings.value = {...originalSettings.value};
     }
+};
+
+const goToBackup = () => {
+    router.visit(route('backup'));
 };
 </script>
