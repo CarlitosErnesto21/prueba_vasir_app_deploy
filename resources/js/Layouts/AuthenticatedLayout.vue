@@ -5,7 +5,7 @@ import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
 import { faRoute, faDoorOpen, faCircleXmark, faUserCircle, 
     faChevronCircleDown, faUser, faHotel, faPlaneDeparture, faGear, faBoxesStacked, 
     faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,
-
+}
 import axios from 'axios';
 import { route } from 'ziggy-js';
 
