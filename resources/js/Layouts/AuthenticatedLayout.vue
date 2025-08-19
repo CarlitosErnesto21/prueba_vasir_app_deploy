@@ -6,6 +6,7 @@ import  { faRoute, faDoorOpen, faCircleXmark, faUserCircle,
     faChevronCircleDown, faUser, faHotel, faPlaneDeparture, faGear, faBoxesStacked, 
     faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,
     faFileInvoice, faMap, } from "@fortawesome/free-solid-svg-icons";
+
 import axios from 'axios';
 import { route } from 'ziggy-js';
 
