@@ -84,7 +84,7 @@ const verMasInfo = (tour) => {
       <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="text-center mb-8">
-          <h1 class="text-4xl font-bold mb-4 text-red-700">🇸🇻 Tours Nacionales</h1>
+          <h1 class="text-4xl font-bold mb-4 text-red-700">Tours Nacionales</h1>
           <p class="text-lg text-gray-600 mb-2">Descubre las maravillas de El Salvador</p>
           <p class="text-sm text-gray-500">Experiencias auténticas en nuestro hermoso país</p>
         </div>
