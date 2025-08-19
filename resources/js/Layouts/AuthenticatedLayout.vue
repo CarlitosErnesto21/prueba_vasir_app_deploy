@@ -4,8 +4,9 @@ import { usePage, Link, router } from '@inertiajs/vue3';
 import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
 import  { faRoute, faDoorOpen, faCircleXmark, faUserCircle, 
     faChevronCircleDown, faUser, faHotel, faPlaneDeparture, faGear, faBoxesStacked, 
-    faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,
-    faFileInvoice, faMap, } from "@fortawesome/free-solid-svg-icons";
+    faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,faListCheck,
+    faFileInvoice,
+    faMap} from "@fortawesome/free-solid-svg-icons";   
 
 import axios from 'axios';
 import { route } from 'ziggy-js';
@@ -338,22 +339,22 @@ function manageClientes() {
                         <li
                             class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
                             :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
-                            @click="$inertia.visit(route('categorias'))"
+                            @click="$inertia.visit(route('catPTH'))"
                             tabindex="0"
-                            @keydown.enter="$inertia.visit(route('categorias'))"
+                            @keydown.enter="$inertia.visit(route('catPTH'))"
                             title="Control de categorias">
-                            <FontAwesomeIcon :icon="faFileInvoice" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
-                            <span v-if="!isSidebarCollapsed">Categorías</span>
+                            <FontAwesomeIcon :icon="faListCheck" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
+                            <span v-if="!isSidebarCollapsed">Gestión categorías</span>
                         </li>
                         <li
                             class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
                             :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
-                            @click="$inertia.visit(route('paisescategorias'))"
+                            @click="$inertia.visit(route('controlPaisesProvincias'))"
                             tabindex="0"
-                            @keydown.enter="$inertia.visit(route('paisescategorias'))"
+                            @keydown.enter="$inertia.visit(route('controlPaisesProvincias'))"
                             title="Control de paises y provincias">
-                            <FontAwesomeIcon :icon="faMap " :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
-                            <span v-if="!isSidebarCollapsed">Categorías</span>
+                            <FontAwesomeIcon :icon="faMap" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
+                            <span v-if="!isSidebarCollapsed">Control paises y provincias</span>
                         </li>
                     </ul>
                 </nav>

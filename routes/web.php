@@ -40,11 +40,11 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
 
     Route::get('catalogos/ControlCategorias', function () {
         return Inertia::render('catalogos/ControlCategorias');
-    })->name('categorias');
+    })->name('catPTH');
 
     Route::get('catalogos/ControlPaisesProvincias', function () {
         return Inertia::render('catalogos/ControlPaisesProvincias');
-    })->name('paisescategorias');
+    })->name('controlPaisesProvincias');
 
     /////////////////////////////////////////////////////////////////
     // Respaldo de Base de Datos
