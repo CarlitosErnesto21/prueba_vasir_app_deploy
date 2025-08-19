@@ -2,109 +2,465 @@
 import Catalogo from '../Catalogo.vue'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
-import { ref, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 
-const loading = ref(true)
-const reservaciones = ref([])
+// Datos estáticos de reservaciones disponibles
+const reservaciones = ref([
+  {
+    id: 1,
+    titulo: 'Cerro Verde y Lago de Ilopango',
+    descripcion: 'Aventura completa en uno de los volcanes más espectaculares con vista al lago más grande de El Salvador.',
+    precio: 60,
+    imagen: '/images/productos/producto1.jpg',
+    destino: 'Cerro Verde, Santa Ana',
+    punto_salida: 'Oficina Central San Salvador',
+    fecha_salida: '2025-08-25',
+    hora_salida: '08:00',
+    hora_regreso: '17:00',
+    duracion: '9 horas',
+    cupo_maximo: 15,
+    cupos_disponibles: 8,
+    estado: 'Disponible',
+    incluye: ['Transporte ida y vuelta', 'Guía especializado', 'Entrada al parque', 'Almuerzo típico'],
+    categoria: 'Volcanes',
+    dificultad: 'Intermedio'
+  },
+  {
+    id: 2,
+    titulo: 'Festival del Melocotón - El Pital',
+    descripcion: 'Experiencia única en el punto más alto de El Salvador durante el famoso Festival del Melocotón.',
+    precio: 85,
+    imagen: '/images/productos/producto2.jpg',
+    destino: 'Cerro El Pital, Chalatenango',
+    punto_salida: 'Terminal de Oriente',
+    fecha_salida: '2025-08-30',
+    hora_salida: '06:30',
+    hora_regreso: '19:00',
+    duracion: '12 horas',
+    cupo_maximo: 20,
+    cupos_disponibles: 12,
+    estado: 'Disponible',
+    incluye: ['Transporte especializado', 'Desayuno y almuerzo', 'Entrada al festival', 'Guía cultural', 'Degustación de melocotones'],
+    categoria: 'Cultural',
+    dificultad: 'Fácil'
+  },
+  {
+    id: 3,
+    titulo: 'Ruta de las Flores Completa',
+    descripcion: 'Recorrido por los pueblos más pintorescos: Nahuizalco, Salcoatitán, Juayúa, Apaneca y Ataco.',
+    precio: 75,
+    imagen: '/images/productos/producto3.jpg',
+    destino: 'Ruta de las Flores, Ahuachapán',
+    punto_salida: 'Plaza Salvador del Mundo',
+    fecha_salida: '2025-09-01',
+    hora_salida: '07:00',
+    hora_regreso: '18:30',
+    duracion: '11 horas',
+    cupo_maximo: 25,
+    cupos_disponibles: 18,
+    estado: 'Disponible',
+    incluye: ['Transporte turístico', 'Guía local', 'Almuerzo', 'Visitas a talleres', 'Tiempo libre en cada pueblo'],
+    categoria: 'Cultural',
+    dificultad: 'Fácil'
+  },
+  {
+    id: 4,
+    titulo: 'Joya de Cerén - Pompeya de América',
+    descripcion: 'Descubre el sitio arqueológico mejor conservado de Mesoamérica, Patrimonio de la Humanidad.',
+    precio: 45,
+    imagen: '/images/productos/producto4.jpg',
+    destino: 'Joya de Cerén, La Libertad',
+    punto_salida: 'Metrocentro',
+    fecha_salida: '2025-09-05',
+    hora_salida: '09:00',
+    hora_regreso: '15:00',
+    duracion: '6 horas',
+    cupo_maximo: 30,
+    cupos_disponibles: 22,
+    estado: 'Disponible',
+    incluye: ['Transporte', 'Guía arqueólogo', 'Entrada al sitio', 'Material educativo'],
+    categoria: 'Arqueología',
+    dificultad: 'Fácil'
+  },
+  {
+    id: 5,
+    titulo: 'Suchitoto Colonial y Lago Suchitlán',
+    descripcion: 'Ciudad colonial mejor conservada de El Salvador con paseo en lancha por el embalse más grande.',
+    precio: 70,
+    imagen: '/images/productos/producto5.jpg',
+    destino: 'Suchitoto, Cuscatlán',
+    punto_salida: 'Centro Histórico San Salvador',
+    fecha_salida: '2025-09-08',
+    hora_salida: '08:30',
+    hora_regreso: '17:30',
+    duracion: '9 horas',
+    cupo_maximo: 20,
+    cupos_disponibles: 5,
+    estado: 'Últimos cupos',
+    incluye: ['Transporte', 'City tour', 'Paseo en lancha', 'Almuerzo típico', 'Guía histórico'],
+    categoria: 'Colonial',
+    dificultad: 'Fácil'
+  },
+  {
+    id: 6,
+    titulo: 'Tazumal y Casa Blanca Arqueológicos',
+    descripcion: 'Dos importantes sitios arqueológicos mayas en Chalchuapa con museo incluido.',
+    precio: 50,
+    imagen: '/images/productos/producto6.jpg',
+    destino: 'Chalchuapa, Santa Ana',
+    fecha_salida: '2025-09-12',
+    punto_salida: 'Terminal de Occidente',
+    hora_salida: '08:00',
+    hora_regreso: '16:00',
+    duracion: '8 horas',
+    cupo_maximo: 25,
+    cupos_disponibles: 0,
+    estado: 'Agotado',
+    incluye: ['Transporte', 'Guía especializado', 'Entradas a sitios', 'Visita al museo', 'Almuerzo'],
+    categoria: 'Arqueología',
+    dificultad: 'Fácil'
+  }
+])
 
-onMounted(() => {
-  setTimeout(() => {
-    reservaciones.value = [
-      {
-        id: 1,
-        titulo: 'Cerro Verde y el Lago de Ilopango',
-        descripcion: 'Reserva tu lugar en nuestro tour de aventura por volcanes y lagos. Incluye transporte y guía.',
-        precio: 60,
-        imagen: '/imagenes/reserva1.jpg',
-        destino: 'Volcán Arenal',
-        punto_salida: 'Oficina Central',
-        fecha_hora_salida: '2023-10-10 08:00',
-        hora_regreso: '2023-10-10 17:00',
-        duracion: '9 horas',
-        cupo_maximo: 15,
-        estado: 'Disponible'
-      },
-      {
-        id: 2,
-        titulo: 'Festival del Melocotón, El Pital y Mirador de Cristal en el Rincón de la Fresa',
-        descripcion: 'Disfruta de un paquete especial para familias, con actividades y visitas guiadas a pueblos históricos.',
-        precio: 80,
-        imagen: '/imagenes/reserva2.jpg',
-        destino: 'Monteverde',
-        punto_salida: 'Hotel Los Jardines',
-        fecha_hora_salida: '2023-10-12 07:30',
-        hora_regreso: '2023-10-12 16:30',
-        duracion: '9 horas',
-        cupo_maximo: 10,
-        estado: 'Disponible'
-      },
-      {
-        id: 3,
-        titulo: 'Cerro Verde y el Lago de Ilopango',
-        descripcion: 'Reserva tu lugar en nuestro tour de aventura por volcanes y lagos. Incluye transporte y guía.',
-        precio: 60,
-        imagen: '/imagenes/reserva1.jpg',
-        destino: 'Volcán Arenal',
-        punto_salida: 'Oficina Central',
-        fecha_hora_salida: '2023-10-10 08:00',
-        hora_regreso: '2023-10-10 17:00',
-        duracion: '9 horas',
-        cupo_maximo: 15,
-        estado: 'Disponible'
-      },
-    ]
-    loading.value = false
-  }, 600)
+// Filtros
+const selectedCategoria = ref('Todos')
+const selectedEstado = ref('Todos')
+const selectedPrecio = ref('Todos')
+
+// Categorías disponibles
+const categorias = computed(() => {
+  const cats = [...new Set(reservaciones.value.map(r => r.categoria))]
+  return cats
 })
 
-const placeholders = Array.from({ length: 2 })
+// Estados disponibles
+const estados = computed(() => {
+  const ests = [...new Set(reservaciones.value.map(r => r.estado))]
+  return ests
+})
+
+// Reservaciones filtradas
+const reservacionesFiltradas = computed(() => {
+  let filtradas = reservaciones.value
+  
+  if (selectedCategoria.value !== 'Todos') {
+    filtradas = filtradas.filter(r => r.categoria === selectedCategoria.value)
+  }
+  
+  if (selectedEstado.value !== 'Todos') {
+    filtradas = filtradas.filter(r => r.estado === selectedEstado.value)
+  }
+  
+  if (selectedPrecio.value !== 'Todos') {
+    if (selectedPrecio.value === 'bajo') {
+      filtradas = filtradas.filter(r => r.precio < 60)
+    } else if (selectedPrecio.value === 'medio') {
+      filtradas = filtradas.filter(r => r.precio >= 60 && r.precio < 80)
+    } else if (selectedPrecio.value === 'alto') {
+      filtradas = filtradas.filter(r => r.precio >= 80)
+    }
+  }
+  
+  return filtradas
+})
+
+// Funciones para botones
+const reservarAhora = (reservacion) => {
+  if (reservacion.estado === 'Agotado') {
+    alert('Lo sentimos, esta reservación está agotada.')
+    return
+  }
+  alert(`¡Reservación "${reservacion.titulo}" seleccionada!\nFecha: ${reservacion.fecha_salida}\nHora: ${reservacion.hora_salida}\nPrecio: $${reservacion.precio}\nCupos disponibles: ${reservacion.cupos_disponibles}`)
+}
+
+const verMasInfo = (reservacion) => {
+  alert(`Información detallada:\n\nTour: ${reservacion.titulo}\nDestino: ${reservacion.destino}\nPunto de salida: ${reservacion.punto_salida}\nFecha: ${reservacion.fecha_salida}\nHorario: ${reservacion.hora_salida} - ${reservacion.hora_regreso}\nDuración: ${reservacion.duracion}\nDificultad: ${reservacion.dificultad}\nIncluye: ${reservacion.incluye.join(', ')}\nCupos disponibles: ${reservacion.cupos_disponibles}/${reservacion.cupo_maximo}`)
+}
 </script>
 <template>
   <Catalogo>
-    <div class="p-8 max-w-8xl mx-auto bg-white rounded shadow">
-      <h1 class="text-3xl font-bold mb-4 text-red-700">Reservaciones</h1>
-      <p class="mb-6 text-gray-700">
-        Reserva tus tours y paquetes de forma fácil y segura. Selecciona la opción que más te interese y completa el formulario.
-      </p>
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <template v-if="loading">
-          <div v-for="(_, n) in placeholders" :key="n" class="animate-pulse bg-red-50 rounded h-80 border border-red-100"></div>
-        </template>
-        <template v-else>
+    <div class="p-4 bg-gray-50 min-h-screen">
+      <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+          <h1 class="text-4xl font-bold mb-4 text-red-700">📅 Reservaciones Disponibles</h1>
+          <p class="text-lg text-gray-600 mb-2">Reserva tu lugar en nuestros próximos tours y excursiones</p>
+          <p class="text-sm text-gray-500">Fechas confirmadas con salidas garantizadas</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div class="bg-white rounded-lg p-6 shadow-md text-center border border-gray-200">
+            <h3 class="text-2xl font-bold text-red-600">{{ reservaciones.length }}</h3>
+            <p class="text-gray-600">Tours Programados</p>
+          </div>
+          <div class="bg-white rounded-lg p-6 shadow-md text-center border border-gray-200">
+            <h3 class="text-2xl font-bold text-green-600">{{ reservaciones.filter(r => r.estado === 'Disponible').length }}</h3>
+            <p class="text-gray-600">Disponibles</p>
+          </div>
+          <div class="bg-white rounded-lg p-6 shadow-md text-center border border-gray-200">
+            <h3 class="text-2xl font-bold text-yellow-600">{{ reservaciones.filter(r => r.estado === 'Últimos cupos').length }}</h3>
+            <p class="text-gray-600">Últimos Cupos</p>
+          </div>
+          <div class="bg-white rounded-lg p-6 shadow-md text-center border border-gray-200">
+            <h3 class="text-2xl font-bold text-blue-600">Desde $45</h3>
+            <p class="text-gray-600">Precios</p>
+          </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="bg-white rounded-xl p-6 shadow-md border border-gray-200 mb-8">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Filtrar reservaciones</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Por categoría</label>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  @click="selectedCategoria = 'Todos'"
+                  :class="['px-3 py-1 rounded-full text-sm font-medium transition-all', 
+                    selectedCategoria === 'Todos' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-red-100']"
+                >
+                  Todos
+                </button>
+                <button
+                  v-for="categoria in categorias"
+                  :key="categoria"
+                  @click="selectedCategoria = categoria"
+                  :class="['px-3 py-1 rounded-full text-sm font-medium transition-all', 
+                    selectedCategoria === categoria ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-red-100']"
+                >
+                  {{ categoria }}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Por disponibilidad</label>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  @click="selectedEstado = 'Todos'"
+                  :class="['px-3 py-1 rounded-full text-sm font-medium transition-all', 
+                    selectedEstado === 'Todos' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-blue-100']"
+                >
+                  Todos
+                </button>
+                <button
+                  v-for="estado in estados"
+                  :key="estado"
+                  @click="selectedEstado = estado"
+                  :class="['px-3 py-1 rounded-full text-sm font-medium transition-all', 
+                    selectedEstado === estado ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-blue-100']"
+                >
+                  {{ estado }}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Por precio</label>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  @click="selectedPrecio = 'Todos'"
+                  :class="['px-3 py-1 rounded-full text-sm font-medium transition-all', 
+                    selectedPrecio === 'Todos' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-green-100']"
+                >
+                  Todos
+                </button>
+                <button
+                  @click="selectedPrecio = 'bajo'"
+                  :class="['px-3 py-1 rounded-full text-sm font-medium transition-all', 
+                    selectedPrecio === 'bajo' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-green-100']"
+                >
+                  < $60
+                </button>
+                <button
+                  @click="selectedPrecio = 'medio'"
+                  :class="['px-3 py-1 rounded-full text-sm font-medium transition-all', 
+                    selectedPrecio === 'medio' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-green-100']"
+                >
+                  $60 - $80
+                </button>
+                <button
+                  @click="selectedPrecio = 'alto'"
+                  :class="['px-3 py-1 rounded-full text-sm font-medium transition-all', 
+                    selectedPrecio === 'alto' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-green-100']"
+                >
+                  > $80
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reservaciones Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card
-            v-for="{ id, titulo, descripcion, precio, imagen, destino, punto_salida, fecha_hora_salida, hora_regreso, duracion, cupo_maximo, estado } in reservaciones"
-            :key="id"
-            class="bg-red-50 border border-red-200 rounded shadow flex flex-col items-center"
+            v-for="reservacion in reservacionesFiltradas"
+            :key="reservacion.id"
+            class="border border-gray-300 bg-white shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-full transform hover:-translate-y-1"
+            :class="{ 'opacity-75': reservacion.estado === 'Agotado' }"
           >
             <template #header>
-              <img :src="imagen || '/storage/no-image.png'" alt="Reservación" class="w-full h-40 object-cover rounded-t mb-4" />
+              <div class="relative w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg overflow-hidden group">
+                <img
+                  :src="reservacion.imagen"
+                  :alt="reservacion.titulo"
+                  class="object-cover h-full w-full group-hover:scale-110 transition-transform duration-500"
+                  @error="$event.target.src = 'https://via.placeholder.com/350x250/ef4444/ffffff?text=' + encodeURIComponent(reservacion.categoria)"
+                />
+                <div class="absolute top-2 right-2 bg-green-600 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
+                  ${{ reservacion.precio }}
+                </div>
+                <div class="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs">
+                  {{ reservacion.fecha_salida }}
+                </div>
+                <div class="absolute top-2 left-2 bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                  {{ reservacion.categoria }}
+                </div>
+                <div class="absolute bottom-2 right-2" :class="{
+                  'bg-green-500': reservacion.estado === 'Disponible',
+                  'bg-yellow-500': reservacion.estado === 'Últimos cupos',
+                  'bg-red-500': reservacion.estado === 'Agotado'
+                }">
+                  <span class="text-white px-2 py-1 rounded-full text-xs font-bold">
+                    {{ reservacion.estado }}
+                  </span>
+                </div>
+              </div>
             </template>
+            
             <template #title>
-              <h2 class="text-xl font-bold text-red-700 mb-2">{{ titulo }}</h2>
+              <span class="text-lg font-bold text-gray-800 leading-tight line-clamp-2">{{ reservacion.titulo }}</span>
             </template>
+            
             <template #content>
-              <p class="text-gray-700 mb-2">{{ descripcion }}</p>
-              <span class="text-red-700 font-semibold mb-2 block">Desde ${{ precio }}</span>
-              <!-- Campos adicionales -->
-              <ul class="text-sm text-gray-600 mb-2">
-                <li v-if="destino"><strong>Destino:</strong> {{ destino }}</li>
-                <li v-if="punto_salida"><strong>Punto de salida:</strong> {{ punto_salida }}</li>
-                <li v-if="fecha_hora_salida"><strong>Salida:</strong> {{ fecha_hora_salida }}</li>
-                <li v-if="hora_regreso"><strong>Regreso:</strong> {{ hora_regreso }}</li>
-                <li v-if="duracion"><strong>Duración:</strong> {{ duracion }}</li>
-                <li v-if="cupo_maximo"><strong>Cupo máximo:</strong> {{ cupo_maximo }}</li>
-                <li v-if="estado"><strong>Estado:</strong> {{ estado }}</li>
-              </ul>
+              <div class="flex-grow space-y-3">
+                <p class="text-gray-600 text-sm line-clamp-2">
+                  {{ reservacion.descripcion }}
+                </p>
+                
+                <!-- Información del tour -->
+                <div class="space-y-2">
+                  <div class="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                    <div class="flex items-center">
+                      <span class="w-1 h-1 bg-blue-500 rounded-full mr-2"></span>
+                      <strong>Destino:</strong>
+                    </div>
+                    <span class="text-xs">{{ reservacion.destino }}</span>
+                    
+                    <div class="flex items-center">
+                      <span class="w-1 h-1 bg-green-500 rounded-full mr-2"></span>
+                      <strong>Salida:</strong>
+                    </div>
+                    <span class="text-xs">{{ reservacion.hora_salida }}</span>
+                    
+                    <div class="flex items-center">
+                      <span class="w-1 h-1 bg-purple-500 rounded-full mr-2"></span>
+                      <strong>Duración:</strong>
+                    </div>
+                    <span class="text-xs">{{ reservacion.duracion }}</span>
+                    
+                    <div class="flex items-center">
+                      <span class="w-1 h-1 bg-red-500 rounded-full mr-2"></span>
+                      <strong>Cupos:</strong>
+                    </div>
+                    <span class="text-xs">{{ reservacion.cupos_disponibles }}/{{ reservacion.cupo_maximo }}</span>
+                  </div>
+                  
+                  <div>
+                    <p class="text-xs font-semibold text-gray-700 mb-1">Punto de salida:</p>
+                    <p class="text-xs text-gray-600">{{ reservacion.punto_salida }}</p>
+                  </div>
+                  
+                  <div>
+                    <p class="text-xs font-semibold text-gray-700 mb-1">Incluye:</p>
+                    <ul class="text-xs text-gray-600">
+                      <li v-for="item in reservacion.incluye.slice(0, 2)" :key="item" class="flex items-center">
+                        <span class="w-1 h-1 bg-green-500 rounded-full mr-2"></span>
+                        {{ item }}
+                      </li>
+                      <li v-if="reservacion.incluye.length > 2" class="text-gray-400">
+                        + {{ reservacion.incluye.length - 2 }} servicios más...
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </template>
+            
             <template #footer>
-              <Button label="Reservar ahora" class="!bg-red-600 !border-none !px-4 !py-2 !text-white font-semibold rounded hover:!bg-red-700 transition w-full" />
+              <div class="flex gap-2 mt-4">
+                <Button
+                  :label="reservacion.estado === 'Agotado' ? 'Agotado' : 'Reservar'"
+                  @click="reservarAhora(reservacion)"
+                  :disabled="reservacion.estado === 'Agotado'"
+                  :class="[
+                    '!border-none !px-3 !py-2 !text-sm font-semibold rounded transition-all flex-1 shadow-sm',
+                    reservacion.estado === 'Agotado' 
+                      ? '!bg-gray-400 !text-white cursor-not-allowed' 
+                      : '!bg-red-600 !text-white hover:!bg-red-700'
+                  ]"
+                  size="small"
+                />
+                <Button
+                  label="Info"
+                  @click="verMasInfo(reservacion)"
+                  outlined
+                  class="!border-red-600 !text-red-600 !px-3 !py-2 !text-sm font-semibold rounded hover:!bg-red-50 transition-all"
+                  size="small"
+                />
+              </div>
             </template>
           </Card>
-        </template>
-      </div>
-      <div class="mt-8 text-center">
-        <span class="text-gray-600">¿Tienes dudas? <a href="/contactos" class="text-red-600 hover:underline">Contáctanos</a></span>
+        </div>
+
+        <!-- Info adicional -->
+        <div class="mt-12 bg-white rounded-xl p-8 shadow-md border border-gray-200">
+          <h2 class="text-2xl font-bold text-red-700 mb-6 text-center">¿Cómo funciona el sistema de reservaciones?</h2>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="text-center">
+              <div class="text-4xl mb-3">🔍</div>
+              <h3 class="font-semibold text-red-600 mb-2">1. Explora</h3>
+              <p class="text-gray-600 text-sm">Revisa tours disponibles con fechas confirmadas</p>
+            </div>
+            <div class="text-center">
+              <div class="text-4xl mb-3">📝</div>
+              <h3 class="font-semibold text-red-600 mb-2">2. Reserva</h3>
+              <p class="text-gray-600 text-sm">Asegura tu lugar con información detallada</p>
+            </div>
+            <div class="text-center">
+              <div class="text-4xl mb-3">💳</div>
+              <h3 class="font-semibold text-red-600 mb-2">3. Paga</h3>
+              <p class="text-gray-600 text-sm">Confirma tu reservación con pago seguro</p>
+            </div>
+            <div class="text-center">
+              <div class="text-4xl mb-3">🚌</div>
+              <h3 class="font-semibold text-red-600 mb-2">4. Viaja</h3>
+              <p class="text-gray-600 text-sm">Disfruta tu experiencia sin preocupaciones</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensaje de no resultados -->
+        <div v-if="reservacionesFiltradas.length === 0" class="text-center py-12">
+          <div class="text-6xl mb-4">📅</div>
+          <h3 class="text-xl font-semibold text-gray-600 mb-2">No se encontraron reservaciones</h3>
+          <p class="text-gray-500">Intenta con otros filtros o <button @click="selectedCategoria = 'Todos'; selectedEstado = 'Todos'; selectedPrecio = 'Todos'" class="text-red-600 hover:underline">ver todas las opciones</button></p>
+        </div>
+
+        <!-- CTA final -->
+        <div class="mt-8 text-center">
+          <span class="text-gray-600">¿Tienes dudas sobre las reservaciones? <a href="/contactos" class="text-red-600 hover:underline font-semibold">Contáctanos para más información</a></span>
+        </div>
       </div>
     </div>
   </Catalogo>
 </template>
+
+<style scoped>
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>
