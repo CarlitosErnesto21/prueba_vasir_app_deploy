@@ -4,8 +4,8 @@ import { usePage, Link, router } from '@inertiajs/vue3';
 import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
 import  { faRoute, faDoorOpen, faCircleXmark, faUserCircle, 
     faChevronCircleDown, faUser, faHotel, faPlaneDeparture, faGear, faBoxesStacked, 
-    faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,faListCheck,
-    faFileInvoice} from "@fortawesome/free-solid-svg-icons";   
+    faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,
+    faFileInvoice, faMap, } from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
 import { route } from 'ziggy-js';
 
@@ -341,7 +341,7 @@ function manageClientes() {
                             tabindex="0"
                             @keydown.enter="$inertia.visit(route('categorias'))"
                             title="Control de categorias">
-                            <FontAwesomeIcon :icon="faListCheck" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
+                            <FontAwesomeIcon :icon="faFileInvoice" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Categorías</span>
                         </li>
                         <li
@@ -351,7 +351,7 @@ function manageClientes() {
                             tabindex="0"
                             @keydown.enter="$inertia.visit(route('paisescategorias'))"
                             title="Control de paises y provincias">
-                            <FontAwesomeIcon :icon="faFileInvoice" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
+                            <FontAwesomeIcon :icon="faMap " :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Categorías</span>
                         </li>
                     </ul>
