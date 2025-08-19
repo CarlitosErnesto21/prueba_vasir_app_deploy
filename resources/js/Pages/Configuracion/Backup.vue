@@ -4,11 +4,22 @@
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <!-- Header -->
                 <div class="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
-                    <h1 class="text-2xl font-bold text-white flex items-center">
-                        <FontAwesomeIcon :icon="faFileArchive" class="mr-3" />
-                        Respaldo de Base de Datos
-                    </h1>
-                    <p class="text-red-100 mt-2">Genere y gestione copias de seguridad de la base de datos</p>
+                    <div class="flex items-center">
+                        <button 
+                            @click="router.visit(route('settings'))"
+                            class="flex items-center text-white hover:text-red-200 transition-colors duration-200 p-2 rounded-lg hover:bg-red-800 mr-4"
+                            title="Regresar a Configuración"
+                        >
+                            <FontAwesomeIcon :icon="faArrowLeft" class="h-5 w-5" />
+                        </button>
+                        <div>
+                            <h1 class="text-2xl font-bold text-white flex items-center">
+                                <FontAwesomeIcon :icon="faFileArchive" class="mr-3" />
+                                Respaldo de Base de Datos
+                            </h1>
+                            <p class="text-red-100 mt-2">Genere y gestione copias de seguridad de la base de datos</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Content -->
@@ -98,7 +109,8 @@ import {
     faTrash, 
     faFolderOpen, 
     faInfoCircle, 
-    faSpinner 
+    faSpinner,
+    faArrowLeft
 } from '@fortawesome/free-solid-svg-icons';
 
 const isGenerating = ref(false);
