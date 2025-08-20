@@ -2,23 +2,27 @@
     <AuthenticatedLayout>
         <Toast />
         <ConfirmDialog />
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Gestión de Tipos de Documento
-            </h2>
-        </template>
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <!-- Header con botón agregar -->
+                <!-- Header con botón de regreso y botón agregar -->
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg mb-6">
                     <div class="p-6 bg-white border-b border-gray-200">
                         <div class="flex justify-between items-center">
-                            <div>
-                                <h3 class="text-lg font-medium text-gray-900">Tipos de Documento</h3>
-                                <p class="mt-1 text-sm text-gray-500">
-                                    Gestiona los tipos de documentos disponibles para los clientes
-                                </p>
+                            <div class="flex items-center space-x-4">
+                                <button 
+                                    @click="router.visit(route('clientes'))"
+                                    class="flex items-center text-gray-600 hover:text-red-600 transition-colors duration-200 p-2 rounded-lg hover:bg-gray-100"
+                                    title="Regresar a Clientes"
+                                >
+                                    <FontAwesomeIcon :icon="faArrowLeft" class="h-5 w-5" />
+                                </button>
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-900">Tipos de Documento</h3>
+                                    <p class="mt-1 text-sm text-gray-500">
+                                        Gestiona los tipos de documentos disponibles para los clientes
+                                    </p>
+                                </div>
                             </div>
                             <button 
                                 @click="showCreateModal = true"
@@ -217,7 +221,8 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { 
     faIdCard, 
     faUsers,
-    faFileAlt
+    faFileAlt,
+    faArrowLeft
 } from '@fortawesome/free-solid-svg-icons';
 
 // Props desde el controller
