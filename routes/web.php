@@ -5,6 +5,7 @@ use App\Http\Controllers\InformePDFController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\TipoDocumentoController;
+use App\Http\Controllers\BackupController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Middleware\RutasAdmin;
@@ -51,6 +52,20 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
     Route::get('/configuracion/backup', function () {
         return Inertia::render('Configuracion/Backup');
     })->name('backup');
+    
+    // API routes for backup management - Solo para Administradores
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/api/backups', [BackupController::class, 'index']);
+        Route::post('/api/backups/generate', [BackupController::class, 'generate']);
+        Route::get('/api/backups/{id}/download', [BackupController::class, 'download']);
+        Route::delete('/api/backups/{id}', [BackupController::class, 'delete']);
+        Route::post('/api/backups/cleanup', [BackupController::class, 'cleanup']);
+    });
+    
+    // Ruta de prueba para backup
+    Route::get('/test-backup', function () {
+        return view('test-backup');
+    })->middleware('auth');
     
     // Asignación de Roles - Solo para Administradores
     Route::get('/configuracion/roles', [RoleController::class, 'index'])->name('roles')->middleware('role:admin');
