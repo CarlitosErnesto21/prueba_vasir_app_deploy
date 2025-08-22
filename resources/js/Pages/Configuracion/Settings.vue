@@ -156,6 +156,19 @@
                             <div class="space-y-6">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Descripción de la Empresa
+                                    </label>
+                                    <textarea 
+                                        v-model="settings.description"
+                                        rows="4"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                        placeholder="Describe brevemente qué es VASIR y qué hacen..."
+                                    ></textarea>
+                                    <p class="text-xs text-blue-600 mt-1">Este texto aparecerá en el encabezado principal de la página Sobre Nosotros</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
                                         Misión de la Empresa
                                     </label>
                                     <textarea 
@@ -283,6 +296,7 @@ const settings = ref({
     // Configuraciones para contenido del sitio
     mission: props.siteSettings.mission || '',
     vision: props.siteSettings.vision || '',
+    description: props.siteSettings.description || '',
     
     // Configuraciones del sistema (solo para display, no funcionales aún)
     systemName: 'Sistema VASIR',
@@ -322,18 +336,20 @@ const saveSettings = async () => {
         // Guardar configuraciones de contenido del sitio
         await router.post(route('settings.update'), {
             mission: settings.value.mission,
-            vision: settings.value.vision
+            vision: settings.value.vision,
+            description: settings.value.description
         }, {
             onSuccess: (page) => {
                 // Actualizar las configuraciones originales
                 originalSettings.value.mission = settings.value.mission;
                 originalSettings.value.vision = settings.value.vision;
+                originalSettings.value.description = settings.value.description;
                 
                 // Mostrar toast de éxito
                 toast.add({
                     severity: 'success',
                     summary: '¡Éxito!',
-                    detail: 'Misión y Visión actualizadas correctamente',
+                    detail: 'Configuración de la empresa actualizada correctamente',
                     life: 3000
                 });
                 
