@@ -28,6 +28,13 @@ class SiteSettingsSeeder extends Seeder
                 'description' => 'Visión corporativa que aparece en la página Sobre Nosotros'
             ],
             [
+                'key' => 'company_description',
+                'value' => '', // Campo vacío para que el admin lo configure
+                'type' => 'textarea',
+                'label' => 'Descripción de la Empresa',
+                'description' => 'Descripción principal que aparece en el encabezado de la página Sobre Nosotros'
+            ],
+            [
                 'key' => 'auto_backup_enabled',
                 'value' => 'false',
                 'type' => 'boolean',
