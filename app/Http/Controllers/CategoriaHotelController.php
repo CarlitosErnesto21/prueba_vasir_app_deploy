@@ -22,7 +22,7 @@ class CategoriaHotelController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'estrella' => 'required|integer|min:1|max:5',
+            'nombre' => 'required|string|max:50',
         ]);
 
         $categoria = CategoriaHotel::create($validated);
@@ -44,10 +44,12 @@ class CategoriaHotelController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, CategoriaHotel $categoriaHotel)
+    public function update(Request $request, $id)
     {
+        $categoriaHotel = CategoriaHotel::findOrFail($id);
+        
         $validated = $request->validate([
-            'estrella' => 'required|integer|min:1|max:5',
+            'nombre' => 'required|string|max:50',
         ]);
 
         $categoriaHotel->update($validated);
@@ -61,12 +63,14 @@ class CategoriaHotelController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(CategoriaHotel $categoriaHotel)
+    public function destroy($id)
     {
+        $categoriaHotel = CategoriaHotel::findOrFail($id);
         $categoriaHotel->delete();
 
         return response()->json([
             'message' => 'Categoría de hotel eliminada exitosamente',
+            'success' => true
         ]);
     }
 }

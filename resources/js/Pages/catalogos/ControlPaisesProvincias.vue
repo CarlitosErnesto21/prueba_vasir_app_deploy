@@ -2,7 +2,7 @@
   <Head title="Países y Provincias" />
   <AuthenticatedLayout>
     <Toast />
-    <div class="py-6 px-2 sm:px-4 md:px-6 mt-10 mx-auto bg-red-50 shadow-md rounded-lg max-w-full">
+    <div class="py-6 px-2 sm:px-4 md:px-6 mt-10 mx-auto bg-red-50 shadow-md rounded-lg max-w-3xl">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-xl font-bold">Control de Países y Provincias</h3>
         <Button :label="`Agregar ${modoSeleccionado}`" 
