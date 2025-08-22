@@ -27,18 +27,20 @@ TODOS LOS DESARROLLADORES DEBEN HACER ESTO:
 ============================================
 
 SI HAY PROBLEMAS:
-- Ventana se cierra rapido: usar diagnostico_backup.bat
+- Ventana se cierra rapido: usar diagnostico_rapido.bat PRIMERO
 - Error "Could not open artisan": ejecutar desde carpeta correcta
   → Buscar carpeta con archivo 'artisan' 
   → Copiar archivos .bat a esa carpeta
   → O usar VS Code Terminal
 - Error "backup no funciona": ejecutar preparar_proyecto.bat
+- Script se cierra solo: usar diagnostico_rapido.bat
 - Error "acceso denegado": ejecutar como administrador
 - Error "PHP no encontrado": instalar PHP
 - Error "no es Laravel": ejecutar desde carpeta correcta
 - Otros errores: tomar captura y enviar al grupo
 
 📄 AYUDA EXTRA:
+- diagnostico_rapido.bat (para cuando scripts se cierran solos)
 - preparar_proyecto.bat (instala dependencias automáticamente)
 - SOLUCION_ERROR_ARTISAN.txt (para error más común)
 
