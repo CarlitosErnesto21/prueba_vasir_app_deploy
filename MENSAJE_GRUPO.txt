@@ -1,0 +1,46 @@
+🚨 MENSAJE PARA EL GRUPO DE WHATSAPP/TELEGRAM 🚨
+
+Copia y pega este mensaje:
+
+---
+
+🔥 IMPORTANTE - TODOS DEBEN HACER ESTO 🔥
+
+Hola equipo! Acabo de simplificar el sistema de backups automáticos. 
+
+📋 SOLO 2 PASOS SIMPLES:
+
+1️⃣ PREPARAR PROYECTO:
+   - Buscar: preparar_proyecto.bat
+   - Clic derecho → "Ejecutar como administrador"
+   - Presionar ENTER cuando pida
+   - Esperar hasta "PROYECTO PREPARADO CORRECTAMENTE"
+
+2️⃣ CONFIGURAR BACKUPS:
+   - Buscar: configurar_backup_automatico.bat
+   - Clic derecho → "Ejecutar como administrador"
+   - Presionar ENTER cuando pida
+   - Esperar hasta ver ✅ símbolos verdes
+
+✅ PARA VERIFICAR:
+- Ve a: storage/app/private/VASIR/
+- Debe haber archivos de backup con fecha de hoy
+
+📱 SI HAY PROBLEMAS:
+- Error "acceso denegado" → ejecutar como administrador
+- Error "PHP no encontrado" → instalar PHP/XAMPP
+- Error "Composer no encontrado" → instalar Composer
+- Tomar captura del error
+- Enviar al grupo
+
+💡 ESTO SE HACE UNA SOLA VEZ
+- Funciona aunque cierres Visual Studio Code
+- Los backups se crean automáticamente cada 2 minutos
+- Se puede cambiar la frecuencia desde la web
+
+📄 AYUDA:
+- INSTRUCCIONES_SIMPLES.txt (pasos detallados)
+
+¿Preguntas? ¡Escriban al grupo! 👨‍💻👩‍💻
+
+---
