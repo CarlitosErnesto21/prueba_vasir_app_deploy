@@ -15,9 +15,38 @@ echo Este script va a instalar dependencias y
 echo configurar el proyecto para que funcionen
 echo los backups.
 echo.
+echo ⚠️  IMPORTANTE: Presiona ENTER en cada paso
+echo    para poder ver si hay errores
+echo.
 echo Presiona ENTER para comenzar...
 pause >nul
 cls
+
+echo.
+echo 🔍 Verificando ubicación del proyecto...
+echo Ruta actual: %~dp0
+echo.
+
+if not exist "artisan" (
+    color 0C
+    echo ❌ ERROR: NO ESTAS EN LA CARPETA CORRECTA
+    echo.
+    echo Este script debe ejecutarse desde la carpeta
+    echo que contiene el archivo 'artisan'
+    echo.
+    echo SOLUCION:
+    echo 1. Buscar la carpeta que tiene 'artisan'
+    echo 2. Copiar este archivo ahí
+    echo 3. Ejecutar desde esa ubicación
+    echo.
+    echo ⚠️  Presiona ENTER para cerrar...
+    pause >nul
+    goto :final
+)
+
+echo ✅ Archivo artisan encontrado - ubicación correcta
+echo    Presiona ENTER para continuar...
+pause >nul
 
 echo.
 echo 📦 PASO 1: Instalando dependencias...
@@ -25,6 +54,7 @@ echo    (Esto puede tardar varios minutos)
 echo.
 
 REM Verificar si composer existe
+echo 🔍 Verificando Composer...
 composer --version >nul 2>&1
 if %errorLevel% neq 0 (
     color 0C
@@ -36,14 +66,21 @@ if %errorLevel% neq 0 (
     echo 3. Reinicia la computadora
     echo 4. Vuelve a ejecutar este script
     echo.
+    echo ⚠️  Presiona ENTER para cerrar...
+    pause >nul
     goto :final
 )
 
 echo ✅ Composer encontrado
+composer --version | findstr "Composer"
 echo.
+echo    Presiona ENTER para continuar con la instalación...
+pause >nul
 
 REM Ejecutar composer install
 echo 🔄 Ejecutando composer install...
+echo    (Esto puede tardar varios minutos - ten paciencia)
+echo.
 composer install
 if %errorLevel% neq 0 (
     color 0C
@@ -55,11 +92,16 @@ if %errorLevel% neq 0 (
     echo 2. Ejecutar: composer update
     echo 3. Pedir ayuda en el grupo
     echo.
+    echo ⚠️  Presiona ENTER para cerrar...
+    pause >nul
     goto :final
 )
 
 echo ✅ Dependencias instaladas correctamente
 echo.
+echo    ✨ ¡Excelente! Composer install completado
+echo    Presiona ENTER para continuar...
+pause >nul
 
 echo 📄 PASO 2: Verificando archivo .env...
 echo.
@@ -78,11 +120,17 @@ if not exist ".env" (
         echo 2. Configurar base de datos
         echo 3. Pedir ayuda en el grupo
         echo.
+        echo ⚠️  Presiona ENTER para cerrar...
+        pause >nul
         goto :final
     )
 ) else (
     echo ✅ Archivo .env existe
 )
+
+echo.
+echo    Presiona ENTER para continuar...
+pause >nul
 
 echo.
 echo 🔑 PASO 3: Generando clave de aplicación...
@@ -92,11 +140,16 @@ php artisan key:generate --force
 if %errorLevel% neq 0 (
     color 0C
     echo ❌ ERROR GENERANDO CLAVE
+    echo.
+    echo ⚠️  Presiona ENTER para cerrar...
+    pause >nul
     goto :final
 )
 
 echo ✅ Clave generada correctamente
 echo.
+echo    Presiona ENTER para continuar con migraciones...
+pause >nul
 
 echo 🗃️ PASO 4: Ejecutando migraciones...
 echo.
@@ -116,11 +169,16 @@ if %errorLevel% neq 0 (
     echo 2. Crear la base de datos
     echo 3. Volver a ejecutar este script
     echo.
+    echo ⚠️  Presiona ENTER para cerrar...
+    pause >nul
     goto :final
 )
 
 echo ✅ Migraciones ejecutadas correctamente
 echo.
+echo    ✨ ¡Base de datos configurada!
+echo    Presiona ENTER para probar el backup...
+pause >nul
 
 echo 🧪 PASO 5: Probando backup nuevamente...
 echo.
