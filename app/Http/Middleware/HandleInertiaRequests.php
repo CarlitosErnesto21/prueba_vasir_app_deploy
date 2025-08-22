@@ -49,6 +49,14 @@ class HandleInertiaRequests extends Middleware
                     ]
                 ) : null, // Si no hay usuario autenticado, retorna null
             ],
+            
+            // Compartir mensajes flash con todas las vistas de Inertia
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+                'info' => fn () => $request->session()->get('info'),
+                'warning' => fn () => $request->session()->get('warning'),
+            ],
         ]);
     }
 }

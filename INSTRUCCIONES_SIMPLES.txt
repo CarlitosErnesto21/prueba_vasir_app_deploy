@@ -1,0 +1,36 @@
+============================================
+    BACKUPS AUTOMATICOS - INSTRUCCIONES
+============================================
+
+TODOS LOS DESARROLLADORES DEBEN HACER ESTO:
+
+1. ACTUALIZAR PROYECTO:
+   - git pull
+   - composer install
+
+2. CONFIGURAR BACKUPS:
+   - Buscar archivo: configurar_backup_automatico.bat
+   - Clic derecho -> "Ejecutar como administrador"
+   - Decir "Si" cuando pregunte
+   - Esperar hasta ver simbolos verdes ✓
+
+3. VERIFICAR:
+   - Doble clic en: verificar_estado_backup.bat
+   - Debe mostrar simbolos verdes ✓
+
+============================================
+
+SI HAY PROBLEMAS:
+- Error "acceso denegado": ejecutar como administrador
+- Error "PHP no encontrado": instalar PHP
+- Otros errores: tomar captura y enviar al grupo
+
+QUE HACE:
+- Crea backups automaticos cada 2 minutos
+- Funciona aunque cierres Visual Studio Code
+- No verás ventanas ni notificaciones
+- Se puede cambiar frecuencia desde la web
+
+IMPORTANTE: SOLO SE HACE UNA VEZ, NO CADA ACTUALIZACION
+
+============================================

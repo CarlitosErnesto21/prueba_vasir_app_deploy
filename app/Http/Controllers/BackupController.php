@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\SiteSetting;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class BackupController extends Controller
 {
@@ -366,5 +369,65 @@ class BackupController extends Controller
         }
         
         return round($bytes, $precision) . ' ' . $units[$i];
+    }
+
+    /**
+     * Mostrar la vista de backup con configuraciones
+     */
+    public function showBackupPage()
+    {
+        return Inertia::render('Configuracion/Backup', [
+            'backupSettings' => [
+                'auto_backup_enabled' => SiteSetting::get('auto_backup_enabled', 'false') === 'true',
+                'backup_frequency' => SiteSetting::get('backup_frequency', 'daily'),
+                'backup_retention_days' => (int) SiteSetting::get('backup_retention_days', '7')
+            ]
+        ]);
+    }
+
+    /**
+     * Actualizar configuraciones de backup automático
+     */
+    public function updateBackupSettings(Request $request)
+    {
+        try {
+            $request->validate([
+                'auto_backup_enabled' => 'required|boolean',
+                'backup_frequency' => 'required|in:every_2_minutes,hourly,daily,weekly,monthly',
+                'backup_retention_days' => 'required|integer|min:1|max:365'
+            ]);
+
+            SiteSetting::set('auto_backup_enabled', $request->auto_backup_enabled ? 'true' : 'false');
+            SiteSetting::set('backup_frequency', $request->backup_frequency);
+            SiteSetting::set('backup_retention_days', $request->backup_retention_days);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Configuración de respaldos actualizada correctamente'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al guardar configuración: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener configuraciones actuales de backup
+     */
+    public function getBackupSettings()
+    {
+        return response()->json([
+            'auto_backup_enabled' => SiteSetting::get('auto_backup_enabled', 'false') === 'true',
+            'backup_frequency' => SiteSetting::get('backup_frequency', 'daily'),
+            'backup_retention_days' => (int) SiteSetting::get('backup_retention_days', '7')
+        ]);
     }
 }
