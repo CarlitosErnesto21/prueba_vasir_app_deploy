@@ -2,52 +2,33 @@
     BACKUPS AUTOMATICOS - INSTRUCCIONES
 ============================================
 
-TODOS LOS DESARROLLADORES DEBEN HACER ESTO:
+SOLO HAY 2 PASOS SIMPLES:
 
-⚠️ SI LA VENTANA SE CIERRA MUY RAPIDO:
-   - Primero ejecutar: diagnostico_backup.bat
-   - Como administrador
-   - Te dira que esta fallando
-
-1. ACTUALIZAR PROYECTO:
-   - git pull
-   - composer install
+1. PREPARAR PROYECTO:
+   - Buscar archivo: preparar_proyecto.bat
+   - Clic derecho -> "Ejecutar como administrador"
+   - Seguir instrucciones (presionar ENTER cuando pida)
+   - Esperar hasta que diga "PROYECTO PREPARADO CORRECTAMENTE"
 
 2. CONFIGURAR BACKUPS:
    - Buscar archivo: configurar_backup_automatico.bat
    - Clic derecho -> "Ejecutar como administrador"
-   - Decir "Si" cuando pregunte
-   - IMPORTANTE: presionar ENTER cuando te pida
+   - Seguir instrucciones (presionar ENTER cuando pida)
    - Esperar hasta ver simbolos verdes ✓
-
-3. VERIFICAR:
-   - Doble clic en: verificar_estado_backup.bat
-   - Debe mostrar simbolos verdes ✓
 
 ============================================
 
 SI HAY PROBLEMAS:
-- Ventana se cierra rapido: usar diagnostico_rapido.bat PRIMERO
-- Error "Could not open artisan": ejecutar desde carpeta correcta
-  → Buscar carpeta con archivo 'artisan' 
-  → Copiar archivos .bat a esa carpeta
-  → O usar VS Code Terminal
-- Error "backup no funciona": ejecutar preparar_proyecto.bat
-- Script se cierra solo: usar diagnostico_rapido.bat
 - Error "acceso denegado": ejecutar como administrador
-- Error "PHP no encontrado": instalar PHP
-- Error "no es Laravel": ejecutar desde carpeta correcta
+- Error "PHP no encontrado": instalar PHP/XAMPP
+- Error "Composer no encontrado": instalar Composer
+- Script se cierra solo: NO ejecutar como administrador
 - Otros errores: tomar captura y enviar al grupo
-
-📄 AYUDA EXTRA:
-- diagnostico_rapido.bat (para cuando scripts se cierran solos)
-- preparar_proyecto.bat (instala dependencias automáticamente)
-- SOLUCION_ERROR_ARTISAN.txt (para error más común)
 
 QUE HACE:
 - Crea backups automaticos cada 2 minutos
 - Funciona aunque cierres Visual Studio Code
-- No verás ventanas ni notificaciones
+- No veras ventanas ni notificaciones
 - Se puede cambiar frecuencia desde la web
 
 IMPORTANTE: SOLO SE HACE UNA VEZ, NO CADA ACTUALIZACION
