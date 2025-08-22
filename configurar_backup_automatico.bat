@@ -16,8 +16,13 @@ echo.
 echo     IMPORTANTE: Debes ejecutar como ADMINISTRADOR
 echo ====================================================
 echo.
+echo 🔍 Iniciando diagnostico del sistema...
+echo    Presiona ENTER para continuar o Ctrl+C para cancelar
+pause >nul
+echo.
 
 REM Verificar permisos de administrador
+echo 🔐 Verificando permisos de administrador...
 net session >nul 2>&1
 if %errorLevel% neq 0 (
     color 0C
@@ -26,13 +31,13 @@ if %errorLevel% neq 0 (
     echo.
     echo Para solucionarlo:
     echo 1. Cierra esta ventana
-    echo 2. Clic derecho en el archivo .bat
+    echo 2. Clic derecho en el archivo configurar_backup_automatico.bat
     echo 3. Selecciona "Ejecutar como administrador"
     echo 4. Cuando Windows pregunte, haz clic en "Si"
     echo.
-    echo ⚠️  NO CIERRES ESTA VENTANA SIN HACER LO ANTERIOR
+    echo ⚠️  Presiona ENTER para cerrar...
     echo.
-    pause
+    pause >nul
     exit /b 1
 )
 
@@ -44,20 +49,27 @@ set PROJECT_PATH=%~dp0
 set PROJECT_PATH=%PROJECT_PATH:~0,-1%
 
 echo 📂 Detectando proyecto en: %PROJECT_PATH%
+echo    Presiona ENTER para continuar...
+pause >nul
 echo.
 
 REM Verificar que estamos en un proyecto Laravel válido
+echo 🔍 Buscando archivo 'artisan' en el proyecto...
 if not exist "%PROJECT_PATH%\artisan" (
     color 0C
     echo.
     echo ❌❌❌ ERROR: NO ES UN PROYECTO LARAVEL VALIDO ❌❌❌
     echo.
-    echo No encontre el archivo 'artisan' en esta carpeta.
+    echo No encontre el archivo 'artisan' en esta carpeta:
+    echo %PROJECT_PATH%
     echo.
-    echo Asegurate de ejecutar este archivo desde la carpeta
-    echo donde esta el proyecto (donde esta el archivo 'artisan').
+    echo ¿Que hacer?
+    echo 1. Asegurate de ejecutar desde la carpeta del proyecto
+    echo 2. Debe estar junto al archivo 'artisan'
+    echo 3. Si no ves el archivo 'artisan', pregunta en el grupo
     echo.
-    pause
+    echo ⚠️  Presiona ENTER para cerrar...
+    pause >nul
     exit /b 1
 )
 
@@ -74,38 +86,48 @@ if %errorLevel% neq 0 (
     echo.
     echo PHP es necesario para que funcionen los backups.
     echo.
-    echo Soluciones:
-    echo 1. Instalar PHP en tu computadora
-    echo 2. Agregar PHP a las variables de entorno
-    echo 3. Pedir ayuda en el grupo si no sabes como
+    echo ¿Que hacer?
+    echo 1. Instalar PHP desde php.net
+    echo 2. Agregar PHP a las variables de entorno PATH
+    echo 3. Reiniciar la computadora después de instalar
+    echo 4. Si tienes XAMPP, usar el PHP de ahí
+    echo 5. Pedir ayuda en el grupo si no sabes como
     echo.
-    pause
+    echo ⚠️  Presiona ENTER para cerrar...
+    pause >nul
     exit /b 1
 )
 
 echo ✅ PHP instalado y funcionando: OK
+php --version | findstr "PHP"
 echo.
 
 REM Probar el comando de backup
 echo 🧪 Probando si el sistema de backup funciona...
+echo    (Esto puede tardar unos segundos...)
 php artisan backup:auto >nul 2>&1
 if %errorLevel% neq 0 (
     color 0C
     echo.
     echo ❌❌❌ ERROR: EL SISTEMA DE BACKUP NO FUNCIONA ❌❌❌
     echo.
-    echo Posibles causas:
-    echo 1. No hiciste 'composer install'
-    echo 2. Falta configurar la base de datos
-    echo 3. Hay algun error en el proyecto
+    echo ¿Que hacer?
+    echo 1. Ejecutar 'composer install' en la terminal
+    echo 2. Configurar correctamente la base de datos (.env)
+    echo 3. Ejecutar 'php artisan migrate' 
+    echo 4. Verificar que no hay errores en el proyecto
+    echo 5. Pedir ayuda en el grupo
     echo.
-    echo Solucion: Ejecuta 'composer install' y vuelve a intentar
-    echo.
-    pause
+    echo ⚠️  Presiona ENTER para cerrar...
+    pause >nul
     exit /b 1
 )
 
 echo ✅ Sistema de backup funcionando: OK
+echo.
+echo    ✨ ¡Excelente! El backup funciona correctamente
+echo    Presiona ENTER para continuar con la configuracion automatica...
+pause >nul
 echo.
 
 REM Crear el script VBS dinámicamente
@@ -126,7 +148,8 @@ if %errorLevel% neq 0 (
     echo.
     echo Solucion: Ejecutar como administrador
     echo.
-    pause
+    echo ⚠️  Presiona ENTER para cerrar...
+    pause >nul
     exit /b 1
 )
 
@@ -166,7 +189,8 @@ if %ERRORLEVEL% EQU 0 (
     echo.
     echo Solucion: Ejecutar como administrador
     echo.
-    pause
+    echo ⚠️  Presiona ENTER para cerrar...
+    pause >nul
     exit /b 1
 )
 
@@ -179,7 +203,8 @@ if %errorLevel% neq 0 (
     echo.
     echo ❌❌❌ ERROR: LA TAREA NO SE CREO CORRECTAMENTE ❌❌❌
     echo.
-    pause
+    echo ⚠️  Presiona ENTER para cerrar...
+    pause >nul
     exit /b 1
 )
 

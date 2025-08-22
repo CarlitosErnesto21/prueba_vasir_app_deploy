@@ -10,18 +10,27 @@ Hola equipo! Acabo de agregar un sistema de backups automáticos al proyecto.
 
 📋 QUE DEBEN HACER (5 MINUTOS):
 
+⚠️ SI LA VENTANA SE CIERRA MUY RÁPIDO:
+   - Primero ejecutar: diagnostico_backup.bat (como administrador)
+   - Te dirá exactamente qué está fallando
+
 1️⃣ git pull
 2️⃣ composer install  
 3️⃣ Buscar archivo: configurar_backup_automatico.bat
 4️⃣ Clic derecho → "Ejecutar como administrador"
 5️⃣ Decir "Sí" cuando Windows pregunte
-6️⃣ Esperar hasta ver ✅ símbolos verdes
+6️⃣ IMPORTANTE: Presionar ENTER cuando te lo pida
+7️⃣ Esperar hasta ver ✅ símbolos verdes
 
 ✅ PARA VERIFICAR:
 - Doble clic en: verificar_estado_backup.bat
 - Debe mostrar símbolos verdes
 
 📱 SI HAY PROBLEMAS:
+- Ventana se cierra rápido → usar diagnostico_backup.bat
+- Error "acceso denegado" → ejecutar como administrador  
+- Error "PHP no encontrado" → instalar PHP/XAMPP
+- Error "no es Laravel" → ejecutar desde carpeta correcta
 - Tomar captura del error
 - Enviar al grupo
 - Alguien te ayudará
@@ -32,9 +41,10 @@ Hola equipo! Acabo de agregar un sistema de backups automáticos al proyecto.
 - Se puede cambiar la frecuencia desde la web
 
 🎯 ARCHIVOS IMPORTANTES:
+- diagnostico_backup.bat (para problemas técnicos)
 - GUIA_FACIL_COMPAÑEROS.md (guía completa)
-- CHECKLIST_BACKUPS.txt (lista de verificación)
 - INSTRUCCIONES_SIMPLES.txt (versión corta)
+- CHECKLIST_BACKUPS.txt (lista de verificación)
 
 ¿Preguntas? ¡Escriban al grupo! 👨‍💻👩‍💻
 
