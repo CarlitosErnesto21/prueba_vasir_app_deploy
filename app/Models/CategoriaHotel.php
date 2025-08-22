@@ -12,7 +12,7 @@ class CategoriaHotel extends Model
     protected $table = 'categorias_hoteles';
     
     use HasFactory;
-    protected $fillable = ['estrella'];
+    protected $fillable = ['nombre'];
 
     public function hoteles()
     {

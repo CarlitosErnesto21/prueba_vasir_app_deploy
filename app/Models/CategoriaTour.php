@@ -9,6 +9,7 @@ use Psy\Readline\Hoa\FileLink;
 class CategoriaTour extends Model
 {
     use HasFactory;
+    protected $table = 'categorias_tours';
     protected $fillable = ['nombre'];
 
     public function tours()

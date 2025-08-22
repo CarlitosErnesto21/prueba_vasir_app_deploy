@@ -32,13 +32,16 @@ class CategoriaTourController extends Controller
         return response()->json($categoriaTour);
     }
 
-    public function update(Request $request, CategoriaTour $categoriaTour)
+    public function update(Request $request, $id)
     {
+        $categoriaTour = CategoriaTour::findOrFail($id);
+        
         $validated = $request->validate([
             'nombre' => 'required|string|max:50',
         ]);
 
-        $categoriaTour->update($validated);
+        $categoriaTour->nombre = $validated['nombre'];
+        $categoriaTour->save();
 
         return response()->json([
             'message' => 'Categoría de tour actualizada exitosamente',
@@ -46,12 +49,14 @@ class CategoriaTourController extends Controller
         ]);
     }
 
-    public function destroy(CategoriaTour $categoriaTour)
+    public function destroy($id)
     {
+        $categoriaTour = CategoriaTour::findOrFail($id);
         $categoriaTour->delete();
 
         return response()->json([
             'message' => 'Categoría de tour eliminada exitosamente',
+            'success' => true
         ]);
     }
 }
