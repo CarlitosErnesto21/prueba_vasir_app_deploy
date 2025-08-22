@@ -50,15 +50,26 @@ if not exist "%PROJECT_PATH%\artisan" (
     echo ❌ NO ES UN PROYECTO LARAVEL VALIDO
     echo.
     echo PROBLEMA: No encontré el archivo 'artisan'
+    echo Ruta actual: %PROJECT_PATH%
     echo.
-    echo SOLUCION:
-    echo 1. Asegurate de ejecutar desde la carpeta del proyecto
-    echo 2. Debe haber un archivo llamado 'artisan' aquí
+    echo ❌ Confirmo: NO hay archivo 'artisan' en esta ubicación
     echo.
-    dir artisan 2>nul | findstr "artisan" >nul
-    if errorlevel 1 (
-        echo ❌ Confirmo: NO hay archivo 'artisan' aquí
-    )
+    echo 🔍 Vamos a buscar dónde está el proyecto...
+    echo.
+    dir /s artisan 2>nul | findstr "artisan"
+    echo.
+    echo SOLUCION PASO A PASO:
+    echo 1. Busca la carpeta que contiene el archivo 'artisan'
+    echo 2. Copia ESTOS ARCHIVOS a esa carpeta:
+    echo    - diagnostico_backup.bat
+    echo    - configurar_backup_automatico.bat
+    echo 3. Ejecuta desde AHI, no desde aquí
+    echo.
+    echo O mejor aún:
+    echo 1. Abre la carpeta del proyecto en VS Code
+    echo 2. Abre terminal en VS Code (Ctrl + `)
+    echo 3. Ejecuta: ..\diagnostico_backup.bat
+    echo.
     goto :final
 ) else (
     echo ✅ Proyecto Laravel: OK
@@ -93,8 +104,8 @@ if not exist "%PROJECT_PATH%\vendor" (
     echo ⚠️ FALTA INSTALAR DEPENDENCIAS
     echo.
     echo SOLUCION:
-    echo 1. Abrir terminal en esta carpeta
-    echo 2. Ejecutar: composer install
+    echo 1. Ejecutar: preparar_proyecto.bat (recomendado)
+    echo 2. O manualmente: composer install
     echo 3. Esperar a que termine
     echo.
     goto :final
@@ -112,6 +123,17 @@ if %errorLevel% neq 0 (
     echo ❌ EL COMANDO DE BACKUP FALLA
     echo.
     echo PROBLEMA: Hay un error en el sistema
+    echo.
+    echo 🚀 SOLUCION AUTOMATICA:
+    echo 1. Ejecutar: preparar_proyecto.bat
+    echo 2. Ese script arreglara todo automaticamente
+    echo 3. Despues volver a ejecutar configurar_backup_automatico.bat
+    echo.
+    echo 📋 SOLUCION MANUAL:
+    echo 1. Ejecutar: composer install
+    echo 2. Configurar base de datos en .env
+    echo 3. Ejecutar: php artisan migrate
+    echo 4. Pedir ayuda con el error que aparece abajo
     echo.
     echo Vamos a ver el error exacto:
     echo.

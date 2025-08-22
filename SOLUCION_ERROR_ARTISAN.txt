@@ -1,0 +1,62 @@
+🚨 ERROR COMÚN: "Could not open input file: artisan"
+
+========================================
+    SOLUCIÓN RÁPIDA
+========================================
+
+❌ PROBLEMA: 
+Estás ejecutando el script desde la carpeta incorrecta.
+El script busca el archivo 'artisan' pero no lo encuentra.
+
+✅ SOLUCIÓN FÁCIL:
+
+OPCIÓN 1 - Usar VS Code (MÁS FÁCIL):
+1. Abrir VS Code
+2. File → Open Folder → Seleccionar carpeta del proyecto
+3. Terminal → New Terminal (o Ctrl + `)
+4. En la terminal escribir: .\diagnostico_backup.bat
+5. Presionar ENTER
+
+OPCIÓN 2 - Mover archivos:
+1. Buscar la carpeta que tiene el archivo 'artisan'
+2. Copiar estos archivos A ESA CARPETA:
+   - diagnostico_backup.bat
+   - configurar_backup_automatico.bat
+3. Ejecutar desde AHÍ
+
+OPCIÓN 3 - Explorador de Windows:
+1. Buscar archivo 'artisan' en tu computadora
+2. Ir a esa carpeta
+3. Copiar los archivos .bat ahí
+4. Ejecutar como administrador
+
+========================================
+    CÓMO IDENTIFICAR LA CARPETA CORRECTA
+========================================
+
+La carpeta correcta debe tener estos archivos:
+- artisan (archivo principal de Laravel)
+- composer.json
+- package.json
+- app/ (carpeta)
+- database/ (carpeta)
+- resources/ (carpeta)
+
+Si ves estos archivos, esa es la carpeta correcta.
+
+========================================
+    PARA EL GRUPO
+========================================
+
+Mensaje para enviar:
+
+"Hola! Si te sale error 'Could not open input file: artisan':
+
+1. Abre VS Code
+2. File → Open Folder → carpeta del proyecto  
+3. Terminal → New Terminal
+4. Escribe: .\diagnostico_backup.bat
+
+O copia los archivos .bat a la carpeta donde está 'artisan'"
+
+========================================
