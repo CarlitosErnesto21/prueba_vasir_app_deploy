@@ -28,11 +28,19 @@ TODOS LOS DESARROLLADORES DEBEN HACER ESTO:
 
 SI HAY PROBLEMAS:
 - Ventana se cierra rapido: usar diagnostico_backup.bat
+- Error "Could not open artisan": ejecutar desde carpeta correcta
+  → Buscar carpeta con archivo 'artisan' 
+  → Copiar archivos .bat a esa carpeta
+  → O usar VS Code Terminal
+- Error "backup no funciona": ejecutar preparar_proyecto.bat
 - Error "acceso denegado": ejecutar como administrador
 - Error "PHP no encontrado": instalar PHP
 - Error "no es Laravel": ejecutar desde carpeta correcta
-- Error "backup no funciona": hacer composer install
 - Otros errores: tomar captura y enviar al grupo
+
+📄 AYUDA EXTRA:
+- preparar_proyecto.bat (instala dependencias automáticamente)
+- SOLUCION_ERROR_ARTISAN.txt (para error más común)
 
 QUE HACE:
 - Crea backups automaticos cada 2 minutos

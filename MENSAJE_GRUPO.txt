@@ -28,6 +28,8 @@ Hola equipo! Acabo de agregar un sistema de backups automáticos al proyecto.
 
 📱 SI HAY PROBLEMAS:
 - Ventana se cierra rápido → usar diagnostico_backup.bat
+- Error "Could not open artisan" → ejecutar desde carpeta correcta
+- Error "backup no funciona" → ejecutar preparar_proyecto.bat
 - Error "acceso denegado" → ejecutar como administrador  
 - Error "PHP no encontrado" → instalar PHP/XAMPP
 - Error "no es Laravel" → ejecutar desde carpeta correcta
@@ -42,6 +44,7 @@ Hola equipo! Acabo de agregar un sistema de backups automáticos al proyecto.
 
 🎯 ARCHIVOS IMPORTANTES:
 - diagnostico_backup.bat (para problemas técnicos)
+- preparar_proyecto.bat (instala dependencias automáticamente)
 - GUIA_FACIL_COMPAÑEROS.md (guía completa)
 - INSTRUCCIONES_SIMPLES.txt (versión corta)
 - CHECKLIST_BACKUPS.txt (lista de verificación)
