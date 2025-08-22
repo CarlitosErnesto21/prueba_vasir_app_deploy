@@ -114,7 +114,24 @@ if not exist "%PROJECT_PATH%\vendor" (
 )
 
 echo.
-echo 🔍 PASO 5: Probando comando de backup...
+echo 🔍 PASO 5: Verificando archivo .env...
+echo.
+
+if not exist ".env" (
+    color 0E
+    echo ⚠️ FALTA ARCHIVO .ENV
+    echo.
+    echo SOLUCION:
+    echo 1. Ejecutar: configurar_env.bat
+    echo 2. O ejecutar: preparar_proyecto.bat
+    echo.
+    goto :final
+) else (
+    echo ✅ Archivo .env existe: OK
+)
+
+echo.
+echo 🔍 PASO 6: Probando comando de backup...
 echo.
 
 php artisan backup:auto >nul 2>&1
@@ -125,8 +142,8 @@ if %errorLevel% neq 0 (
     echo PROBLEMA: Hay un error en el sistema
     echo.
     echo 🚀 SOLUCION AUTOMATICA:
-    echo 1. Ejecutar: preparar_proyecto.bat
-    echo 2. Ese script arreglara todo automaticamente
+    echo 1. Ejecutar: configurar_env.bat (para problemas de .env)
+    echo 2. O ejecutar: preparar_proyecto.bat (para problemas generales)
     echo 3. Despues volver a ejecutar configurar_backup_automatico.bat
     echo.
     echo 📋 SOLUCION MANUAL:
