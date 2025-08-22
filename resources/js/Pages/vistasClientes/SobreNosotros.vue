@@ -3,6 +3,13 @@ import Catalogo from '../Catalogo.vue'
 import Card from 'primevue/card'
 import { ref } from 'vue'
 
+const props = defineProps({
+    siteSettings: {
+        type: Object,
+        default: () => ({})
+    }
+});
+
 const showImagenAmpliada = ref(false)
 
 // Datos del equipo y estadísticas
@@ -94,8 +101,8 @@ function cerrarImagen() {
         </div>
 
         <!-- Misión y Visión -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          <Card class="border border-gray-300 bg-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+        <div v-if="siteSettings.mission || siteSettings.vision" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          <Card v-if="siteSettings.mission" class="border border-gray-300 bg-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
             <template #title>
               <div class="flex items-center mb-4">
                 <span class="text-3xl mr-3">🎯</span>
@@ -104,15 +111,12 @@ function cerrarImagen() {
             </template>
             <template #content>
               <p class="text-gray-700 leading-relaxed text-lg">
-                Brindar a nuestros clientes los mejores paquetes turísticos, tours y servicios, 
-                garantizando seguridad, comodidad y satisfacción en cada viaje. Nos comprometemos 
-                a crear experiencias memorables que conecten a las personas con la belleza 
-                natural y cultural de El Salvador.
+                {{ siteSettings.mission }}
               </p>
             </template>
           </Card>
 
-          <Card class="border border-gray-300 bg-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+          <Card v-if="siteSettings.vision" class="border border-gray-300 bg-white shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
             <template #title>
               <div class="flex items-center mb-4">
                 <span class="text-3xl mr-3">🌟</span>
@@ -121,15 +125,22 @@ function cerrarImagen() {
             </template>
             <template #content>
               <p class="text-gray-700 leading-relaxed text-lg">
-                Ser la agencia líder en turismo en El Salvador, reconocida por la innovación, 
-                excelencia y compromiso con nuestros clientes y el medio ambiente. Aspiramos 
-                a posicionar a El Salvador como un destino turístico de clase mundial.
+                {{ siteSettings.vision }}
               </p>
             </template>
           </Card>
         </div>
 
-        <!-- Nuestros Valores -->
+        <!-- Mensaje cuando no hay contenido configurado -->
+        <div v-if="!siteSettings.mission && !siteSettings.vision" class="text-center py-12 mb-12">
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 max-w-2xl mx-auto">
+            <div class="text-6xl mb-4">⚙️</div>
+            <h3 class="text-xl font-semibold text-yellow-800 mb-2">Contenido en configuración</h3>
+            <p class="text-yellow-700">
+              La misión y visión de la empresa están siendo configuradas por nuestro equipo.
+            </p>
+          </div>
+        </div>        <!-- Nuestros Valores -->
         <div class="mb-12">
           <h2 class="text-3xl font-bold text-red-700 text-center mb-8">💎 Nuestros Valores</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -1,0 +1,41 @@
+🚨 MENSAJE PARA EL GRUPO DE WHATSAPP/TELEGRAM 🚨
+
+Copia y pega este mensaje:
+
+---
+
+🔥 IMPORTANTE - TODOS DEBEN HACER ESTO 🔥
+
+Hola equipo! Acabo de agregar un sistema de backups automáticos al proyecto. 
+
+📋 QUE DEBEN HACER (5 MINUTOS):
+
+1️⃣ git pull
+2️⃣ composer install  
+3️⃣ Buscar archivo: configurar_backup_automatico.bat
+4️⃣ Clic derecho → "Ejecutar como administrador"
+5️⃣ Decir "Sí" cuando Windows pregunte
+6️⃣ Esperar hasta ver ✅ símbolos verdes
+
+✅ PARA VERIFICAR:
+- Doble clic en: verificar_estado_backup.bat
+- Debe mostrar símbolos verdes
+
+📱 SI HAY PROBLEMAS:
+- Tomar captura del error
+- Enviar al grupo
+- Alguien te ayudará
+
+💡 ESTO SE HACE UNA SOLA VEZ
+- Funciona aunque cierres Visual Studio Code
+- Los backups se crean automáticamente cada 2 minutos
+- Se puede cambiar la frecuencia desde la web
+
+🎯 ARCHIVOS IMPORTANTES:
+- GUIA_FACIL_COMPAÑEROS.md (guía completa)
+- CHECKLIST_BACKUPS.txt (lista de verificación)
+- INSTRUCCIONES_SIMPLES.txt (versión corta)
+
+¿Preguntas? ¡Escriban al grupo! 👨‍💻👩‍💻
+
+---
