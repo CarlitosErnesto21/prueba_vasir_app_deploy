@@ -27,6 +27,7 @@ import Textarea from 'primevue/textarea';
 import InputNumber from 'primevue/inputnumber';
 import Select from 'primevue/select';
 import ConfirmationService from 'primevue/confirmationservice';
+import Calendar from "primevue/calendar";
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -64,6 +65,7 @@ createInertiaApp({
             app.component('Textarea', Textarea); // Componente de área de texto
             app.component('InputNumber', InputNumber); // Componente de entrada numérica
             app.component('Select', Select); // Componente de selección
+            app.component('Calendar', Calendar); // Componente de calendario
             app.mount(el);
             return app;
     },

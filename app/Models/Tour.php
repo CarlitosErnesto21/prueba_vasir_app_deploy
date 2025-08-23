@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Tour extends Model
 {
     use HasFactory;
+    protected $table = 'tours';
 
     protected $fillable = [
         'nombre',
@@ -32,5 +33,10 @@ class Tour extends Model
     public function detalleReservas()
     {
         return $this->hasMany(DetalleReservaTour::class, 'tour_id');
+    }
+
+    public function imagenes()
+    {
+        return $this->morphMany(Imagen::class, 'imageable');
     }
 }
