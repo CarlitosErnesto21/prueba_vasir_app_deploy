@@ -25,7 +25,7 @@ const toggleSidebar = () => {
 const logout = async () => {
     try{
         await axios.post('/logout');
-        window.location.href = '/login';
+        window.location.href = '/';
     }catch(err){
         console.error('Error al cerrar la sesion', err);
     }
@@ -36,8 +36,8 @@ function handleResize() {
         isSidebarCollapsed.value = true;
         isSidebarOpen.value = false;
     } else {
-        isSidebarCollapsed.value = true;
-        isSidebarOpen.value = false;
+        // En pantallas grandes, permitir que se mantenga el estado actual del sidebar
+        isSidebarOpen.value = false; // Solo cerrar el overlay móvil
     }
 }
 
@@ -215,9 +215,9 @@ function manageClientes() {
                         <li
                             class="px-4 py-3 hover:bg-red-600 flex items-center cursor-pointer"
                             :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
-                            @click="$inertia.visit(route('dashboard'))"
+                            @click="router.visit(route('dashboard'))"
                             tabindex="0"
-                            @keydown.enter="$inertia.visit(route('dashboard'))"
+                            @keydown.enter="router.visit(route('dashboard'))"
                             title="Inicio"
                         >
                             <FontAwesomeIcon :icon="faHouseChimneyUser" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6" />
@@ -279,36 +279,36 @@ function manageClientes() {
                                     class="w-full rounded-md shadow-lg overflow-hidden bg-white text-red-700">
                                     <li
                                         class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer"
-                                        @click="$inertia.visit(route('productos'))"
+                                        @click="router.visit(route('productos'))"
                                         tabindex="0"
-                                        @keydown.enter="$inertia.visit(route('productos'))"
+                                        @keydown.enter="router.visit(route('productos'))"
                                         title="Categorías">
                                         <FontAwesomeIcon :icon="faBox" class="drop-shadow-md" />
                                         <span class="ml-3">Productos</span>
                                     </li>
                                     <li
                                         class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer"
-                                        @click="$inertia.visit(route('tours'))"
+                                        @click="router.visit(route('tours'))"
                                         tabindex="0"
-                                        @keydown.enter="$inertia.visit(route('tours'))"
+                                        @keydown.enter="router.visit(route('tours'))"
                                         title="Tours">
                                         <FontAwesomeIcon :icon="faRoute" class="drop-shadow-md"/>
                                         <span class="ml-3">Tours</span>
                                     </li>
                                     <li
                                         class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer"
-                                        @click="$inertia.visit(route('hoteles'))"
+                                        @click="router.visit(route('hoteles'))"
                                         tabindex="0"
-                                        @keydown.enter="$inertia.visit(route('hoteles'))"
+                                        @keydown.enter="router.visit(route('hoteles'))"
                                         title="Otros">
                                         <FontAwesomeIcon :icon="faHotel" class="drop-shadow-md"/>
                                         <span class="ml-3">Hoteles</span>
                                     </li>
                                     <li
                                         class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer"
-                                        @click="$inertia.visit(route('aerolineas'))"
+                                        @click="router.visit(route('aerolineas'))"
                                         tabindex="0"
-                                        @keydown.enter="$inertia.visit(route('aerolineas'))"
+                                        @keydown.enter="router.visit(route('aerolineas'))"
                                         title="Aerolineas">
                                         <FontAwesomeIcon :icon="faPlaneDeparture" class="drop-shadow-md"/>
                                         <span class="ml-3">Aerolineas</span>
@@ -319,9 +319,9 @@ function manageClientes() {
                         <li
                             class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
                             :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
-                            @click="$inertia.visit(route('reservatours'))"
+                            @click="router.visit(route('reservatours'))"
                             tabindex="0"
-                            @keydown.enter="$inertia.visit(route('reservatours'))"
+                            @keydown.enter="router.visit(route('reservatours'))"
                             title="Gestionar reservas">
                             <FontAwesomeIcon :icon="faClipboardList" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Reservaciones</span>
@@ -329,9 +329,9 @@ function manageClientes() {
                         <li
                             class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
                             :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
-                            @click="$inertia.visit(route('informes'))"
+                            @click="router.visit(route('informes'))"
                             tabindex="0"
-                            @keydown.enter="$inertia.visit(route('informes'))"
+                            @keydown.enter="router.visit(route('informes'))"
                             title="Generar informes">
                             <FontAwesomeIcon :icon="faFileInvoice" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Informes</span>
@@ -339,9 +339,9 @@ function manageClientes() {
                         <li
                             class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
                             :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
-                            @click="$inertia.visit(route('catPTH'))"
+                            @click="router.visit(route('catPTH'))"
                             tabindex="0"
-                            @keydown.enter="$inertia.visit(route('catPTH'))"
+                            @keydown.enter="router.visit(route('catPTH'))"
                             title="Control de categorias">
                             <FontAwesomeIcon :icon="faListCheck" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Gestión categorías</span>
@@ -349,9 +349,9 @@ function manageClientes() {
                         <li
                             class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
                             :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
-                            @click="$inertia.visit(route('controlPaisesProvincias'))"
+                            @click="router.visit(route('controlPaisesProvincias'))"
                             tabindex="0"
-                            @keydown.enter="$inertia.visit(route('controlPaisesProvincias'))"
+                            @keydown.enter="router.visit(route('controlPaisesProvincias'))"
                             title="Control de paises y provincias">
                             <FontAwesomeIcon :icon="faMap" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Control paises y provincias</span>

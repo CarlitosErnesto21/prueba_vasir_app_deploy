@@ -1,6 +1,6 @@
 <script setup>
-import { Head, Link, router } from '@inertiajs/vue3'
-import { ref, onMounted } from 'vue'
+import { Head, Link, router, usePage } from '@inertiajs/vue3'
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faList, faUser, faDoorOpen, faShop, faPhone, faEnvelope, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons'
 import { faFacebook, faInstagram, faTiktok, faWhatsapp } from '@fortawesome/free-brands-svg-icons'
@@ -24,7 +24,23 @@ onMounted(() => {
     document.addEventListener('click', closeTours)
     document.addEventListener('click', closeUserMenu)
 })
-const logout = () => router.post(route('logout'))
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', closePaquetes)
+    document.removeEventListener('click', closeTours)
+    document.removeEventListener('click', closeUserMenu)
+})
+const logout = () => {
+    router.post(route('logout'), {}, {
+        onSuccess: () => router.visit('/')
+    })
+}
+
+// Computed properties para autenticación segura
+const page = usePage()
+const auth = computed(() => page.props.auth || {})
+const user = computed(() => auth.value.user || null)
+const isAuthenticated = computed(() => !!user.value)
 
 // Redes sociales
 const redes = [
@@ -193,7 +209,7 @@ const redes = [
             
             <!--Datos de la sesion-->
             <div class="flex items-center space-x-2 md:space-x-4">
-                <template v-if="!$page.props.auth || !$page.props.auth.user">
+                <template v-if="!isAuthenticated">
                     <Link
                         :href="route('login')"
                         class="px-3 py-1 sm:px-4 sm:py-2 md:px-5 md:py-2 rounded-lg bg-gradient-to-r from-red-600 to-red-500 text-white font-semibold shadow-md border border-red-700 hover:bg-white hover:text-white hover:border-red-700 hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 animate-fade-in text-sm md:text-base"
@@ -217,13 +233,13 @@ const redes = [
                     <div class="relative user-menu-dropdown">
                         <button @click="toggleUserMenu"
                             class="flex items-center space-x-2 px-3 py-1 rounded-full bg-gray-100 hover:bg-red-50 border border-gray-200 transition focus:outline-none focus:ring-2 focus:ring-red-200"
-                            :title="$page.props.auth.user.email"
+                            :title="user?.email"
                         >
                             <span class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-lg">
-                                {{ ($page.props.auth.user.name || $page.props.auth.user.email).charAt(0).toUpperCase() }}
+                                {{ (user?.name || user?.email)?.charAt(0).toUpperCase() }}
                             </span>
                             <span class="text-md text-black font-medium max-w-[120px] truncate">
-                                {{ $page.props.auth.user.name || $page.props.auth.user.email }}
+                                {{ user?.name || user?.email }}
                             </span>
                             <svg class="ml-1 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
@@ -235,11 +251,11 @@ const redes = [
                             <div class="px-4 py-3 border-b border-gray-100">
                                 <div class="flex items-center space-x-2">
                                     <span class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-lg">
-                                        {{ ($page.props.auth.user.name || $page.props.auth.user.email).charAt(0).toUpperCase() }}
+                                        {{ (user?.name || user?.email)?.charAt(0).toUpperCase() }}
                                     </span>
                                     <div>
-                                        <div class="font-semibold text-black truncate">{{ $page.props.auth.user.name || 'Usuario' }}</div>
-                                        <div class="text-xs text-gray-500 truncate">{{ $page.props.auth.user.email }}</div>
+                                        <div class="font-semibold text-black truncate">{{ user?.name || 'Usuario' }}</div>
+                                        <div class="text-xs text-gray-500 truncate">{{ user?.email }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -384,7 +400,7 @@ const redes = [
         </nav>
         <div class="mt-auto px-6 pb-6">
           <div class="border-t border-red-100 mb-4"></div>
-          <template v-if="!$page.props.auth || !$page.props.auth.user">
+          <template v-if="!isAuthenticated">
             <Link
                 :href="route('login')"
                 class="block w-full mb-2 py-1 px-2 sm:py-2 sm:px-2 rounded-lg bg-gradient-to-r from-red-600 to-red-500 text-white font-semibold shadow-md border border-red-700 hover:bg-white hover:text-white hover:border-red-700 hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 animate-fade-in text-sm sm:text-base text-left"
@@ -409,11 +425,11 @@ const redes = [
           <template v-else>
             <div class="flex items-center space-x-3 py-2 px-2 rounded bg-gray-50 mb-2 border border-gray-100">
               <span class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-xl">
-                {{ ($page.props.auth.user.name || $page.props.auth.user.email).charAt(0).toUpperCase() }}
+                {{ (user?.name || user?.email)?.charAt(0).toUpperCase() }}
               </span>
               <div class="flex flex-col min-w-0">
-                <span class="text-md text-black font-medium truncate">{{ $page.props.auth.user.name || 'Usuario' }}</span>
-                <span class="text-xs text-gray-500 truncate">{{ $page.props.auth.user.email }}</span>
+                <span class="text-md text-black font-medium truncate">{{ user?.name || 'Usuario' }}</span>
+                <span class="text-xs text-gray-500 truncate">{{ user?.email }}</span>
               </div>
             </div>
             <button

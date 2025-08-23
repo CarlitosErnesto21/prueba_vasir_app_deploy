@@ -159,17 +159,17 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                         <button 
                                             @click="openEditRolesAndPermissionsModal(user)"
-                                            class="text-red-600 hover:text-red-900 transition-colors"
+                                            class="text-orange-600 hover:text-orange-900 transition-colors"
                                             title="Editar Roles y Permisos"
                                         >
-                                            <FontAwesomeIcon :icon="faEdit" />
+                                            <FontAwesomeIcon :icon="faEdit" class="h-5 w-5" />
                                         </button>
                                         <button 
                                             @click="showUserPermissions(user)"
                                             class="text-blue-600 hover:text-blue-900 transition-colors"
                                             title="Ver Permisos"
                                         >
-                                            <FontAwesomeIcon :icon="faEye" />
+                                            <FontAwesomeIcon :icon="faEye" class="h-5 w-5" />
                                         </button>
                                     </td>
                                 </tr>

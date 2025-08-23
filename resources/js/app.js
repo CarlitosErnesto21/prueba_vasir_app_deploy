@@ -28,6 +28,7 @@ import InputNumber from 'primevue/inputnumber';
 import Select from 'primevue/select';
 import ConfirmationService from 'primevue/confirmationservice';
 import Calendar from "primevue/calendar";
+import ConfirmDialog from 'primevue/confirmdialog';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -66,6 +67,7 @@ createInertiaApp({
             app.component('InputNumber', InputNumber); // Componente de entrada numérica
             app.component('Select', Select); // Componente de selección
             app.component('Calendar', Calendar); // Componente de calendario
+            app.component('ConfirmDialog', ConfirmDialog); // Componente de diálogo de confirmación
             app.mount(el);
             return app;
     },

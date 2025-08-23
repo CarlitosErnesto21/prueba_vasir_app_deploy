@@ -164,7 +164,7 @@ return [
          * The password to be used for archive encryption.
          * Set to `null` to disable encryption.
          */
-        'password' => env('BACKUP_ARCHIVE_PASSWORD'),
+        'password' => null,
 
         /*
          * The encryption algorithm to be used for archive encryption.
@@ -173,7 +173,7 @@ return [
          * When set to 'default', we'll use ZipArchive::EM_AES_256 if it is
          * available on your system.
          */
-        'encryption' => 'default',
+        'encryption' => false,
 
         /*
          * The number of attempts, in case the backup command encounters an exception
