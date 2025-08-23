@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('categorias_hoteles', function (Blueprint $table) {
             $table->id();
-$table->string('nombre', 15);
+            $table->string('nombre', 50);
             $table->timestamps();
         });
     }

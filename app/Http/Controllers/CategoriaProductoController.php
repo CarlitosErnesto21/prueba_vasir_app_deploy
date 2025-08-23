@@ -31,23 +31,33 @@ class CategoriaProductoController extends Controller
         return response()->json($categoriaProducto);
     }
 
-    public function update(Request $request, CategoriaProducto $categoriaProducto)
+    public function update(Request $request, $id)
     {
+        $categoriaProducto = CategoriaProducto::findOrFail($id);
+        
         $validated = $request->validate([
             'nombre' => 'required|string|max:50',
         ]);
 
-        $categoriaProducto->update($validated);
+        $categoriaProducto->nombre = $validated['nombre'];
+        $categoriaProducto->save();
 
         return response()->json([
             'message' => 'Categoría de producto actualizada exitosamente',
-            'categoria' => $categoriaProducto,
+            'categoria' => $categoriaProducto->fresh(),
+            'success' => true
         ]);
     }
 
-    public function destroy(CategoriaProducto $categoriaProducto)
+    public function destroy($id)
     {
+        $categoriaProducto = CategoriaProducto::findOrFail($id);
         $categoriaProducto->delete();
+
+        return response()->json([
+            'message' => 'Categoría de producto eliminada exitosamente',
+            'success' => true
+        ]);
 
         return response()->json([
             'message' => 'Categoría de producto eliminada exitosamente',

@@ -5,6 +5,8 @@ use App\Http\Controllers\InformePDFController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\TipoDocumentoController;
+use App\Http\Controllers\BackupController;
+use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Middleware\RutasAdmin;
@@ -48,9 +50,25 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
 
     /////////////////////////////////////////////////////////////////
     // Respaldo de Base de Datos
-    Route::get('/configuracion/backup', function () {
-        return Inertia::render('Configuracion/Backup');
-    })->name('backup');
+    Route::get('/configuracion/backup', [BackupController::class, 'showBackupPage'])->name('backup');
+    
+    // API routes for backup management - Solo para Administradores
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/api/backups', [BackupController::class, 'index']);
+        Route::post('/api/backups/generate', [BackupController::class, 'generate']);
+        Route::get('/api/backups/{id}/download', [BackupController::class, 'download']);
+        Route::delete('/api/backups/{id}', [BackupController::class, 'delete']);
+        Route::post('/api/backups/cleanup', [BackupController::class, 'cleanup']);
+        
+        // Nuevas rutas para configuración de backup automático
+        Route::get('/api/backup-settings', [BackupController::class, 'getBackupSettings']);
+        Route::post('/api/backup-settings', [BackupController::class, 'updateBackupSettings']);
+    });
+    
+    // Ruta de prueba para backup
+    Route::get('/test-backup', function () {
+        return view('test-backup');
+    })->middleware('auth');
     
     // Asignación de Roles - Solo para Administradores
     Route::get('/configuracion/roles', [RoleController::class, 'index'])->name('roles')->middleware('role:admin');
@@ -67,10 +85,9 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
     Route::get('/roles/users/{user}/employee', [RoleController::class, 'getEmployeeData'])->middleware('role:admin');
     Route::put('/roles/users/{user}/employee', [RoleController::class, 'updateEmployeeData'])->middleware('role:admin');
     
-    // Configuración del Sistema
-    Route::get('/configuracion/settings', function () {
-        return Inertia::render('Configuracion/Settings');
-    })->name('settings');
+    // Configuración del Sistema - Solo para Administradores
+    Route::get('/configuracion/settings', [SettingsController::class, 'index'])->name('settings')->middleware('role:admin');
+    Route::post('/configuracion/settings', [SettingsController::class, 'update'])->name('settings.update')->middleware('role:admin');
     
     // Gestión de Clientes
     Route::get('/configuracion/clientes', [ClienteController::class, 'index'])->name('clientes');
@@ -107,7 +124,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
 // Rutas para vistas de clientes //***NO MODIFICAR ESTAS RUTAS***//
 Route::get('/paquetes', function () {
     return Inertia::render('vistasClientes/Paquetes');
@@ -129,9 +145,7 @@ Route::get('/tienda', function () {
     return Inertia::render('vistasClientes/Tienda');
 })->name('tienda');
 
-Route::get('/sobre-nosotros', function () {
-    return Inertia::render('vistasClientes/SobreNosotros');
-})->name('sobre-nosotros');
+Route::get('/sobre-nosotros', [App\Http\Controllers\SobreNosotrosController::class, 'index'])->name('sobre-nosotros');
 
 Route::get('/contactos', function () {
     return Inertia::render('vistasClientes/Contactos');
