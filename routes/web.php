@@ -124,7 +124,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
 // Rutas para vistas de clientes //***NO MODIFICAR ESTAS RUTAS***//
 Route::get('/paquetes', function () {
     return Inertia::render('vistasClientes/Paquetes');
