@@ -9,6 +9,7 @@ use Symfony\Component\Mailer\Transport;
 class TipoTransporte extends Model
 {
     use HasFactory;
+    protected $table = 'tipos_transportes';
     protected $fillable = [
         'nombre',
 
