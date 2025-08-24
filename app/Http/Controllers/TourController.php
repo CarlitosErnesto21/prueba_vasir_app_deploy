@@ -13,7 +13,7 @@ class TourController extends Controller
      */
     public function index()
     {
-        $tours = Tour::with(['categoria', 'transporte.tipoTransporte', 'imagenes'])->get();
+        $tours = Tour::with(['categoria', 'transporte', 'imagenes'])->get();
         return response()->json($tours);
     }
 
@@ -33,22 +33,14 @@ class TourController extends Controller
             'fecha_regreso' => 'required|date',
             'precio' => 'required|numeric|min:0|max:9999.99',
             'categoria_tour_id' => 'required|exists:categorias_tours,id',
-            'tipo_transporte_id' => 'required|exists:tipos_transportes,id',
+            'transporte_id' => 'required|exists:transportes,id',
             'imagenes' => 'nullable|array',
             'imagenes.*' => 'image|max:2048',
         ]);
 
-        // Asignar transporte disponible
-        $transporte = Transporte::where('tipo_transporte_id', $validated['tipo_transporte_id'])->first();
-        if (!$transporte) {
-            return response()->json(['message' => 'No hay transporte disponible para el tipo seleccionado.'], 422);
-        }
-
-        // Preparar datos para crear el tour (remover tipo_transporte_id y agregar transporte_id)
+        // Preparar datos para crear el tour
         $tourData = $validated;
-        unset($tourData['tipo_transporte_id']); // Remover campo que no existe en la tabla
         unset($tourData['imagenes']); // Remover imagenes del array principal
-        $tourData['transporte_id'] = $transporte->id;
 
         // Crear tour
         $tour = Tour::create($tourData);
@@ -68,7 +60,7 @@ class TourController extends Controller
 
         return response()->json([
             'message' => 'Tour creado exitosamente',
-            'tour' => $tour->load(['imagenes', 'categoria', 'transporte.tipoTransporte']),
+            'tour' => $tour->load(['imagenes', 'categoria', 'transporte']),
         ]);
     }
 
@@ -77,7 +69,7 @@ class TourController extends Controller
      */
     public function show(Tour $tour)
     {
-        $tour->load(['categoria', 'transporte.tipoTransporte', 'imagenes']);
+        $tour->load(['categoria', 'transporte', 'imagenes']);
         return response()->json($tour);
     }
 
@@ -97,24 +89,16 @@ class TourController extends Controller
             'fecha_regreso' => 'required|date',
             'precio' => 'required|numeric|min:0|max:9999.99',
             'categoria_tour_id' => 'required|exists:categorias_tours,id',
-            'tipo_transporte_id' => 'required|exists:tipos_transportes,id',
+            'transporte_id' => 'required|exists:transportes,id',
             'imagenes' => 'nullable|array',
             'imagenes.*' => 'image|max:2048',
             'removed_images' => 'nullable|array',
         ]);
 
-        // Asignar transporte disponible
-        $transporte = Transporte::where('tipo_transporte_id', $validated['tipo_transporte_id'])->first();
-        if (!$transporte) {
-            return response()->json(['message' => 'No hay transporte disponible para el tipo seleccionado.'], 422);
-        }
-
-        // Preparar datos para actualizar el tour (remover tipo_transporte_id y agregar transporte_id)
+        // Preparar datos para actualizar el tour
         $tourData = $validated;
-        unset($tourData['tipo_transporte_id']); // Remover campo que no existe en la tabla
         unset($tourData['imagenes']); // Remover imagenes del array principal
         unset($tourData['removed_images']); // Remover removed_images del array principal
-        $tourData['transporte_id'] = $transporte->id;
 
         // Actualizar tour
         $tour->update($tourData);
@@ -146,7 +130,7 @@ class TourController extends Controller
 
         return response()->json([
             'message' => 'Tour actualizado exitosamente',
-            'tour' => $tour->load(['imagenes', 'categoria', 'transporte.tipoTransporte']),
+            'tour' => $tour->load(['imagenes', 'categoria', 'transporte']),
         ]);
     }
 
@@ -156,7 +140,7 @@ class TourController extends Controller
     public function destroy($id)
     {
         $tour = Tour::findOrFail($id);
-        $tour->loadMissing(['imagenes', 'categoria', 'transporte.tipoTransporte']);
+        $tour->loadMissing(['imagenes', 'categoria', 'transporte']);
 
         // Eliminar imágenes físicas y registros
         foreach ($tour->imagenes as $imagen) {
@@ -177,7 +161,7 @@ class TourController extends Controller
      */
     public function toursNacionales()
     {
-        $tours = Tour::with(['categoria', 'transporte.tipoTransporte', 'imagenes'])
+        $tours = Tour::with(['categoria', 'transporte', 'imagenes'])
             ->where('categoria_tour_id', 4) // ID de categoría Nacional
             ->where('fecha_salida', '>=', now())
             ->orderBy('fecha_salida', 'asc')
@@ -193,7 +177,7 @@ class TourController extends Controller
      */
     public function toursInternacionales()
     {
-        $tours = Tour::with(['categoria', 'transporte.tipoTransporte', 'imagenes'])
+        $tours = Tour::with(['categoria', 'transporte', 'imagenes'])
             ->where('categoria_tour_id', 3) // ID de categoría Internacional
             ->where('fecha_salida', '>=', now())
             ->orderBy('fecha_salida', 'asc')
@@ -209,7 +193,7 @@ class TourController extends Controller
      */
     public function mostrarTourNacional($id)
     {
-        $tour = Tour::with(['categoria', 'transporte.tipoTransporte', 'imagenes'])
+        $tour = Tour::with(['categoria', 'transporte', 'imagenes'])
             ->where('id', $id)
             ->where('categoria_tour_id', 4) // ID de categoría Nacional
             ->firstOrFail();
@@ -225,7 +209,7 @@ class TourController extends Controller
      */
     public function mostrarTourInternacional($id)
     {
-        $tour = Tour::with(['categoria', 'transporte.tipoTransporte', 'imagenes'])
+        $tour = Tour::with(['categoria', 'transporte', 'imagenes'])
             ->where('id', $id)
             ->where('categoria_tour_id', 3) // ID de categoría Internacional
             ->firstOrFail();

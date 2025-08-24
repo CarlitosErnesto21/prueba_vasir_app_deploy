@@ -13,13 +13,16 @@ return new class extends Migration
     {
         Schema::create('tours', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre', 50);
-            $table->string('descripcion', 100);
-            $table->string('punto_salida', 60);
-            $table->dateTime('fecha');
-            $table->decimal('precio', 5, 2);
-            $table->time('hora_regreso');
-            // llavee foraneea a categorias_tours y transportes
+            $table->string('nombre');
+            $table->text('incluye');
+            $table->text('no_incluye');
+            $table->integer('cupo_min');
+            $table->integer('cupo_max');
+            $table->string('punto_salida');
+            $table->date('fecha_salida');
+            $table->date('fecha_regreso');
+            $table->decimal('precio', 10, 2);
+            // llaves foraneas a categorias_tours y transportes
             $table->unsignedBigInteger('categoria_tour_id');
             $table->unsignedBigInteger('transporte_id');
             $table->foreign('categoria_tour_id')->references('id')->on('categorias_tours')->onDelete('cascade');

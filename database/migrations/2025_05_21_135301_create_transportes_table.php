@@ -13,10 +13,8 @@ return new class extends Migration
     {
         Schema::create('transportes', function (Blueprint $table) {
             $table->id();
+            $table->string('nombre');
             $table->bigInteger('capacidad');
-            // llave foranea a la tabla tipo_transporte
-            $table->unsignedBigInteger('tipo_transporte_id');
-            $table->foreign('tipo_transporte_id')->references('id')->on('tipos_transportes')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -110,7 +110,7 @@
                   </div>
                   <div v-if="tour.transporte" class="flex items-start text-gray-600 text-sm sm:text-base">
                     <i class="pi pi-car mr-2 sm:mr-3 text-blue-600 mt-0.5 text-sm sm:text-base"></i>
-                    <span><strong>Transporte:</strong> {{ tour.transporte.tipo_transporte?.nombre }}</span>
+                    <span><strong>Transporte:</strong> {{ tour.transporte?.nombre }}</span>
                   </div>
                   <div v-if="tour.cupo_min && tour.cupo_max" class="flex items-start text-gray-600 text-sm sm:text-base">
                     <i class="pi pi-users mr-2 sm:mr-3 text-blue-600 mt-0.5 text-sm sm:text-base"></i>
@@ -121,7 +121,7 @@
                 <!-- Precio -->
                 <div class="mb-4 sm:mb-6 order-1 xl:order-none">
                   <div class="text-2xl sm:text-3xl font-bold text-red-600">
-                    ${{ parseFloat(tour.precio).toLocaleString('es-ES', { minimumFractionDigits: 2 }) }}
+                    ${{ parseFloat(tour.precio).toLocaleString('en-US', { minimumFractionDigits: 2 }) }}
                   </div>
                   <div class="text-gray-600 text-sm sm:text-base">Por persona</div>
                 </div>
@@ -153,24 +153,39 @@
                           <span class="truncate">Lo que incluye</span>
                         </h3>
                         <div class="bg-green-50 rounded-lg p-2">
-                          <p class="text-gray-700 whitespace-pre-line text-xs leading-tight">{{ tour.incluye }}</p>
+                          <ul v-if="textoALista(tour.incluye).length > 0" class="space-y-1">
+                            <li 
+                              v-for="(item, index) in textoALista(tour.incluye)" 
+                              :key="index"
+                              class="text-gray-700 text-xs leading-tight flex items-start"
+                            >
+                              <span class="text-green-600 mr-1 mt-0.5 text-xs">▶</span>
+                              <span>{{ item }}</span>
+                            </li>
+                          </ul>
+                          <p v-else class="text-gray-500 text-xs italic">No hay información disponible</p>
                         </div>
                       </div>
                       
                       <!-- Lo que NO incluye -->
-                      <div v-if="tour.no_incluye">
+                      <div>
                         <h3 class="text-sm font-semibold text-gray-900 mb-2 flex items-center">
                           <i class="pi pi-times-circle mr-1 text-red-600 text-xs"></i>
                           <span class="truncate">No incluye</span>
                         </h3>
                         <div class="bg-red-50 rounded-lg p-2">
-                          <p class="text-gray-700 whitespace-pre-line text-xs leading-tight">{{ tour.no_incluye }}</p>
+                          <ul v-if="textoALista(tour.no_incluye).length > 0" class="space-y-1">
+                            <li 
+                              v-for="(item, index) in textoALista(tour.no_incluye)" 
+                              :key="index"
+                              class="text-gray-700 text-xs leading-tight flex items-start"
+                            >
+                              <span class="text-red-600 mr-1 mt-0.5 text-xs">▶</span>
+                              <span>{{ item }}</span>
+                            </li>
+                          </ul>
+                          <p v-else class="text-gray-500 text-xs italic">No hay información disponible</p>
                         </div>
-                      </div>
-                      
-                      <!-- Placeholder si no hay "no incluye" -->
-                      <div v-else class="flex items-center justify-center bg-gray-100 rounded-lg p-2">
-                        <span class="text-gray-500 text-xs">Sin restricciones</span>
                       </div>
                     </div>
                   </div>
@@ -184,18 +199,38 @@
                         Lo que incluye
                       </h3>
                       <div class="bg-green-50 rounded-lg p-3 sm:p-4">
-                        <p class="text-gray-700 whitespace-pre-line text-sm sm:text-base">{{ tour.incluye }}</p>
+                        <ul v-if="textoALista(tour.incluye).length > 0" class="space-y-2">
+                          <li 
+                            v-for="(item, index) in textoALista(tour.incluye)" 
+                            :key="index"
+                            class="text-gray-700 text-sm sm:text-base flex items-start"
+                          >
+                            <span class="text-green-600 mr-2 mt-1 text-sm">▶</span>
+                            <span>{{ item }}</span>
+                          </li>
+                        </ul>
+                        <p v-else class="text-gray-500 text-sm sm:text-base italic">No hay información disponible</p>
                       </div>
                     </div>
 
                     <!-- Lo que NO incluye -->
-                    <div v-if="tour.no_incluye" class="mb-4 sm:mb-6">
+                    <div class="mb-4 sm:mb-6">
                       <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3 flex items-center">
                         <i class="pi pi-times-circle mr-2 text-red-600 text-sm sm:text-base"></i>
                         Lo que NO incluye
                       </h3>
                       <div class="bg-red-50 rounded-lg p-3 sm:p-4">
-                        <p class="text-gray-700 whitespace-pre-line text-sm sm:text-base">{{ tour.no_incluye }}</p>
+                        <ul v-if="textoALista(tour.no_incluye).length > 0" class="space-y-2">
+                          <li 
+                            v-for="(item, index) in textoALista(tour.no_incluye)" 
+                            :key="index"
+                            class="text-gray-700 text-sm sm:text-base flex items-start"
+                          >
+                            <span class="text-red-600 mr-2 mt-1 text-sm">▶</span>
+                            <span>{{ item }}</span>
+                          </li>
+                        </ul>
+                        <p v-else class="text-gray-500 text-sm sm:text-base italic">No hay información disponible</p>
                       </div>
                     </div>
                   </div>
@@ -318,6 +353,12 @@ const imagenSiguiente = () => {
 const cambiarImagen = (index) => {
   currentImageIndex.value = index
   reiniciarCarrusel() // Reiniciar el carrusel después de navegación manual
+}
+
+// Función para convertir texto a lista
+const textoALista = (texto) => {
+  if (!texto) return []
+  return texto.split('|').filter(item => item.trim()).map(item => item.trim())
 }
 
 // Funciones del carrusel automático
