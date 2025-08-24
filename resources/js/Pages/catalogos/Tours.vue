@@ -1,13 +1,11 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head } from "@inertiajs/vue3";
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode } from "@primevue/core/api";
-import FileUpload from "primevue/fileupload";
-import Select from "primevue/select";
-import Carousel from "primevue/carousel";
-import Calendar from "primevue/calendar";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { faEdit, faEye, faTrash } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
 const toast = useToast();
@@ -16,13 +14,15 @@ const tours = ref([]);
 const tour = ref({
     id: null,
     nombre: "",
-    descripcion: "",
+    incluye: "",
+    no_incluye: "",
+    cupo_min: null,
+    cupo_max: null,
     punto_salida: "",
-    fecha: null,
+    fecha_salida: null,
+    fecha_regreso: null,
     precio: null,
-    hora_regreso: null,
     categoria_tour_id: null,
-    tipo_transporte_id: null,
     transporte_id: null,
     imagenes: [],
 });
@@ -30,48 +30,83 @@ const tour = ref({
 const imagenPreviewList = ref([]);
 const imagenFiles = ref([]);
 const removedImages = ref([]);
-const selectedTours = ref(null); // CORRECCIÓN: declarado correctamente
+const selectedTours = ref(null);
 const dialog = ref(false);
 const deleteDialog = ref(false);
 const submitted = ref(false);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    categoria_tour_id: { value: null, matchMode: FilterMatchMode.EQUALS },
+    'transporte.tipo_transporte_id': { value: null, matchMode: FilterMatchMode.EQUALS },
 });
+const selectedCategoria = ref(null);
+const selectedTipoTransporte = ref(null);
+const rowsPerPage = ref(10);
+const rowsPerPageOptions = ref([5, 10, 20, 50]);
 const btnTitle = ref("Guardar");
-const horaRegresoInput = ref("");
-const horaRegresoAMPM = ref("am");
 const horaRegresoCalendar = ref(null);
 const url = "/api/tours";
 const IMAGE_PATH = "/images/tours/";
 const categoriasTours = ref([]);
 const tipoTransportes = ref([]);
-const transportes = ref([]);
 const showImageDialog = ref(false);
 const selectedImages = ref([]);
 const carouselIndex = ref(0);
+const fileInput = ref(null);
+
+// Computed property para obtener tours filtrados
+const filteredTours = computed(() => {
+    let filtered = tours.value;
+    
+    // Filtro por búsqueda global
+    if (filters.value.global.value) {
+        const searchTerm = filters.value.global.value.toLowerCase();
+        filtered = filtered.filter(tour => 
+            tour.nombre.toLowerCase().includes(searchTerm) ||
+            tour.incluye.toLowerCase().includes(searchTerm) ||
+            tour.no_incluye.toLowerCase().includes(searchTerm) ||
+            tour.punto_salida.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    // Filtro por categoría
+    if (filters.value.categoria_tour_id.value) {
+        filtered = filtered.filter(tour => 
+            tour.categoria_tour_id === filters.value.categoria_tour_id.value
+        );
+    }
+    
+    // Filtro por tipo de transporte
+    if (filters.value['transporte.tipo_transporte_id'].value) {
+        filtered = filtered.filter(tour => 
+            tour['transporte.tipo_transporte_id'] === filters.value['transporte.tipo_transporte_id'].value
+        );
+    }
+    
+    return filtered;
+});
 
 function resetForm() {
     tour.value = {
         id: null,
         nombre: "",
-        descripcion: "",
+        incluye: "",
+        no_incluye: "",
+        cupo_min: null,
+        cupo_max: null,
         punto_salida: "",
-        fecha: null,
+        fecha_salida: null,
+        fecha_regreso: null,
         precio: null,
-        hora_regreso: null,
         categoria_tour_id: null,
-        tipo_transporte_id: null,
         transporte_id: null,
         imagenes: [],
     };
     imagenPreviewList.value = [];
     imagenFiles.value = [];
     removedImages.value = [];
-    horaRegresoInput.value = "";
-    horaRegresoAMPM.value = "am";
     horaRegresoCalendar.value = null;
     submitted.value = false;
-    transportes.value = [];
 }
 
 // Obtener tours, categorías y tipos de transporte
@@ -92,10 +127,16 @@ const fetchTours = async () => {
             categoria_nombre: t.categoria?.nombre || "",
             tipo_transporte_nombre: t.transporte?.tipo_transporte?.nombre || "",
             transporte_capacidad: t.transporte?.capacidad || "",
-            fecha: t.fecha,
-        }));
+            // Agregar campos para filtros
+            categoria_tour_id: t.categoria?.id || t.categoria_tour_id,
+            'transporte.tipo_transporte_id': t.transporte?.tipo_transporte?.id || t.transporte?.tipo_transporte_id,
+        })).sort((a, b) => {
+            // Ordenar por fecha de creación descendente (más recientes primero)
+            const dateA = new Date(a.created_at);
+            const dateB = new Date(b.created_at);
+            return dateB - dateA;
+        });
     } catch (err) {
-        console.error("fetchTours error:", err);
         toast.add({ severity: "error", summary: "Error", detail: "No se pudieron cargar los tours.", life: 4000 });
     }
 };
@@ -120,22 +161,29 @@ const fetchTipoTransportes = async () => {
     }
 };
 
-const fetchTransportes = async (tipoId) => {
-    try {
-        let endpoint = "/api/transportes";
-        if (tipoId) endpoint += `?tipo_transporte_id=${tipoId}`;
-        const response = await axios.get(endpoint);
-        transportes.value = response.data || [];
-    } catch {
-        transportes.value = [];
-        toast.add({ severity: "error", summary: "Error", detail: "No se pudieron cargar los transportes.", life: 4000 });
-    }
+// Funciones para manejar filtros
+const onCategoriaFilterChange = () => {
+    filters.value.categoria_tour_id.value = selectedCategoria.value;
 };
 
-watch(() => tour.value.tipo_transporte_id, (newVal) => {
-    if (newVal) fetchTransportes(newVal);
-    else transportes.value = [];
-});
+const onTipoTransporteFilterChange = () => {
+    filters.value['transporte.tipo_transporte_id'].value = selectedTipoTransporte.value;
+};
+
+const clearFilters = () => {
+    selectedCategoria.value = null;
+    selectedTipoTransporte.value = null;
+    filters.value.global.value = null;
+    filters.value.categoria_tour_id.value = null;
+    filters.value['transporte.tipo_transporte_id'].value = null;
+    
+    toast.add({ 
+        severity: "info", 
+        summary: "Filtros limpiados", 
+        detail: "Se han removido todos los filtros aplicados.", 
+        life: 3000 
+    });
+};
 
 const openNew = () => {
     resetForm();
@@ -145,22 +193,29 @@ const openNew = () => {
 
 const editTour = (t) => {
     resetForm();
+    
     tour.value = {
         ...t,
         categoria_tour_id: t.categoria?.id || t.categoria_tour_id || null,
-        tipo_transporte_id: t.transporte?.tipoTransporte?.id || t.tipo_transporte_id || null,
         transporte_id: t.transporte?.id || t.transporte_id || null,
     };
-    if (tour.value.tipo_transporte_id) fetchTransportes(tour.value.tipo_transporte_id);
 
-    if (t.hora_regreso) {
-        const dateObj = new Date(`1970-01-01T${t.hora_regreso}`);
-        let hours = dateObj.getHours();
-        let minutes = dateObj.getMinutes();
-        horaRegresoAMPM.value = hours >= 12 ? "pm" : "am";
-        hours = hours % 12 || 12;
-        horaRegresoInput.value = `${hours.toString().padStart(2,"0")}:${minutes.toString().padStart(2,"0")}`;
-        syncCalendarFromInput();
+    // Cargar fecha_salida correctamente
+    if (t.fecha_salida) {
+        if (typeof t.fecha_salida === 'string') {
+            tour.value.fecha_salida = new Date(t.fecha_salida);
+        } else {
+            tour.value.fecha_salida = t.fecha_salida;
+        }
+    }
+
+    // Cargar fecha_regreso correctamente para horaRegresoCalendar
+    if (t.fecha_regreso) {
+        if (typeof t.fecha_regreso === 'string') {
+            horaRegresoCalendar.value = new Date(t.fecha_regreso);
+        } else {
+            horaRegresoCalendar.value = t.fecha_regreso;
+        }
     }
 
     imagenPreviewList.value = (t.imagenes || []).map(img => typeof img === "string" ? img : img.nombre);
@@ -168,79 +223,198 @@ const editTour = (t) => {
     dialog.value = true;
 };
 
-function formatHoraInput(hora) {
-    const parts = hora.split(":");
-    if (parts.length !== 2) return null;
-    const hh = parts[0].padStart(2,"0");
-    const mm = parts[1].padStart(2,"0");
-    return `${hh}:${mm}`;
-}
-
 const saveOrUpdate = async () => {
     submitted.value = true;
 
-    if (!horaRegresoInput.value || !["am","pm"].includes(horaRegresoAMPM.value.toLowerCase())) {
-        toast.add({ severity: "error", summary: "Error", detail: "Hora de regreso inválida.", life: 4000 });
+    if (!horaRegresoCalendar.value) {
+        toast.add({ severity: "warn", summary: "Campos requeridos", detail: "Por favor verifica que todos los campos obligatorios estén completos.", life: 4000 });
         return;
     }
 
-    tour.value.hora_regreso = `${formatHoraInput(horaRegresoInput.value)} ${horaRegresoAMPM.value.toLowerCase()}`;
+    // Validar nombre específicamente
+    if (!tour.value.nombre || tour.value.nombre.length < 10 || tour.value.nombre.length > 200) {
+        toast.add({ severity: "warn", summary: "Campos requeridos", detail: "Por favor verifica que todos los campos obligatorios estén completos y cumplan los requisitos.", life: 4000 });
+        return;
+    }
 
-    if (!tour.value.nombre || !tour.value.descripcion || !tour.value.punto_salida || !tour.value.fecha || !tour.value.precio || !tour.value.categoria_tour_id || !tour.value.tipo_transporte_id || imagenPreviewList.value.length === 0) {
-        toast.add({ severity: "error", summary: "Error", detail: "Completa todos los campos obligatorios.", life: 4000 });
+    // Validar incluye específicamente
+    if (!tour.value.incluye || tour.value.incluye.length < 5 || tour.value.incluye.length > 1000) {
+        toast.add({ severity: "warn", summary: "Campos requeridos", detail: "Por favor verifica que todos los campos obligatorios estén completos y cumplan los requisitos.", life: 4000 });
+        return;
+    }
+
+    // Validar punto_salida específicamente
+    if (!tour.value.punto_salida || tour.value.punto_salida.length < 5 || tour.value.punto_salida.length > 200) {
+        toast.add({ severity: "warn", summary: "Campos requeridos", detail: "Por favor verifica que todos los campos obligatorios estén completos y cumplan los requisitos.", life: 4000 });
+        return;
+    }
+
+    // Validar cupos si están definidos
+    if (tour.value.cupo_min && tour.value.cupo_max && tour.value.cupo_min >= tour.value.cupo_max) {
+        toast.add({ severity: "warn", summary: "Verificar datos", detail: "Por favor revisa los valores ingresados y corrige cualquier inconsistencia.", life: 4000 });
+        return;
+    }
+
+    // Validar fechas
+    if (!validateFechaSalida()) {
+        toast.add({ severity: "warn", summary: "Verificar fechas", detail: "Por favor revisa las fechas ingresadas y asegúrate de que sean correctas.", life: 4000 });
+        return;
+    }
+
+    if (!validateFechaRegreso()) {
+        toast.add({ severity: "warn", summary: "Verificar fechas", detail: "Por favor revisa las fechas ingresadas y asegúrate de que sean correctas.", life: 4000 });
+        return;
+    }
+
+    if (!tour.value.fecha_salida || !tour.value.precio || !tour.value.categoria_tour_id || !tour.value.transporte_id || imagenPreviewList.value.length === 0) {
+        toast.add({ severity: "warn", summary: "Campos requeridos", detail: "Por favor verifica que todos los campos obligatorios estén completos.", life: 4000 });
+        return;
+    }
+
+    // Validar tamaño de imágenes antes de enviar
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    const oversizedFiles = imagenFiles.value.filter(file => file.size > maxSize);
+    if (oversizedFiles.length > 0) {
+        toast.add({ 
+            severity: "warn", 
+            summary: "Verificar archivos", 
+            detail: "Por favor revisa el tamaño de las imágenes seleccionadas.", 
+            life: 4000 
+        });
         return;
     }
 
     try {
         const formData = new FormData();
-        formData.append("nombre", tour.value.nombre);
-        formData.append("descripcion", tour.value.descripcion);
-        formData.append("punto_salida", tour.value.punto_salida);
-        formData.append("fecha", tour.value.fecha instanceof Date ? tour.value.fecha.toISOString().slice(0,10) : tour.value.fecha);
-        formData.append("precio", tour.value.precio);
-        formData.append("hora", formatHoraInput(horaRegresoInput.value));
-        formData.append("ampm", horaRegresoAMPM.value.toLowerCase());
-        formData.append("categoria_tour_id", tour.value.categoria_tour_id);
-        formData.append("tipo_transporte_id", tour.value.tipo_transporte_id);
+        
+        // Campos obligatorios con validación
+        formData.append("nombre", tour.value.nombre || "");
+        formData.append("incluye", tour.value.incluye || "");
+        formData.append("punto_salida", tour.value.punto_salida || "");
+        
+        // Formatear fecha_salida correctamente
+        if (tour.value.fecha_salida instanceof Date) {
+            formData.append("fecha_salida", tour.value.fecha_salida.toISOString().slice(0, 19).replace('T', ' '));
+        } else if (tour.value.fecha_salida) {
+            formData.append("fecha_salida", tour.value.fecha_salida);
+        }
+        
+        // Formatear fecha_regreso correctamente
+        if (horaRegresoCalendar.value instanceof Date) {
+            formData.append("fecha_regreso", horaRegresoCalendar.value.toISOString().slice(0, 19).replace('T', ' '));
+        } else if (horaRegresoCalendar.value) {
+            formData.append("fecha_regreso", horaRegresoCalendar.value);
+        }
+        
+        // Campos numéricos con validación
+        formData.append("precio", tour.value.precio || "");
+        formData.append("categoria_tour_id", tour.value.categoria_tour_id || "");
+        formData.append("tipo_transporte_id", tour.value.transporte_id || "");
+
+        // Agregar campos opcionales si tienen valor
+        if (tour.value.no_incluye) {
+            formData.append("no_incluye", tour.value.no_incluye);
+        }
+        if (tour.value.cupo_min) {
+            formData.append("cupo_min", tour.value.cupo_min);
+        }
+        if (tour.value.cupo_max) {
+            formData.append("cupo_max", tour.value.cupo_max);
+        }
 
         imagenFiles.value.forEach(f => formData.append("imagenes[]", f));
-        removedImages.value.forEach(img => formData.append("removed_images[]", img.split("/").pop()));
+        removedImages.value.forEach(img => {
+            // Manejo seguro para obtener el nombre del archivo
+            const fileName = img.includes("/") ? img.split("/").pop() : img;
+            formData.append("removed_images[]", fileName);
+        });
 
         let response;
         if (!tour.value.id) {
             response = await axios.post(url, formData, { headers: {"Content-Type":"multipart/form-data"} });
-            toast.add({ severity: "success", summary: "Éxito", detail: "Tour agregado.", life: 4000 });
+            toast.add({ 
+                severity: "success", 
+                summary: "¡Éxito!", 
+                detail: "El tour ha sido creado correctamente.", 
+                life: 5000 
+            });
         } else {
             formData.append("_method","PUT");
             response = await axios.post(`${url}/${tour.value.id}`, formData, { headers: {"Content-Type":"multipart/form-data"} });
-            toast.add({ severity: "info", summary: "Éxito", detail: "Tour actualizado.", life: 4000 });
+            toast.add({ 
+                severity: "success", 
+                summary: "¡Éxito!", 
+                detail: "El tour ha sido actualizado correctamente.", 
+                life: 5000 
+            });
         }
 
         await fetchTours();
         dialog.value = false;
         resetForm();
     } catch (err) {
-        console.error("saveOrUpdate error:", err);
-        toast.add({ severity: "error", summary: "Error", detail: err.response?.data?.message || "No se pudo guardar el tour.", life: 4000 });
+        toast.add({ 
+            severity: "warn", 
+            summary: "Error de validación", 
+            detail: "Por favor revisa los campos e intenta nuevamente.", 
+            life: 6000 
+        });
     }
 };
 
-// Funciones para eliminar tours, manejar imágenes y sincronizar hora
 const confirmDeleteTour = (t) => { tour.value = { ...t }; deleteDialog.value = true; };
 const deleteTour = async () => {
     try {
         await axios.delete(`${url}/${tour.value.id}`);
         await fetchTours();
         deleteDialog.value = false;
-        toast.add({ severity: "warn", summary: "Eliminado", detail: `El tour "${tour.value.nombre}" fue eliminado.`, life: 4000 });
+        toast.add({ 
+            severity: "success", 
+            summary: "¡Eliminado!", 
+            detail: "El tour ha sido eliminado correctamente.", 
+            life: 5000 
+        });
     } catch (err) {
-        toast.add({ severity: "error", summary: "Error", detail: "No se pudo eliminar el tour.", life: 4000 });
+        toast.add({ 
+            severity: "error", 
+            summary: "Error", 
+            detail: "No se pudo eliminar el tour. Inténtalo de nuevo.", 
+            life: 5000 
+        });
     }
 };
-const hideDialog = () => { dialog.value = false; imagenPreviewList.value = []; imagenFiles.value = []; removedImages.value = []; submitted.value = false; };
+const hideDialog = () => { 
+    dialog.value = false; 
+    resetForm();
+};
 const onImageSelect = (event) => {
-    for (const file of event.files) {
+    const files = event.target ? event.target.files : event.files;
+    const maxSize = 2 * 1024 * 1024; // 2MB en bytes
+    
+    for (const file of files) {
         if (file instanceof File) {
+            // Validar tamaño del archivo
+            if (file.size > maxSize) {
+                toast.add({ 
+                    severity: "warn", 
+                    summary: "Archivo no válido", 
+                    detail: "Por favor selecciona archivos que cumplan con los requisitos de tamaño (máximo 2MB).", 
+                    life: 5000 
+                });
+                continue; // Saltar este archivo
+            }
+            
+            // Validar tipo de archivo
+            if (!file.type.startsWith('image/')) {
+                toast.add({ 
+                    severity: "warn", 
+                    summary: "Formato no válido", 
+                    detail: "Por favor selecciona únicamente archivos de imagen válidos.", 
+                    life: 4000 
+                });
+                continue; // Saltar este archivo
+            }
+            
             imagenFiles.value.push(file);
             const reader = new FileReader();
             reader.onload = (e) => imagenPreviewList.value.push(e.target.result);
@@ -262,41 +436,130 @@ const viewImages = (imagenesTour) => {
     selectedImages.value = (imagenesTour||[]).map(img=>IMAGE_PATH+(typeof img==="string"?img:img.nombre));
     showImageDialog.value = true;
 };
-function syncCalendarFromInput() {
-    if (!horaRegresoInput.value || !horaRegresoAMPM.value) return;
-    const [hh, mm] = horaRegresoInput.value.split(":");
-    let hours = parseInt(hh)||0;
-    if (horaRegresoAMPM.value.toLowerCase()==="pm" && hours<12) hours+=12;
-    if (horaRegresoAMPM.value.toLowerCase()==="am" && hours===12) hours=0;
-    const date = new Date();
-    date.setHours(hours);
-    date.setMinutes(parseInt(mm)||0);
-    horaRegresoCalendar.value = date;
-}
-function onHoraRegresoCalendarChange() {
-    if (!horaRegresoCalendar.value) return;
-    const date = new Date(horaRegresoCalendar.value);
-    let hours = date.getHours();
-    let minutes = date.getMinutes();
-    let ampm = hours>=12?"pm":"am";
-    hours = hours%12||12;
-    horaRegresoInput.value = `${hours.toString().padStart(2,"0")}:${minutes.toString().padStart(2,"0")}`;
-    horaRegresoAMPM.value = ampm;
-}
-watch(horaRegresoAMPM,syncCalendarFromInput);
+
+const validateNombre = () => {
+    // Limitar a 200 caracteres máximo
+    if (tour.value.nombre && tour.value.nombre.length > 200) {
+        tour.value.nombre = tour.value.nombre.substring(0, 200);
+    }
+};
+
+const validateIncluye = () => {
+    // Limitar a 1000 caracteres máximo
+    if (tour.value.incluye && tour.value.incluye.length > 1000) {
+        tour.value.incluye = tour.value.incluye.substring(0, 1000);
+    }
+};
+
+const validatePuntoSalida = () => {
+    // Limitar a 200 caracteres máximo
+    if (tour.value.punto_salida && tour.value.punto_salida.length > 200) {
+        tour.value.punto_salida = tour.value.punto_salida.substring(0, 200);
+    }
+};
+
+const validateCupos = () => {
+    // Si se llena cupo_min, asegurar que cupo_max sea al menos cupo_min + 1
+    if (tour.value.cupo_min && !tour.value.cupo_max) {
+        // Si hay mínimo pero no máximo, sugerir un máximo
+        return true;
+    }
+    
+    // Si se llena cupo_max, asegurar que cupo_min sea menor
+    if (tour.value.cupo_max && !tour.value.cupo_min) {
+        // Si hay máximo pero no mínimo, está bien
+        return true;
+    }
+    
+    // Si ambos están llenos, validar la lógica
+    if (tour.value.cupo_min && tour.value.cupo_max) {
+        if (tour.value.cupo_min >= tour.value.cupo_max) {
+            return false;
+        }
+    }
+    
+    return true;
+};
+
+const validateFechaSalida = () => {
+    if (!tour.value.fecha_salida) return true;
+    
+    const now = new Date();
+    const fechaSalida = new Date(tour.value.fecha_salida);
+    
+    // Permitir fechas desde hace 5 minutos para evitar problemas de sincronización
+    const tolerance = new Date(now.getTime() - 5 * 60 * 1000); // 5 minutos atrás
+    if (fechaSalida < tolerance) {
+        return false;
+    }
+    
+    // Si hay fecha de regreso, validar que salida sea anterior al regreso
+    if (horaRegresoCalendar.value) {
+        const fechaRegreso = new Date(horaRegresoCalendar.value);
+        if (fechaSalida >= fechaRegreso) {
+            return false;
+        }
+    }
+    
+    return true;
+};
+
+const validateFechaRegreso = () => {
+    if (!horaRegresoCalendar.value) return true;
+    
+    const fechaRegreso = new Date(horaRegresoCalendar.value);
+    
+    // Si hay fecha de salida, validar que regreso sea posterior a salida
+    if (tour.value.fecha_salida) {
+        const fechaSalida = new Date(tour.value.fecha_salida);
+        if (fechaRegreso <= fechaSalida) {
+            return false;
+        }
+        
+        // Validar que el regreso sea al menos 1 hora después de la salida
+        const diferenciaHoras = (fechaRegreso - fechaSalida) / (1000 * 60 * 60);
+        if (diferenciaHoras < 1) {
+            return false;
+        }
+    }
+    
+    return true;
+};
+
+// Función para obtener fecha mínima (ahora + 1 hora)
+const getMinDate = () => {
+    const now = new Date();
+    now.setHours(now.getHours() + 1);
+    return now;
+};
+
+// Función para obtener fecha mínima de regreso (fecha salida + 1 hora)
+const getMinDateRegreso = () => {
+    if (!tour.value.fecha_salida) return getMinDate();
+    
+    const fechaSalida = new Date(tour.value.fecha_salida);
+    fechaSalida.setHours(fechaSalida.getHours() + 1);
+    return fechaSalida;
+};
 </script>
 
 
 <template>
     <Head title="Tours" />
     <AuthenticatedLayout>
-        <div class="py-6 px-7 mt-10 mx-auto bg-red-100 shadow-md rounded-lg">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Catálogo de Tours</h3>
+        <!-- Toast Component for notifications with high z-index -->
+        <Toast class="z-[9999]" />
+        
+        <div class="py-4 sm:py-6 px-4 sm:px-7 mt-6 sm:mt-10 mx-auto bg-red-100 shadow-md rounded-lg max-w-full">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-0">
+                <h3 class="text-lg sm:text-xl font-bold">Catálogo de Tours</h3>
                 <Button
                     label="Agregar tour"
                     icon="pi pi-plus"
-                    class="p-button-sm p-button-danger"
+                    style="background-color: #ef4444 !important; color: white !important; border: none !important; padding: 0.5rem 1.5rem; border-radius: 0.375rem; transition: all 0.2s ease; font-weight: 500;"
+                    onmouseover="this.style.backgroundColor='#dc2626'"
+                    onmouseout="this.style.backgroundColor='#ef4444'"
+                    class="w-full sm:w-auto"
                     @click="openNew"
                 />
             </div>
@@ -307,25 +570,81 @@ watch(horaRegresoAMPM,syncCalendarFromInput);
                 dataKey="id"
                 :filters="filters"
                 :paginator="true"
-                :rows="10"
-                class="overflow-x-auto max-w-full"
+                :rows="rowsPerPage"
+                :rowsPerPageOptions="rowsPerPageOptions"
+                v-model:rowsPerPage="rowsPerPage"
+                paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} tours"
+                class="overflow-x-auto max-w-full text-xs sm:text-sm lg:text-base"
                 style="display: block; max-width: 84vw"
             >
                 <template #header>
-                    <InputText
-                        v-model="filters['global'].value"
-                        placeholder="Buscar..."
-                        class="w-full"
-                    />
+                    <div class="flex flex-col gap-3 mb-4">
+                        <!-- Fila de filtros -->
+                        <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center">
+                            <!-- Buscador global -->
+                            <div class="flex-1 min-w-0">
+                                <InputText
+                                    v-model="filters['global'].value"
+                                    placeholder="Buscar en todos los campos..."
+                                    class="w-full text-sm"
+                                />
+                            </div>
+                            
+                            <!-- Filtro por categoría -->
+                            <div class="w-full sm:w-48">
+                                <Select
+                                    v-model="selectedCategoria"
+                                    :options="categoriasTours"
+                                    optionLabel="nombre"
+                                    optionValue="id"
+                                    placeholder="Filtrar por categoría"
+                                    class="w-full text-sm"
+                                    @change="onCategoriaFilterChange"
+                                    :clearable="true"
+                                />
+                            </div>
+                            
+                            <!-- Filtro por tipo de transporte -->
+                            <div class="w-full sm:w-48">
+                                <Select
+                                    v-model="selectedTipoTransporte"
+                                    :options="tipoTransportes"
+                                    optionLabel="nombre"
+                                    optionValue="id"
+                                    placeholder="Filtrar por transporte"
+                                    class="w-full text-sm"
+                                    @change="onTipoTransporteFilterChange"
+                                    :clearable="true"
+                                />
+                            </div>
+                            
+                            <!-- Botón limpiar filtros -->
+                            <Button
+                                label="Limpiar"
+                                icon="pi pi-filter-slash"
+                                class="p-button-sm p-button-outlined"
+                                @click="clearFilters"
+                            />
+                        </div>
+                        
+                        <!-- Total de registros -->
+                        <div class="flex justify-end">
+                            <div class="text-sm text-gray-600">
+                                Total: {{ filteredTours.length }} tour{{ filteredTours.length !== 1 ? 's' : '' }}
+                            </div>
+                        </div>
+                    </div>
                 </template>
                 <Column field="nombre" header="Nombre" sortable />
-                <Column field="descripcion" header="Descripción" />
-                <Column field="punto_salida" header="Punto de salida" />
-                <Column field="fecha" header="Fecha y hora de salida">
+                <Column field="incluye" header="Incluye" />
+                <Column field="no_incluye" header="No incluye" />
+                <Column field="punto_salida" header="Punto salida" />
+                <Column field="fecha_salida" header="Fecha salida">
                     <template #body="slotProps">
                         {{
-                            slotProps.data.fecha
-                                ? new Date(slotProps.data.fecha).toLocaleString(
+                            slotProps.data.fecha_salida
+                                ? new Date(slotProps.data.fecha_salida).toLocaleString(
                                       "es-ES",
                                       {
                                           day: "2-digit",
@@ -340,9 +659,23 @@ watch(horaRegresoAMPM,syncCalendarFromInput);
                         }}
                     </template>
                 </Column>
-                <Column field="hora_regreso" header="Hora de regreso">
+                <Column field="fecha_regreso" header="Fecha regreso">
                     <template #body="slotProps">
-                        {{ slotProps.data.hora_regreso || "" }}
+                        {{
+                            slotProps.data.fecha_regreso
+                                ? new Date(slotProps.data.fecha_regreso).toLocaleString(
+                                      "es-ES",
+                                      {
+                                          day: "2-digit",
+                                          month: "2-digit",
+                                          year: "numeric",
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                          hour12: true,
+                                      }
+                                  )
+                                : ""
+                        }}
                     </template>
                 </Column>
                 <Column field="precio" header="Precio">
@@ -354,33 +687,35 @@ watch(horaRegresoAMPM,syncCalendarFromInput);
                         }}
                     </template>
                 </Column>
-                <Column field="categoria_nombre" header="Categoría" />
-                <Column
-                    field="tipo_transporte_nombre"
-                    header="Tipo de Transporte"
-                />
-                <Column
-                    field="transporte_capacidad"
-                    header="Capacidad del Transporte"
-                />
                 <Column header="Acciones" :exportable="false">
                     <template #body="slotProps">
-                        <div class="flex gap-2">
-                            <Button
-                                icon="pi pi-eye"
-                                class="p-button-rounded p-button-info p-button-md"
-                                @click="viewImages(slotProps.data.imagenes)"
-                            />
-                            <Button
-                                icon="pi pi-pencil"
-                                class="p-button-rounded p-button-warn p-button-md"
+                        <div class="flex gap-2 sm:gap-3">
+                            <!-- Botón Editar -->
+                            <button
+                                title="Editar tour"
+                                class="text-orange-600 hover:text-orange-900 transition-colors"
                                 @click="editTour(slotProps.data)"
-                            />
-                            <Button
-                                icon="pi pi-trash"
-                                class="p-button-rounded p-button-danger p-button-md"
+                            >
+                                <FontAwesomeIcon :icon="faEdit" class="h-5 w-5" />
+                            </button>
+                            
+                            <!-- Botón Ver imágenes -->
+                            <button
+                                title="Ver imágenes"
+                                class="text-blue-600 hover:text-blue-900 transition-colors"
+                                @click="viewImages(slotProps.data.imagenes)"
+                            >
+                                <FontAwesomeIcon :icon="faEye" class="h-5 w-5" />
+                            </button>
+                            
+                            <!-- Botón Eliminar -->
+                            <button
+                                title="Eliminar tour"
+                                class="text-red-600 hover:text-red-900 transition-colors"
                                 @click="confirmDeleteTour(slotProps.data)"
-                            />
+                            >
+                                <FontAwesomeIcon :icon="faTrash" class="h-5 w-5" />
+                            </button>
                         </div>
                     </template>
                 </Column>
@@ -395,123 +730,288 @@ watch(horaRegresoAMPM,syncCalendarFromInput);
                 <div class="space-y-4">
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
-                            <label for="nombre" class="w-24">Nombre:</label>
+                            <label for="nombre" class="w-24 flex items-center gap-1">
+                                Nombre:
+                                <span class="text-red-500 font-bold">*</span>
+                            </label>
                             <InputText
                                 v-model.trim="tour.nombre"
                                 id="nombre"
+                                name="nombre"
+                                :maxlength="200"
                                 :class="{
-                                    'p-invalid': submitted && !tour.nombre,
+                                    'p-invalid': submitted && (!tour.nombre || tour.nombre.length < 10 || tour.nombre.length > 200),
                                 }"
                                 class="flex-1"
+                                @input="validateNombre"
                             />
                         </div>
+                        <!-- Mensaje cuando tiene menos de 10 caracteres -->
+                        <small
+                            class="text-red-500 ml-28"
+                            v-if="tour.nombre && tour.nombre.length < 10"
+                            >El nombre debe tener al menos 10 caracteres. Actual: {{ tour.nombre.length }}/10</small
+                        >
+                        <!-- Mensaje cuando está cerca del límite o lo excede -->
+                        <small
+                            class="text-orange-500 ml-28"
+                            v-if="tour.nombre && tour.nombre.length >= 180 && tour.nombre.length <= 200"
+                            >Caracteres restantes: {{ 200 - tour.nombre.length }}</small
+                        >
+                        <!-- Mensaje de error cuando está vacío y se intentó enviar -->
                         <small
                             class="text-red-500 ml-28"
                             v-if="submitted && !tour.nombre"
                             >El nombre es obligatorio.</small
                         >
-                    </div>
-                    <div class="w-full flex flex-col">
-                        <div class="flex items-center gap-4">
-                            <label for="descripcion" class="w-24"
-                                >Descripción:</label
-                            >
-                            <textarea
-                                v-model.trim="tour.descripcion"
-                                id="descripcion"
-                                :class="{
-                                    'p-invalid': submitted && !tour.descripcion,
-                                }"
-                                class="flex-1"
-                            />
-                        </div>
+                        <!-- Mensaje de error cuando es menor a 10 caracteres al enviar -->
                         <small
                             class="text-red-500 ml-28"
-                            v-if="submitted && !tour.descripcion"
-                            >La descripción es obligatoria.</small
+                            v-if="submitted && tour.nombre && tour.nombre.length < 10"
+                            >El nombre debe tener al menos 10 caracteres.</small
                         >
                     </div>
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
-                            <label for="punto_salida" class="w-24"
-                                >Punto de salida:</label
-                            >
-                            <InputText
-                                v-model.trim="tour.punto_salida"
-                                id="punto_salida"
+                            <label for="incluye" class="w-24 flex items-center gap-1">
+                                Incluye:
+                                <span class="text-red-500 font-bold">*</span>
+                            </label>
+                            <textarea
+                                v-model.trim="tour.incluye"
+                                id="incluye"
+                                name="incluye"
+                                :maxlength="1000"
                                 :class="{
-                                    'p-invalid':
-                                        submitted && !tour.punto_salida,
+                                    'p-invalid': submitted && (!tour.incluye || tour.incluye.length < 5),
                                 }"
+                                class="flex-1"
+                                @input="validateIncluye"
+                                rows="3"
+                            />
+                        </div>
+                        <!-- Mensaje cuando tiene menos de 5 caracteres -->
+                        <small
+                            class="text-red-500 ml-28"
+                            v-if="tour.incluye && tour.incluye.length < 5"
+                            >Debe tener al menos 5 caracteres. Actual: {{ tour.incluye.length }}/5</small
+                        >
+                        <!-- Mensaje cuando está cerca del límite -->
+                        <small
+                            class="text-orange-500 ml-28"
+                            v-if="tour.incluye && tour.incluye.length >= 950 && tour.incluye.length <= 1000"
+                            >Caracteres restantes: {{ 1000 - tour.incluye.length }}</small
+                        >
+                        <!-- Mensaje de error cuando está vacío y se intentó enviar -->
+                        <small
+                            class="text-red-500 ml-28"
+                            v-if="submitted && !tour.incluye"
+                            >El campo incluye es obligatorio.</small
+                        >
+                        <!-- Mensaje de error cuando es menor a 5 caracteres al enviar -->
+                        <small
+                            class="text-red-500 ml-28"
+                            v-if="submitted && tour.incluye && tour.incluye.length < 5"
+                            >El campo incluye debe tener al menos 5 caracteres.</small
+                        >
+                    </div>
+                    <div class="w-full flex flex-col">
+                        <div class="flex items-center gap-4">
+                            <label for="no_incluye" class="w-24"
+                                >No incluye (opcional):</label
+                            >
+                            <textarea
+                                v-model.trim="tour.no_incluye"
+                                id="no_incluye"
+                                name="no_incluye"
                                 class="flex-1"
                             />
                         </div>
+                    </div>
+                    <div class="w-full flex flex-col">
+                        <div class="flex items-center gap-4">
+                            <label for="punto_salida" class="w-24 flex items-center gap-1">
+                                Punto de salida:
+                                <span class="text-red-500 font-bold">*</span>
+                            </label>
+                            <InputText
+                                v-model.trim="tour.punto_salida"
+                                id="punto_salida"
+                                name="punto_salida"
+                                :maxlength="200"
+                                :class="{
+                                    'p-invalid':
+                                        submitted && (!tour.punto_salida || tour.punto_salida.length < 5),
+                                }"
+                                class="flex-1"
+                                @input="validatePuntoSalida"
+                            />
+                        </div>
+                        <!-- Mensaje cuando tiene menos de 5 caracteres -->
+                        <small
+                            class="text-red-500 ml-28"
+                            v-if="tour.punto_salida && tour.punto_salida.length < 5"
+                            >Debe tener al menos 5 caracteres. Actual: {{ tour.punto_salida.length }}/5</small
+                        >
+                        <!-- Mensaje cuando está cerca del límite -->
+                        <small
+                            class="text-orange-500 ml-28"
+                            v-if="tour.punto_salida && tour.punto_salida.length >= 180 && tour.punto_salida.length <= 200"
+                            >Caracteres restantes: {{ 200 - tour.punto_salida.length }}</small
+                        >
+                        <!-- Mensaje de error cuando está vacío y se intentó enviar -->
                         <small
                             class="text-red-500 ml-28"
                             v-if="submitted && !tour.punto_salida"
                             >El punto de salida es obligatorio.</small
                         >
+                        <!-- Mensaje de error cuando es menor a 5 caracteres al enviar -->
+                        <small
+                            class="text-red-500 ml-28"
+                            v-if="submitted && tour.punto_salida && tour.punto_salida.length < 5"
+                            >El punto de salida debe tener al menos 5 caracteres.</small
+                        >
                     </div>
                     <div class="flex gap-4">
                         <div class="flex-1">
-                            <label for="fecha" class="block mb-2"
-                                >Fecha y hora de salida</label
+                            <label for="cupo_min" class="block mb-2"
+                                >Cupo mínimo:</label
                             >
-                            <Calendar
-                                v-model="tour.fecha"
-                                id="fecha"
-                                :showIcon="true"
-                                :showTime="true"
+                            <InputNumber
+                                v-model="tour.cupo_min"
+                                id="cupo_min"
+                                name="cupo_min"
+                                :min="1"
+                                :max="tour.cupo_max ? tour.cupo_max - 1 : 50"
+                                :step="1"
+                                showButtons
+                                :useGrouping="false"
+                                :class="{
+                                    'p-invalid': tour.cupo_min && tour.cupo_max && tour.cupo_min >= tour.cupo_max,
+                                }"
+                                class="w-full"
+                                @input="validateCupos"
+                                placeholder="0"
+                            />
+                            <small
+                                class="text-red-500 block text-xs mt-1"
+                                v-if="tour.cupo_min && tour.cupo_max && tour.cupo_min >= tour.cupo_max"
+                                >Debe ser menor al máximo</small
+                            >
+                        </div>
+                        <div class="flex-1">
+                            <label for="cupo_max" class="block mb-2"
+                                >Cupo máximo:</label
+                            >
+                            <InputNumber
+                                v-model="tour.cupo_max"
+                                id="cupo_max"
+                                name="cupo_max"
+                                :min="tour.cupo_min ? tour.cupo_min + 1 : 1"
+                                :max="100"
+                                :step="1"
+                                showButtons
+                                :useGrouping="false"
+                                :class="{
+                                    'p-invalid': tour.cupo_min && tour.cupo_max && tour.cupo_max <= tour.cupo_min,
+                                }"
+                                class="w-full"
+                                @input="validateCupos"
+                                placeholder="0"
+                            />
+                            <small
+                                class="text-red-500 block text-xs mt-1"
+                                v-if="tour.cupo_min && tour.cupo_max && tour.cupo_max <= tour.cupo_min"
+                                >Debe ser mayor al mínimo</small
+                            >
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="flex-1">
+                            <label for="fecha_salida" class="flex items-center gap-1 mb-2">
+                                Fecha y hora de salida
+                                <span class="text-red-500 font-bold">*</span>
+                            </label>
+                            <DatePicker
+                                v-model="tour.fecha_salida"
+                                id="fecha_salida"
+                                name="fecha_salida"
+                                showIcon
+                                showTime
                                 hourFormat="12"
                                 dateFormat="yy-mm-dd"
+                                :minDate="getMinDate()"
                                 :class="{
-                                    'p-invalid': submitted && !tour.fecha,
+                                    'p-invalid': 
+                                        (submitted && !tour.fecha_salida) ||
+                                        (tour.fecha_salida && !validateFechaSalida())
                                 }"
                                 class="w-full"
                                 :manualInput="false"
+                                @dateSelect="validateFechaSalida"
+                                @input="validateFechaSalida"
                             />
+                            <!-- Mensaje de requerido -->
                             <small
-                                class="text-red-500"
-                                v-if="submitted && !tour.fecha"
-                                >Fecha y hora requerida.</small
+                                class="text-red-500 block text-xs mt-1"
+                                v-if="submitted && !tour.fecha_salida"
+                                >Fecha y hora de salida requerida.</small
+                            >
+                            <!-- Mensaje de fecha inválida -->
+                            <small
+                                class="text-red-500 block text-xs mt-1"
+                                v-if="tour.fecha_salida && !validateFechaSalida()"
+                                >La fecha debe ser futura y anterior al regreso.</small
                             >
                         </div>
-                        <div style="width: 150px; min-width: 150px">
-                            <label for="hora_regreso" class="block mb-2"
-                                >Hora regreso</label
-                            >
-                            <div class="flex gap-2 items-center">
-                                <Calendar
-                                    v-model="horaRegresoCalendar"
-                                    id="horaRegresoCalendar"
-                                    :showTime="true"
-                                    :timeOnly="true"
-                                    hourFormat="12"
-                                    :manualInput="false"
-                                    :class="{
-                                        'p-invalid':
-                                            submitted && !horaRegresoInput,
-                                    }"
-                                    style="width: 85px; min-width: 85px"
-                                    @change="onHoraRegresoCalendarChange"
-                                />
-                            </div>
+                        <div class="flex-1">
+                            <label for="horaRegresoCalendar" class="flex items-center gap-1 mb-2">
+                                Fecha y hora regreso
+                                <span class="text-red-500 font-bold">*</span>
+                            </label>
+                            <DatePicker
+                                v-model="horaRegresoCalendar"
+                                id="horaRegresoCalendar"
+                                name="horaRegresoCalendar"
+                                showIcon
+                                showTime
+                                hourFormat="12"
+                                dateFormat="yy-mm-dd"
+                                :minDate="getMinDateRegreso()"
+                                :manualInput="false"
+                                :class="{
+                                    'p-invalid': 
+                                        (submitted && !horaRegresoCalendar) ||
+                                        (horaRegresoCalendar && !validateFechaRegreso())
+                                }"
+                                class="w-full"
+                                @dateSelect="validateFechaRegreso"
+                                @input="validateFechaRegreso"
+                            />
+                            <!-- Mensaje de requerido -->
                             <small
-                                class="text-red-500"
-                                v-if="
-                                    submitted &&
-                                    (!horaRegresoInput || !horaRegresoAMPM)
-                                "
-                                >Hora de regreso y AM/PM son requeridos.</small
+                                class="text-red-500 block text-xs mt-1"
+                                v-if="submitted && !horaRegresoCalendar"
+                                >Fecha y hora de regreso requerida.</small
+                            >
+                            <!-- Mensaje de fecha inválida -->
+                            <small
+                                class="text-red-500 block text-xs mt-1"
+                                v-if="horaRegresoCalendar && !validateFechaRegreso()"
+                                >Debe ser posterior a la salida (mín. 1 hora).</small
                             >
                         </div>
                     </div>
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
-                            <label for="precio" class="w-24">Precio:</label>
+                            <label for="precio" class="w-24 flex items-center gap-1">
+                                Precio:
+                                <span class="text-red-500 font-bold">*</span>
+                            </label>
                             <InputNumber
                                 v-model="tour.precio"
                                 id="precio"
+                                name="precio"
                                 mode="currency"
                                 currency="USD"
                                 :locale="'en-US'"
@@ -544,15 +1044,17 @@ watch(horaRegresoAMPM,syncCalendarFromInput);
                     </div>
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
-                            <label for="categoria_tour_id" class="w-24"
-                                >Categoría:</label
-                            >
+                            <label for="categoria_tour_id" class="w-24 flex items-center gap-1">
+                                Categoría:
+                                <span class="text-red-500 font-bold">*</span>
+                            </label>
                             <Select
                                 v-model="tour.categoria_tour_id"
                                 :options="categoriasTours"
                                 optionLabel="nombre"
                                 optionValue="id"
                                 id="categoria_tour_id"
+                                name="categoria_tour_id"
                                 class="flex-1"
                                 placeholder="Selecciona una categoría"
                                 :class="{
@@ -569,43 +1071,57 @@ watch(horaRegresoAMPM,syncCalendarFromInput);
                     </div>
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
-                            <label for="tipo_transporte_id" class="w-24"
-                                >Tipo de transporte:</label
-                            >
+                            <label for="transporte_id" class="w-24 flex items-center gap-1">
+                                Tipo de transporte:
+                                <span class="text-red-500 font-bold">*</span>
+                            </label>
                             <Select
-                                v-model="tour.tipo_transporte_id"
+                                v-model="tour.transporte_id"
                                 :options="tipoTransportes"
                                 optionLabel="nombre"
                                 optionValue="id"
-                                id="tipo_transporte_id"
+                                id="transporte_id"
+                                name="transporte_id"
                                 class="flex-1"
                                 placeholder="Selecciona un tipo de transporte"
                                 :class="{
                                     'p-invalid':
-                                        submitted && !tour.tipo_transporte_id,
+                                        submitted && !tour.transporte_id,
                                 }"
                             />
                         </div>
                         <small
                             class="text-red-500 ml-28"
-                            v-if="submitted && !tour.tipo_transporte_id"
+                            v-if="submitted && !tour.transporte_id"
                             >El tipo de transporte es obligatorio.</small
                         >
                     </div>
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
-                            <label for="imagen" class="w-24">Imágenes:</label>
-                            <FileUpload
-                                mode="basic"
-                                name="imagenes[]"
-                                accept="image/*"
-                                :auto="true"
-                                chooseLabel="Seleccionar imágenes"
-                                @select="onImageSelect"
-                                :customUpload="true"
-                                :multiple="true"
-                                class="flex-1 p-button-rounded p-button-warn p-button-md mr-2"
-                            />
+                            <label for="imagenes" class="w-24 flex items-center gap-1">
+                                Imágenes:
+                                <span class="text-red-500 font-bold">*</span>
+                            </label>
+                            <div class="flex-1">
+                                <input
+                                    type="file"
+                                    id="imagenes"
+                                    name="imagenes[]"
+                                    accept="image/*"
+                                    multiple
+                                    @change="onImageSelect"
+                                    class="hidden"
+                                    ref="fileInput"
+                                />
+                                <Button
+                                    label="Seleccionar imágenes"
+                                    icon="pi pi-plus"
+                                    style="background-color: white !important; border: 1px solid #ef4444 !important; color: #ef4444 !important; padding: 0.5rem 1.5rem; border-radius: 0.375rem; transition: all 0.2s ease;"
+                                    onmouseover="this.style.backgroundColor='#fef2f2'; this.style.borderColor='#dc2626'; this.style.color='#dc2626'"
+                                    onmouseout="this.style.backgroundColor='white'; this.style.borderColor='#ef4444'; this.style.color='#ef4444'"
+                                    @click="$refs.fileInput.click()"
+                                />
+                            </div>
                         </div>
                         <small
                             class="text-red-500 ml-28"
@@ -644,14 +1160,18 @@ watch(horaRegresoAMPM,syncCalendarFromInput);
                         <Button
                             label="Cancelar"
                             icon="pi pi-times"
-                            class="p-button-rounded p-button-danger p-button-md mr-2"
+                            style="background-color: white !important; border: 1px solid #10b981 !important; color: #10b981 !important; padding: 0.5rem 1.5rem; border-radius: 0.375rem; transition: all 0.2s ease;"
+                            onmouseover="this.style.backgroundColor='#f0fdf4'; this.style.borderColor='#059669'; this.style.color='#059669'"
+                            onmouseout="this.style.backgroundColor='white'; this.style.borderColor='#10b981'; this.style.color='#10b981'"
                             text
                             @click="hideDialog"
                         />
                         <Button
                             :label="btnTitle"
                             icon="pi pi-check"
-                            class="p-button-rounded p-button-warn p-button-md mr-2"
+                            style="background-color: #ef4444 !important; color: white !important; border: none !important; padding: 0.5rem 1.5rem; border-radius: 0.375rem; transition: all 0.2s ease;"
+                            onmouseover="this.style.backgroundColor='#dc2626'"
+                            onmouseout="this.style.backgroundColor='#ef4444'"
                             @click="saveOrUpdate"
                         />
                     </div>
@@ -663,25 +1183,35 @@ watch(horaRegresoAMPM,syncCalendarFromInput);
                 header="Confirmar"
                 :modal="true"
                 :style="{ width: '350px' }"
+                :closable="false"
             >
-                <span
-                    >¿Eliminar el tour <b>{{ tour.nombre }}</b
-                    >?</span
-                >
+                <div class="flex items-center gap-3">
+                    <i class="pi pi-exclamation-triangle text-gray-800" style="font-size: 30px;"></i>
+                    <span
+                        >¿Eliminar el tour <b>{{ tour.nombre }}</b
+                        >?</span
+                    >
+                </div>
                 <template #footer>
-                    <Button
-                        label="No"
-                        icon="pi pi-times"
-                        text
-                        @click="deleteDialog = false"
-                        class="p-button-rounded p-button-warn p-button-md mr-2"
-                    />
-                    <Button
-                        label="Sí"
-                        icon="pi pi-check"
-                        severity="danger"
-                        @click="deleteTour"
-                    />
+                    <div class="flex justify-end gap-4 w-full">
+                        <Button
+                            label="No"
+                            icon="pi pi-times"
+                            style="background-color: white !important; border: 1px solid #10b981 !important; color: #10b981 !important; padding: 0.5rem 1.5rem; border-radius: 0.375rem; transition: all 0.2s ease;"
+                            onmouseover="this.style.backgroundColor='#f0fdf4'; this.style.borderColor='#059669'; this.style.color='#059669'"
+                            onmouseout="this.style.backgroundColor='white'; this.style.borderColor='#10b981'; this.style.color='#10b981'"
+                            text
+                            @click="deleteDialog = false"
+                        />
+                        <Button
+                            label="Sí"
+                            icon="pi pi-check"
+                            style="background-color: #ef4444 !important; color: white !important; border: none !important; padding: 0.5rem 1.5rem; border-radius: 0.375rem; transition: all 0.2s ease;"
+                            onmouseover="this.style.backgroundColor='#dc2626'"
+                            onmouseout="this.style.backgroundColor='#ef4444'"
+                            @click="deleteTour"
+                        />
+                    </div>
                 </template>
             </Dialog>
 
@@ -689,6 +1219,7 @@ watch(horaRegresoAMPM,syncCalendarFromInput);
                 v-model:visible="showImageDialog"
                 header="Imágenes del tour"
                 :modal="true"
+                :closable="false"
                 :style="{ width: '700px' }"
             >
                 <div
@@ -724,12 +1255,16 @@ watch(horaRegresoAMPM,syncCalendarFromInput);
                     No hay imágenes para este tour.
                 </div>
                 <template #footer>
-                    <Button
-                        label="Cerrar"
-                        icon="pi pi-times"
-                        class="p-button-rounded-md p-button-danger"
-                        @click="showImageDialog = false"
-                    />
+                    <div class="flex justify-center w-full">
+                        <Button
+                            label="Cerrar"
+                            icon="pi pi-times"
+                            style="background-color: white !important; border: 1px solid #10b981 !important; color: #10b981 !important; padding: 0.5rem 1.5rem; border-radius: 0.375rem; transition: all 0.2s ease;"
+                            onmouseover="this.style.backgroundColor='#f0fdf4'; this.style.borderColor='#059669'; this.style.color='#059669'"
+                            onmouseout="this.style.backgroundColor='white'; this.style.borderColor='#10b981'; this.style.color='#10b981'"
+                            @click="showImageDialog = false"
+                        />
+                    </div>
                 </template>
             </Dialog>
         </div>

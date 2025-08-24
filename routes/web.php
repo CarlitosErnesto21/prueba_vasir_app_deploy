@@ -49,7 +49,7 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
     })->name('controlPaisesProvincias');
 
     /////////////////////////////////////////////////////////////////
-    // Respaldo de Base de Datos
+    // Respaldo de Base de Datos (Solo Manual)
     Route::get('/configuracion/backup', [BackupController::class, 'showBackupPage'])->name('backup');
     
     // API routes for backup management - Solo para Administradores
@@ -59,16 +59,7 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
         Route::get('/api/backups/{id}/download', [BackupController::class, 'download']);
         Route::delete('/api/backups/{id}', [BackupController::class, 'delete']);
         Route::post('/api/backups/cleanup', [BackupController::class, 'cleanup']);
-        
-        // Nuevas rutas para configuración de backup automático
-        Route::get('/api/backup-settings', [BackupController::class, 'getBackupSettings']);
-        Route::post('/api/backup-settings', [BackupController::class, 'updateBackupSettings']);
     });
-    
-    // Ruta de prueba para backup
-    Route::get('/test-backup', function () {
-        return view('test-backup');
-    })->middleware('auth');
     
     // Asignación de Roles - Solo para Administradores
     Route::get('/configuracion/roles', [RoleController::class, 'index'])->name('roles')->middleware('role:admin');
@@ -133,13 +124,16 @@ Route::get('/reservaciones', function () {
     return Inertia::render('vistasClientes/Reservaciones');
 })->name('reservaciones');
 
-Route::get('/tours-nacionales', function () {
-    return Inertia::render('vistasClientes/ToursNacionales');
-})->name('tours-nacionales');
+Route::get('/tours-nacionales', [App\Http\Controllers\TourController::class, 'toursNacionales'])->name('tours-nacionales');
 
-Route::get('/tours-internacionales', function () {
-    return Inertia::render('vistasClientes/ToursInternacionales');
-})->name('tours-internacionales');
+Route::get('/tours-internacionales', [App\Http\Controllers\TourController::class, 'toursInternacionales'])->name('tours-internacionales');
+
+// Rutas para vista detallada de tours
+Route::get('/tours-nacionales/{id}', [App\Http\Controllers\TourController::class, 'mostrarTourNacional'])->name('tour-nacional.show');
+Route::get('/tours-internacionales/{id}', [App\Http\Controllers\TourController::class, 'mostrarTourInternacional'])->name('tour-internacional.show');
+
+// API para obtener información detallada de un tour
+Route::get('/api/tours-clientes/{id}', [App\Http\Controllers\TourController::class, 'show'])->name('tours-clientes.show');
 
 Route::get('/tienda', function () {
     return Inertia::render('vistasClientes/Tienda');

@@ -16,20 +16,24 @@
 
                 <!-- Content -->
                 <div class="p-6">
-                    <!-- Información General del Sistema -->
+                    <!-- Configuración General del Sistema -->
                     <div class="mb-8">
-                        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                            <span class="text-2xl mr-2">⚙️</span>
-                            Información General del Sistema
-                        </h2>
-                        <div class="bg-gray-50 rounded-lg p-6">
+                        <div class="bg-white border border-gray-200 rounded-t-lg px-6 py-4 border-b-0">
+                            <h2 class="text-xl font-semibold text-gray-800 mb-1 flex items-center">
+                                <span class="text-2xl mr-3">⚙️</span>
+                                Configuración General del Sistema
+                            </h2>
+                            <p class="text-gray-600 text-sm">Información básica y configuraciones técnicas del sistema</p>
+                        </div>
+                        
+                        <div class="bg-white border-x border-b border-gray-200 rounded-b-lg p-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Sistema</label>
                                     <input 
                                         v-model="settings.systemName"
                                         type="text"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
                                     />
                                 </div>
                                 <div>
@@ -37,7 +41,7 @@
                                     <input 
                                         v-model="settings.version"
                                         type="text"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
                                     />
                                 </div>
                                 <div>
@@ -45,7 +49,7 @@
                                     <input 
                                         v-model="settings.contactEmail"
                                         type="email"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
                                     />
                                 </div>
                                 <div>
@@ -53,7 +57,7 @@
                                     <input 
                                         v-model="settings.contactPhone"
                                         type="tel"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
                                     />
                                 </div>
                             </div>
@@ -62,43 +66,52 @@
 
                     <!-- Configuración de Seguridad -->
                     <div class="mb-8">
-                        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                            <span class="text-2xl mr-2">🔐</span>
-                            Seguridad y Autenticación
-                        </h2>
-                        <div class="bg-gray-50 rounded-lg p-6">
-                            <div class="space-y-4">
-                                <div class="flex items-center">
-                                    <input 
-                                        v-model="settings.requireEmailVerification"
-                                        type="checkbox"
-                                        class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                                    />
-                                    <label class="ml-2 text-sm text-gray-700">
-                                        Requerir verificación de email
-                                    </label>
-                                </div>
-                                <div class="flex items-center">
-                                    <input 
-                                        v-model="settings.enableTwoFactor"
-                                        type="checkbox"
-                                        class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                                    />
-                                    <label class="ml-2 text-sm text-gray-700">
-                                        Habilitar autenticación de dos factores
-                                    </label>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Tiempo de sesión (minutos)
-                                    </label>
-                                    <input 
-                                        v-model="settings.sessionTimeout"
-                                        type="number"
-                                        min="5"
-                                        max="1440"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                    />
+                        <div class="bg-white border border-gray-200 rounded-t-lg px-6 py-4 border-b-0">
+                            <h2 class="text-xl font-semibold text-gray-800 mb-1 flex items-center">
+                                <span class="text-2xl mr-3">🔐</span>
+                                Seguridad y Autenticación
+                            </h2>
+                            <p class="text-gray-600 text-sm">Configuraciones de seguridad y control de acceso</p>
+                        </div>
+                        
+                        <div class="bg-white border-x border-b border-gray-200 rounded-b-lg p-6">
+                            <div class="space-y-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="space-y-4">
+                                        <div class="flex items-center p-4 bg-red-50 rounded-lg border border-red-200">
+                                            <input 
+                                                v-model="settings.requireEmailVerification"
+                                                type="checkbox"
+                                                class="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                                            />
+                                            <label class="ml-3 text-sm font-medium text-gray-700">
+                                                Requerir verificación de email
+                                            </label>
+                                        </div>
+                                        <div class="flex items-center p-4 bg-red-50 rounded-lg border border-red-200">
+                                            <input 
+                                                v-model="settings.enableTwoFactor"
+                                                type="checkbox"
+                                                class="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                                            />
+                                            <label class="ml-3 text-sm font-medium text-gray-700">
+                                                Habilitar autenticación de dos factores
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            Tiempo de sesión (minutos)
+                                        </label>
+                                        <input 
+                                            v-model="settings.sessionTimeout"
+                                            type="number"
+                                            min="5"
+                                            max="1440"
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
+                                        />
+                                        <p class="text-xs text-gray-500 mt-1">Entre 5 y 1440 minutos (24 horas)</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -106,91 +119,131 @@
 
                     <!-- Configuración de Notificaciones -->
                     <div class="mb-8">
-                        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                            <span class="text-2xl mr-2">�</span>
-                            Notificaciones
-                        </h2>
-                        <div class="bg-gray-50 rounded-lg p-6">
-                            <div class="space-y-4">
-                                <div class="flex items-center">
-                                    <input 
-                                        v-model="settings.emailNotifications"
-                                        type="checkbox"
-                                        class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                                    />
-                                    <label class="ml-2 text-sm text-gray-700">
-                                        Enviar notificaciones por email
-                                    </label>
+                        <div class="bg-white border border-gray-200 rounded-t-lg px-6 py-4 border-b-0">
+                            <h2 class="text-xl font-semibold text-gray-800 mb-1 flex items-center">
+                                <span class="text-2xl mr-3">📧</span>
+                                Configuración de Notificaciones
+                            </h2>
+                            <p class="text-gray-600 text-sm">Gestión de comunicaciones y servicios de mensajería</p>
+                        </div>
+                        
+                        <div class="bg-white border-x border-b border-gray-200 rounded-b-lg p-6">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <!-- Tipos de notificaciones -->
+                                <div class="space-y-4">
+                                    <h3 class="text-lg font-medium text-gray-800 mb-3">Tipos de Notificaciones</h3>
+                                    <div class="flex items-center p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                        <input 
+                                            v-model="settings.emailNotifications"
+                                            type="checkbox"
+                                            class="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                                        />
+                                        <label class="ml-3 text-sm font-medium text-gray-700">
+                                            Enviar notificaciones por email
+                                        </label>
+                                    </div>
+                                    <div class="flex items-center p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                        <input 
+                                            v-model="settings.smsNotifications"
+                                            type="checkbox"
+                                            class="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                                        />
+                                        <label class="ml-3 text-sm font-medium text-gray-700">
+                                            Enviar notificaciones por SMS
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="flex items-center">
-                                    <input 
-                                        v-model="settings.smsNotifications"
-                                        type="checkbox"
-                                        class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                                    />
-                                    <label class="ml-2 text-sm text-gray-700">
-                                        Enviar notificaciones por SMS
-                                    </label>
-                                </div>
+                                
+                                <!-- Configuración SMTP -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Servidor SMTP
-                                    </label>
-                                    <input 
-                                        v-model="settings.smtpServer"
-                                        type="text"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                    />
+                                    <h3 class="text-lg font-medium text-gray-800 mb-3">Configuración SMTP</h3>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            Servidor SMTP
+                                        </label>
+                                        <input 
+                                            v-model="settings.smtpServer"
+                                            type="text"
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
+                                            placeholder="smtp.gmail.com"
+                                        />
+                                        <p class="text-xs text-gray-500 mt-1">Servidor para envío de correos electrónicos</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Contenido del Sitio Web -->
+                    <!-- Información Corporativa -->
                     <div class="mb-8">
-                        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                            <span class="text-2xl mr-2">🌐</span>
-                            Contenido del Sitio Web
-                        </h2>
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                            <div class="space-y-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Descripción de la Empresa
-                                    </label>
+                        <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-t-lg px-6 py-4">
+                            <h2 class="text-xl font-semibold text-white mb-1 flex items-center">
+                                <span class="text-2xl mr-3">�</span>
+                                Información Corporativa
+                            </h2>
+                            <p class="text-blue-100 text-sm">Configure el contenido que aparece en la página "Sobre Nosotros"</p>
+                        </div>
+                        
+                        <div class="bg-white border-x border-b border-gray-200 rounded-b-lg p-6">
+                            <div class="grid grid-cols-1 gap-8">
+                                <!-- Descripción de la Empresa -->
+                                <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                                    <div class="flex items-center mb-4">
+                                        <span class="text-2xl mr-3">📝</span>
+                                        <div>
+                                            <label class="block text-lg font-semibold text-gray-800">
+                                                Descripción de la Empresa
+                                            </label>
+                                            <p class="text-sm text-gray-600">Presentación principal en el encabezado de "Sobre Nosotros"</p>
+                                        </div>
+                                    </div>
                                     <textarea 
                                         v-model="settings.description"
                                         rows="4"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                                        placeholder="Describe brevemente qué es VASIR y qué hacen..."
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none shadow-sm"
+                                        placeholder="Describe brevemente qué es VASIR, su propósito y lo que ofrece a los clientes..."
                                     ></textarea>
-                                    <p class="text-xs text-blue-600 mt-1">Este texto aparecerá en el encabezado principal de la página Sobre Nosotros</p>
                                 </div>
 
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Misión de la Empresa
-                                    </label>
-                                    <textarea 
-                                        v-model="settings.mission"
-                                        rows="4"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                                        placeholder="Describe la misión de VASIR..."
-                                    ></textarea>
-                                    <p class="text-xs text-blue-600 mt-1">Este texto aparecerá en la sección "Nuestra Misión" de la página Sobre Nosotros</p>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Visión de la Empresa
-                                    </label>
-                                    <textarea 
-                                        v-model="settings.vision"
-                                        rows="4"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                                        placeholder="Describe la visión de VASIR..."
-                                    ></textarea>
-                                    <p class="text-xs text-blue-600 mt-1">Este texto aparecerá en la sección "Nuestra Visión" de la página Sobre Nosotros</p>
+                                <!-- Grid para Misión y Visión -->
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <!-- Misión -->
+                                    <div class="bg-slate-50 rounded-lg p-6 border border-slate-200">
+                                        <div class="flex items-center mb-4">
+                                            <span class="text-2xl mr-3">🎯</span>
+                                            <div>
+                                                <label class="block text-lg font-semibold text-gray-800">
+                                                    Misión Corporativa
+                                                </label>
+                                                <p class="text-sm text-slate-600">¿Cuál es el propósito de VASIR?</p>
+                                            </div>
+                                        </div>
+                                        <textarea 
+                                            v-model="settings.mission"
+                                            rows="5"
+                                            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none shadow-sm bg-white"
+                                            placeholder="Nuestra misión es..."
+                                        ></textarea>
+                                    </div>
+                                    
+                                    <!-- Visión -->
+                                    <div class="bg-slate-50 rounded-lg p-6 border border-slate-200">
+                                        <div class="flex items-center mb-4">
+                                            <span class="text-2xl mr-3">🌟</span>
+                                            <div>
+                                                <label class="block text-lg font-semibold text-gray-800">
+                                                    Visión Corporativa
+                                                </label>
+                                                <p class="text-sm text-slate-600">¿Hacia dónde se dirige VASIR?</p>
+                                            </div>
+                                        </div>
+                                        <textarea 
+                                            v-model="settings.vision"
+                                            rows="5"
+                                            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none shadow-sm bg-white"
+                                            placeholder="Nuestra visión es..."
+                                        ></textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>

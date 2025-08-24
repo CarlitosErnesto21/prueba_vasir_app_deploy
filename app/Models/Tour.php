@@ -12,13 +12,16 @@ class Tour extends Model
 
     protected $fillable = [
         'nombre',
-        'descripcion',
+        'incluye',
+        'no_incluye',
+        'cupo_min',
+        'cupo_max',
         'punto_salida',
-        'fecha',
-        'precio',
-        'hora_regreso',
+        'fecha_salida',
+        'fecha_regreso',
         'categoria_tour_id',
-        'transporte_id'
+        'transporte_id',
+        'precio'
     ];
 
     public function categoria()
