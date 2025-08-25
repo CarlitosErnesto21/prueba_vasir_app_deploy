@@ -1,14 +1,21 @@
-<script setup>
+﻿<script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head } from "@inertiajs/vue3";
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, computed, watch, nextTick } from "vue";
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode } from "@primevue/core/api";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faEdit, faEye, faTrash } from "@fortawesome/free-solid-svg-icons";
+import DatePicker from "primevue/datepicker";
 import axios from "axios";
 
 const toast = useToast();
+
+// Variables para listas de incluye/no incluye
+const incluyeLista = ref([]);
+const noIncluyeLista = ref([]);
+const nuevoItemIncluye = ref("");
+const nuevoItemNoIncluye = ref("");
 
 const tours = ref([]);
 const tour = ref({
@@ -21,17 +28,12 @@ const tour = ref({
     punto_salida: "",
     fecha_salida: null,
     fecha_regreso: null,
+    estado: "DISPONIBLE",
     precio: null,
     categoria_tour_id: null,
     transporte_id: null,
     imagenes: [],
 });
-
-// Variables para listas de incluye/no incluye
-const incluyeLista = ref([]);
-const noIncluyeLista = ref([]);
-const nuevoItemIncluye = ref("");
-const nuevoItemNoIncluye = ref("");
 
 const imagenPreviewList = ref([]);
 const imagenFiles = ref([]);
@@ -39,14 +41,22 @@ const removedImages = ref([]);
 const selectedTours = ref(null);
 const dialog = ref(false);
 const deleteDialog = ref(false);
+const unsavedChangesDialog = ref(false);
 const submitted = ref(false);
+const hasUnsavedChanges = ref(false);
+const originalTourData = ref(null);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
     categoria_tour_id: { value: null, matchMode: FilterMatchMode.EQUALS },
     'transporte.nombre': { value: null, matchMode: FilterMatchMode.EQUALS },
+    estado: { value: null, matchMode: FilterMatchMode.EQUALS },
+    fecha_salida: { value: null, matchMode: FilterMatchMode.DATE_IS },
 });
 const selectedCategoria = ref(null);
-const selectedTransporte = ref(null);
+const selectedTipoTransporte = ref(null);
+const selectedEstado = ref(null);
+const selectedFechaInicio = ref(null);
+const selectedFechaFin = ref(null);
 const rowsPerPage = ref(10);
 const rowsPerPageOptions = ref([5, 10, 20, 50]);
 const btnTitle = ref("Guardar");
@@ -54,12 +64,119 @@ const horaRegresoCalendar = ref(null);
 const url = "/api/tours";
 const IMAGE_PATH = "/images/tours/";
 const categoriasTours = ref([]);
-const transportes = ref([]);
-const filteredToursCount = ref(0);
+const tipoTransportes = ref([]);
+const estadosOptions = ref([
+    { label: 'Disponible', value: 'DISPONIBLE' },
+    { label: 'Agotado', value: 'AGOTADO' },
+    { label: 'En Curso', value: 'EN_CURSO' },
+    { label: 'Completado', value: 'COMPLETADO' },
+    { label: 'Cancelado', value: 'CANCELADO' },
+    { label: 'Suspendido', value: 'SUSPENDIDO' },
+    { label: 'Reprogramado', value: 'REPROGRAMADO' }
+]);
 const showImageDialog = ref(false);
 const selectedImages = ref([]);
 const carouselIndex = ref(0);
 const fileInput = ref(null);
+
+// Computed property para obtener tours filtrados
+const filteredTours = computed(() => {
+    let filtered = tours.value;
+    
+    // Filtro por búsqueda global
+    if (filters.value.global.value) {
+        const searchTerm = filters.value.global.value.toLowerCase();
+        filtered = filtered.filter(tour => 
+            tour.nombre.toLowerCase().includes(searchTerm) ||
+            (tour.incluye && tour.incluye.toLowerCase().includes(searchTerm)) ||
+            (tour.no_incluye && tour.no_incluye.toLowerCase().includes(searchTerm)) ||
+            tour.punto_salida.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    // Filtro por categoría
+    if (filters.value.categoria_tour_id.value) {
+        filtered = filtered.filter(tour => 
+            tour.categoria_tour_id === filters.value.categoria_tour_id.value
+        );
+    }
+    
+    // Filtro por tipo de transporte
+    if (filters.value['transporte.nombre'].value) {
+        filtered = filtered.filter(tour => 
+            tour['transporte.nombre'] === filters.value['transporte.nombre'].value
+        );
+    }
+    
+    // Filtro por estado
+    if (filters.value.estado.value) {
+        filtered = filtered.filter(tour => 
+            tour.estado === filters.value.estado.value
+        );
+    }
+    
+    // Filtro por rango de fechas de salida
+    if (selectedFechaInicio.value || selectedFechaFin.value) {
+        filtered = filtered.filter(tour => {
+            if (!tour.fecha_salida) return false;
+            
+            const fechaTour = new Date(tour.fecha_salida);
+            let cumpleFiltro = true;
+            
+            if (selectedFechaInicio.value) {
+                const fechaInicio = new Date(selectedFechaInicio.value);
+                cumpleFiltro = cumpleFiltro && fechaTour >= fechaInicio;
+            }
+            
+            if (selectedFechaFin.value) {
+                const fechaFin = new Date(selectedFechaFin.value);
+                fechaFin.setHours(23, 59, 59, 999); // Incluir todo el día final
+                cumpleFiltro = cumpleFiltro && fechaTour <= fechaFin;
+            }
+            
+            return cumpleFiltro;
+        });
+    }
+
+    return filtered;
+});
+
+// Watcher para detectar cambios en el modal
+watch([tour, horaRegresoCalendar, incluyeLista, noIncluyeLista, imagenPreviewList, removedImages], () => {
+    if (originalTourData.value && dialog.value) {
+        // Usar nextTick para evitar que se active inmediatamente después de cargar datos
+        nextTick(() => {
+            const current = {
+                ...tour.value,
+                fecha_regreso: horaRegresoCalendar.value,
+                incluye_lista: [...incluyeLista.value],
+                no_incluye_lista: [...noIncluyeLista.value],
+                imagenes_actuales: [...imagenPreviewList.value]
+            };
+            
+            // Comparar datos actuales con originales
+            const hasChanges = JSON.stringify(current) !== JSON.stringify({
+                ...originalTourData.value,
+                imagenes_actuales: originalTourData.value.imagenes_originales
+            }) || removedImages.value.length > 0;
+            
+            // Para tours nuevos, también verificar si hay algún dato ingresado
+            const isCreatingNew = !originalTourData.value.id;
+            const hasAnyData = tour.value.nombre || 
+                              tour.value.punto_salida || 
+                              tour.value.fecha_salida || 
+                              horaRegresoCalendar.value || 
+                              tour.value.precio ||
+                              tour.value.categoria_tour_id ||
+                              tour.value.transporte_id ||
+                              incluyeLista.value.length > 0 ||
+                              noIncluyeLista.value.length > 0 ||
+                              imagenPreviewList.value.length > 0;
+            
+            hasUnsavedChanges.value = hasChanges || (isCreatingNew && hasAnyData);
+        });
+    }
+}, { deep: true, flush: 'post' });
 
 function resetForm() {
     tour.value = {
@@ -72,6 +189,7 @@ function resetForm() {
         punto_salida: "",
         fecha_salida: null,
         fecha_regreso: null,
+        estado: "DISPONIBLE",
         precio: null,
         categoria_tour_id: null,
         transporte_id: null,
@@ -113,26 +231,20 @@ const eliminarItemNoIncluye = (index) => {
     noIncluyeLista.value.splice(index, 1);
 };
 
-// Función para convertir texto a lista
+// Funciones para convertir entre texto y lista
 const textoALista = (texto) => {
-    return texto ? texto.split('|').filter(item => item.trim()) : [];
+    return texto ? texto.split('|').filter(item => item.trim()).map(item => item.trim()) : [];
 };
 
-// Función para convertir lista a texto
 const listaATexto = (lista) => {
     return lista.join('|');
 };
 
-// Obtener tours, categorías y transportes
+// Obtener tours, categorías y tipos de transporte
 onMounted(() => {
     fetchTours();
     fetchCategoriasTours();
-    fetchTransportes();
-});
-
-// Watcher para el filtro global
-watch(() => filters.value.global.value, () => {
-    updateFilteredCount();
+    fetchTipoTransportes();
 });
 
 const fetchTours = async () => {
@@ -145,6 +257,7 @@ const fetchTours = async () => {
             ),
             categoria_nombre: t.categoria?.nombre || "",
             transporte_nombre: t.transporte?.nombre || "",
+            transporte_capacidad: t.transporte?.capacidad || "",
             // Agregar campos para filtros
             categoria_tour_id: t.categoria?.id || t.categoria_tour_id,
             'transporte.nombre': t.transporte?.nombre,
@@ -154,7 +267,6 @@ const fetchTours = async () => {
             const dateB = new Date(b.created_at);
             return dateB - dateA;
         });
-        updateFilteredCount(); // Actualizar conteo después de cargar tours
     } catch (err) {
         toast.add({ severity: "error", summary: "Error", detail: "No se pudieron cargar los tours.", life: 4000 });
     }
@@ -170,66 +282,82 @@ const fetchCategoriasTours = async () => {
     }
 };
 
-const fetchTransportes = async () => {
+const fetchTipoTransportes = async () => {
     try {
         const response = await axios.get("/api/transportes");
-        transportes.value = response.data || [];
+        tipoTransportes.value = response.data || [];
     } catch {
-        transportes.value = [];
+        tipoTransportes.value = [];
         toast.add({ severity: "error", summary: "Error", detail: "No se pudieron cargar los transportes.", life: 4000 });
     }
-};
-
-// Función para calcular el conteo filtrado
-const updateFilteredCount = () => {
-    let filtered = tours.value;
-    
-    // Aplicar filtro global
-    if (filters.value.global.value) {
-        const searchTerm = filters.value.global.value.toLowerCase();
-        filtered = filtered.filter(tour => 
-            tour.nombre.toLowerCase().includes(searchTerm) ||
-            tour.incluye.toLowerCase().includes(searchTerm) ||
-            tour.no_incluye.toLowerCase().includes(searchTerm) ||
-            tour.punto_salida.toLowerCase().includes(searchTerm)
-        );
-    }
-    
-    // Aplicar filtro por categoría
-    if (filters.value.categoria_tour_id.value) {
-        filtered = filtered.filter(tour => 
-            tour.categoria_tour_id === filters.value.categoria_tour_id.value
-        );
-    }
-    
-    // Aplicar filtro por transporte
-    if (filters.value['transporte.nombre'].value) {
-        filtered = filtered.filter(tour => 
-            tour.transporte?.nombre === filters.value['transporte.nombre'].value
-        );
-    }
-    
-    filteredToursCount.value = filtered.length;
 };
 
 // Funciones para manejar filtros
 const onCategoriaFilterChange = () => {
     filters.value.categoria_tour_id.value = selectedCategoria.value;
-    updateFilteredCount();
 };
 
-const onTransporteFilterChange = () => {
-    filters.value['transporte.nombre'].value = selectedTransporte.value;
-    updateFilteredCount();
+const onTipoTransporteFilterChange = () => {
+    if (selectedTipoTransporte.value) {
+        // Encontrar el transporte seleccionado para obtener su nombre
+        const transporteSeleccionado = tipoTransportes.value.find(t => t.id === selectedTipoTransporte.value);
+        filters.value['transporte.nombre'].value = transporteSeleccionado ? transporteSeleccionado.nombre : null;
+    } else {
+        filters.value['transporte.nombre'].value = null;
+    }
+};
+
+const onEstadoFilterChange = () => {
+    filters.value.estado.value = selectedEstado.value;
+};
+
+const onFechaInicioFilterChange = () => {
+    // Si la fecha inicio es posterior a la fecha fin, limpiar fecha fin
+    if (selectedFechaInicio.value && selectedFechaFin.value) {
+        const fechaInicio = new Date(selectedFechaInicio.value);
+        const fechaFin = new Date(selectedFechaFin.value);
+        
+        if (fechaInicio > fechaFin) {
+            selectedFechaFin.value = null;
+            toast.add({ 
+                severity: "warn", 
+                summary: "Fecha ajustada", 
+                detail: "La fecha 'hasta' se limpió porque era anterior a la fecha 'desde'.", 
+                life: 3000 
+            });
+        }
+    }
+};
+
+const onFechaFinFilterChange = () => {
+    // Si la fecha fin es anterior a la fecha inicio, limpiar fecha inicio
+    if (selectedFechaInicio.value && selectedFechaFin.value) {
+        const fechaInicio = new Date(selectedFechaInicio.value);
+        const fechaFin = new Date(selectedFechaFin.value);
+        
+        if (fechaFin < fechaInicio) {
+            selectedFechaInicio.value = null;
+            toast.add({ 
+                severity: "warn", 
+                summary: "Fecha ajustada", 
+                detail: "La fecha 'desde' se limpió porque era posterior a la fecha 'hasta'.", 
+                life: 3000 
+            });
+        }
+    }
 };
 
 const clearFilters = () => {
     selectedCategoria.value = null;
-    selectedTransporte.value = null;
+    selectedTipoTransporte.value = null;
+    selectedEstado.value = null;
+    selectedFechaInicio.value = null;
+    selectedFechaFin.value = null;
     filters.value.global.value = null;
     filters.value.categoria_tour_id.value = null;
     filters.value['transporte.nombre'].value = null;
-    updateFilteredCount();
+    filters.value.estado.value = null;
+    filters.value.fecha_salida.value = null;
     
     toast.add({ 
         severity: "info", 
@@ -242,11 +370,25 @@ const clearFilters = () => {
 const openNew = () => {
     resetForm();
     btnTitle.value = "Guardar";
+    submitted.value = false; // Asegurar que no hay estado de validación
     dialog.value = true;
+    
+    // Configurar estado inicial para detectar cambios en tours nuevos
+    nextTick(() => {
+        originalTourData.value = {
+            ...tour.value,
+            fecha_regreso: horaRegresoCalendar.value,
+            incluye_lista: [...incluyeLista.value],
+            no_incluye_lista: [...noIncluyeLista.value],
+            imagenes_originales: [...imagenPreviewList.value]
+        };
+        hasUnsavedChanges.value = false;
+    });
 };
 
 const editTour = (t) => {
     resetForm();
+    submitted.value = false; // Limpiar estado de validación
     
     tour.value = {
         ...t,
@@ -274,12 +416,25 @@ const editTour = (t) => {
 
     imagenPreviewList.value = (t.imagenes || []).map(img => typeof img === "string" ? img : img.nombre);
     
-    // Cargar listas de incluye/no incluye
-    incluyeLista.value = textoALista(t.incluye || "");
-    noIncluyeLista.value = textoALista(t.no_incluye || "");
+    // Cargar listas desde el texto existente
+    incluyeLista.value = textoALista(t.incluye);
+    noIncluyeLista.value = textoALista(t.no_incluye);
     
+    hasUnsavedChanges.value = false;
     btnTitle.value = "Actualizar";
     dialog.value = true;
+    
+    // Guardar datos originales después de que todo esté cargado
+    nextTick(() => {
+        originalTourData.value = {
+            ...tour.value,
+            fecha_regreso: horaRegresoCalendar.value,
+            incluye_lista: [...incluyeLista.value],
+            no_incluye_lista: [...noIncluyeLista.value],
+            imagenes_originales: [...imagenPreviewList.value]
+        };
+        hasUnsavedChanges.value = false;
+    });
 };
 
 const saveOrUpdate = async () => {
@@ -296,7 +451,6 @@ const saveOrUpdate = async () => {
         return;
     }
 
-    // Validar incluye específicamente (ahora basado en la lista)
     // Validar punto_salida específicamente
     if (!tour.value.punto_salida || tour.value.punto_salida.length < 5 || tour.value.punto_salida.length > 200) {
         toast.add({ severity: "warn", summary: "Campos requeridos", detail: "Por favor verifica que todos los campos obligatorios estén completos y cumplan los requisitos.", life: 4000 });
@@ -414,6 +568,8 @@ const saveOrUpdate = async () => {
 
         await fetchTours();
         dialog.value = false;
+        hasUnsavedChanges.value = false;
+        originalTourData.value = null;
         resetForm();
     } catch (err) {
         toast.add({ 
@@ -446,9 +602,24 @@ const deleteTour = async () => {
         });
     }
 };
-const hideDialog = () => { 
+const hideDialog = () => {
+    if (hasUnsavedChanges.value) {
+        unsavedChangesDialog.value = true;
+    } else {
+        closeDialogWithoutSaving();
+    }
+};
+
+const closeDialogWithoutSaving = () => {
     dialog.value = false; 
+    unsavedChangesDialog.value = false;
+    hasUnsavedChanges.value = false;
+    originalTourData.value = null;
     resetForm();
+};
+
+const continueEditing = () => {
+    unsavedChangesDialog.value = false;
 };
 const onImageSelect = (event) => {
     const files = event.target ? event.target.files : event.files;
@@ -543,16 +714,18 @@ const validateFechaSalida = () => {
     const now = new Date();
     const fechaSalida = new Date(tour.value.fecha_salida);
     
-    // Permitir fechas desde hace 5 minutos para evitar problemas de sincronización
-    const tolerance = new Date(now.getTime() - 5 * 60 * 1000); // 5 minutos atrás
-    if (fechaSalida < tolerance) {
+    // Validar que la fecha de salida sea futura (al menos 1 hora después de ahora)
+    const minTime = new Date(now.getTime() + 60 * 60 * 1000); // 1 hora después de ahora
+    if (fechaSalida < minTime) {
         return false;
     }
     
-    // Si hay fecha de regreso, validar que salida sea anterior al regreso
+    // Si hay fecha de regreso, validar que salida sea anterior al regreso con mínimo 1 hora de diferencia
     if (horaRegresoCalendar.value) {
         const fechaRegreso = new Date(horaRegresoCalendar.value);
-        if (fechaSalida >= fechaRegreso) {
+        const diferenciaHoras = (fechaRegreso - fechaSalida) / (1000 * 60 * 60);
+        
+        if (diferenciaHoras < 1) {
             return false;
         }
     }
@@ -568,9 +741,6 @@ const validateFechaRegreso = () => {
     // Si hay fecha de salida, validar que regreso sea posterior a salida
     if (tour.value.fecha_salida) {
         const fechaSalida = new Date(tour.value.fecha_salida);
-        if (fechaRegreso <= fechaSalida) {
-            return false;
-        }
         
         // Validar que el regreso sea al menos 1 hora después de la salida
         const diferenciaHoras = (fechaRegreso - fechaSalida) / (1000 * 60 * 60);
@@ -586,6 +756,9 @@ const validateFechaRegreso = () => {
 const getMinDate = () => {
     const now = new Date();
     now.setHours(now.getHours() + 1);
+    now.setMinutes(0); // Redondear a la hora completa para mejor UX
+    now.setSeconds(0);
+    now.setMilliseconds(0);
     return now;
 };
 
@@ -597,6 +770,16 @@ const getMinDateRegreso = () => {
     fechaSalida.setHours(fechaSalida.getHours() + 1);
     return fechaSalida;
 };
+
+// Función para obtener fecha máxima de salida (fecha regreso - 1 hora)
+const getMaxDateSalida = () => {
+    if (!horaRegresoCalendar.value) return null;
+    
+    const fechaRegreso = new Date(horaRegresoCalendar.value);
+    // La fecha de salida máxima debe ser 1 hora antes del regreso
+    fechaRegreso.setHours(fechaRegreso.getHours() - 1);
+    return fechaRegreso;
+};
 </script>
 
 
@@ -607,175 +790,241 @@ const getMinDateRegreso = () => {
         <Toast class="z-[9999]" />
         
         <div class="py-4 sm:py-6 px-4 sm:px-7 mt-6 sm:mt-10 mx-auto bg-red-100 shadow-md rounded-lg max-w-full">
-            <!-- Header con título y botón -->
-            <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-3">
-                <h3 class="text-lg sm:text-xl font-bold text-center sm:text-left">Catálogo de Tours</h3>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-0">
+                <h3 class="text-lg sm:text-xl font-bold">Catálogo de Tours</h3>
                 <Button
                     label="Agregar tour"
                     icon="pi pi-plus"
-                    class="px-3 py-2 text-sm sm:px-4 sm:py-2 sm:text-base w-auto btn-primary"
+                    style="background-color: #ef4444 !important; color: white !important; border: none !important; padding: 0.5rem 1.5rem; border-radius: 0.375rem; transition: all 0.2s ease; font-weight: 500;"
+                    onmouseover="this.style.backgroundColor='#dc2626'"
+                    onmouseout="this.style.backgroundColor='#ef4444'"
+                    class="w-full sm:w-auto"
                     @click="openNew"
                 />
             </div>
 
             <DataTable
-                :value="tours"
+                :value="filteredTours"
                 v-model:selection="selectedTours"
                 dataKey="id"
-                :filters="filters"
                 :paginator="true"
                 :rows="rowsPerPage"
                 :rowsPerPageOptions="rowsPerPageOptions"
                 v-model:rowsPerPage="rowsPerPage"
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} tours"
-                class="overflow-x-auto max-w-full text-sm responsive-table"
+                class="overflow-x-auto max-w-full"
                 style="display: block; max-width: 84vw"
-                :paginatorStyleClass="'text-xs sm:text-sm'"
+                responsiveLayout="scroll"
+                :pt="{
+                    root: { class: 'text-sm' },
+                    wrapper: { class: 'text-sm' },
+                    table: { class: 'text-sm' },
+                    thead: { class: 'text-sm' },
+                    headerRow: { class: 'text-sm' },
+                    headerCell: { class: 'text-sm font-medium py-3 px-2' },
+                    tbody: { class: 'text-sm' },
+                    bodyRow: { class: 'h-20 text-sm' },
+                    bodyCell: { class: 'py-3 px-2 text-sm' },
+                    paginator: { class: 'text-xs sm:text-sm' },
+                    paginatorWrapper: { class: 'flex flex-wrap justify-center sm:justify-between items-center gap-2 p-2' }
+                }"
             >
                 <template #header>
-                    <div class="flex flex-col gap-3 mb-4">
-                        <!-- Buscador global - Primera fila en móviles -->
-                        <div class="w-full">
-                            <InputText
-                                v-model="filters['global'].value"
-                                placeholder="Buscar en todos los campos..."
-                                class="w-full text-sm"
+                    <div class="bg-white p-3 rounded-lg shadow-sm border mb-4">
+                        <!-- Encabezado compacto -->
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <h3 class="text-base font-medium text-gray-800 flex items-center gap-2">
+                                    <i class="pi pi-filter text-blue-600 text-sm"></i>
+                                    Filtros
+                                </h3>
+                                <div class="bg-blue-50 border border-blue-200 text-blue-700 px-3 py-1 rounded text-sm font-medium">
+                                    {{ filteredTours.length }} resultado{{ filteredTours.length !== 1 ? 's' : '' }}
+                                </div>
+                            </div>
+                            <Button
+                                label="Limpiar"
+                                icon="pi pi-filter-slash"
+                                class="p-button-outlined p-button-sm text-xs px-3 py-1"
+                                @click="clearFilters"
                             />
                         </div>
                         
-                        <!-- Filtros y botón limpiar - Segunda fila -->
-                        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-center">
-                            <!-- Contenedor de filtros en móviles lado a lado -->
-                            <div class="flex flex-row gap-2 flex-1">
-                                <!-- Filtro por categoría -->
-                                <div class="flex-1 min-w-0">
+                        <!-- Filtros en dos filas compactas -->
+                        <div class="space-y-3">
+                            <!-- Fila 1: Buscador -->
+                            <div>
+                                <InputText
+                                    v-model="filters['global'].value"
+                                    placeholder="🔍 Buscar tours..."
+                                    class="w-full h-9 text-sm"
+                                />
+                            </div>
+                            
+                            <!-- Fila 2: Filtros con mejor responsive -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                                <!-- Categoría -->
+                                <div class="sm:col-span-1">
                                     <Select
                                         v-model="selectedCategoria"
                                         :options="categoriasTours"
                                         optionLabel="nombre"
                                         optionValue="id"
-                                        placeholder="Filtrar por categoría"
-                                        class="w-full text-xs sm:text-sm"
+                                        placeholder="Categoría"
+                                        class="w-full h-9 text-sm"
                                         @change="onCategoriaFilterChange"
                                         :clearable="true"
                                     />
                                 </div>
                                 
-                                <!-- Filtro por transporte -->
-                                <div class="flex-1 min-w-0">
+                                <!-- Transporte -->
+                                <div class="sm:col-span-1">
                                     <Select
-                                        v-model="selectedTransporte"
-                                        :options="transportes"
+                                        v-model="selectedTipoTransporte"
+                                        :options="tipoTransportes"
                                         optionLabel="nombre"
-                                        optionValue="nombre"
-                                        placeholder="Filtrar por transporte"
-                                        class="w-full text-xs sm:text-sm"
-                                        @change="onTransporteFilterChange"
+                                        optionValue="id"
+                                        placeholder="Transporte"
+                                        class="w-full h-9 text-sm"
+                                        @change="onTipoTransporteFilterChange"
                                         :clearable="true"
                                     />
                                 </div>
-                            </div>
-                            
-                            <!-- Botón limpiar filtros -->
-                            <div class="w-full sm:w-auto">
-                                <Button
-                                    label="Limpiar"
-                                    icon="pi pi-filter-slash"
-                                    class="w-full sm:w-auto text-xs sm:text-sm px-3 py-2 sm:px-4 border border-gray-300 hover:bg-gray-50"
-                                    style="background-color: white !important; color: #6b7280 !important; border-color: #d1d5db !important;"
-                                    @click="clearFilters"
-                                />
-                            </div>
-                        </div>
-                        
-                        <!-- Total de registros -->
-                        <div class="flex justify-end">
-                            <div class="text-sm text-gray-600">
-                                Total: {{ filteredToursCount }} tour{{ filteredToursCount !== 1 ? 's' : '' }}
+                                
+                                <!-- Estado -->
+                                <div class="sm:col-span-2 md:col-span-1">
+                                    <Select
+                                        v-model="selectedEstado"
+                                        :options="estadosOptions"
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        placeholder="Estado"
+                                        class="w-full h-9 text-sm"
+                                        @change="onEstadoFilterChange"
+                                        :clearable="true"
+                                    />
+                                </div>
+                                
+                                <!-- Fecha desde -->
+                                <div class="sm:col-span-1 md:col-span-1 lg:col-span-1">
+                                    <DatePicker
+                                        v-model="selectedFechaInicio"
+                                        placeholder="Fecha desde"
+                                        class="w-full h-9 text-sm"
+                                        @date-select="onFechaInicioFilterChange"
+                                        @clear="onFechaInicioFilterChange"
+                                        :showIcon="true"
+                                        dateFormat="dd/mm/yy"
+                                        :maxDate="selectedFechaFin"
+                                    />
+                                </div>
+                                
+                                <!-- Fecha hasta -->
+                                <div class="sm:col-span-1 md:col-span-1 lg:col-span-1">
+                                    <DatePicker
+                                        v-model="selectedFechaFin"
+                                        placeholder="Fecha hasta"
+                                        class="w-full h-9 text-sm"
+                                        @date-select="onFechaFinFilterChange"
+                                        @clear="onFechaFinFilterChange"
+                                        :showIcon="true"
+                                        dateFormat="dd/mm/yy"
+                                        :minDate="selectedFechaInicio"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </template>
-                <Column field="nombre" header="Nombre" class="p-2 text-sm" />
-                <Column field="incluye" header="Incluye" class="p-2 text-sm" />
-                <Column field="no_incluye" header="No incluye" class="p-2 text-sm" />
-                <Column field="punto_salida" header="Punto salida" class="p-2 text-sm" />
-                <Column field="fecha_salida" header="Fecha salida" class="p-2 text-sm">
+                <Column field="nombre" header="Nombre" sortable class="w-56 min-w-56">
                     <template #body="slotProps">
-                        {{
-                            slotProps.data.fecha_salida
-                                ? new Date(slotProps.data.fecha_salida).toLocaleString(
-                                      "es-ES",
-                                      {
-                                          day: "2-digit",
-                                          month: "2-digit",
-                                          year: "numeric",
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                          hour12: true,
-                                      }
-                                  )
-                                : ""
-                        }}
+                        <div class="text-sm font-medium leading-relaxed">
+                            {{ slotProps.data.nombre }}
+                        </div>
                     </template>
                 </Column>
-                <Column field="fecha_regreso" header="Fecha regreso" class="p-2 text-sm">
+                <Column field="incluye" header="Incluye" class="w-40 min-w-40">
                     <template #body="slotProps">
-                        {{
-                            slotProps.data.fecha_regreso
-                                ? new Date(slotProps.data.fecha_regreso).toLocaleString(
-                                      "es-ES",
-                                      {
-                                          day: "2-digit",
-                                          month: "2-digit",
-                                          year: "numeric",
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                          hour12: true,
-                                      }
-                                  )
-                                : ""
-                        }}
+                        <div class="text-sm leading-relaxed whitespace-normal">
+                            {{ slotProps.data.incluye }}
+                        </div>
                     </template>
                 </Column>
-                <Column field="precio" header="Precio" class="p-2 text-sm">
+                <Column field="no_incluye" header="No incluye" class="w-40 min-w-40">
                     <template #body="slotProps">
-                        {{
-                            isNaN(Number(slotProps.data.precio))
-                                ? ""
-                                : `$${Number(slotProps.data.precio).toFixed(2)}`
-                        }}
+                        <div class="text-sm leading-relaxed whitespace-normal">
+                            {{ slotProps.data.no_incluye }}
+                        </div>
                     </template>
                 </Column>
-                <Column header="Acciones" :exportable="false" class="p-2 text-sm">
+                <Column field="punto_salida" header="Punto salida" class="w-32 min-w-32">
                     <template #body="slotProps">
-                        <div class="flex gap-2 sm:gap-3">
+                        <div class="text-sm leading-relaxed">
+                            {{ slotProps.data.punto_salida }}
+                        </div>
+                    </template>
+                </Column>
+                <Column field="fecha_salida" header="Fecha salida" class="w-36 min-w-36">
+                    <template #body="slotProps">
+                        <div class="text-sm leading-relaxed">
+                            {{
+                                slotProps.data.fecha_salida
+                                    ? new Date(slotProps.data.fecha_salida).toLocaleString(
+                                          "es-ES",
+                                          {
+                                              day: "2-digit",
+                                              month: "2-digit",
+                                              year: "numeric",
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                              hour12: true,
+                                          }
+                                      )
+                                    : ""
+                            }}
+                        </div>
+                    </template>
+                </Column>
+                <Column field="precio" header="Precio" class="w-24 min-w-24">
+                    <template #body="slotProps">
+                        <div class="text-sm font-medium leading-relaxed">
+                            {{
+                                isNaN(Number(slotProps.data.precio))
+                                    ? ""
+                                    : `$${Number(slotProps.data.precio).toFixed(2)}`
+                            }}
+                        </div>
+                    </template>
+                </Column>
+                <Column header="Acciones" :exportable="false" class="w-28 min-w-28">
+                    <template #body="slotProps">
+                        <div class="flex gap-1 justify-center items-center h-full">
                             <!-- Botón Editar -->
                             <button
                                 title="Editar tour"
-                                class="text-orange-600 hover:text-orange-900 transition-colors"
+                                class="text-orange-600 hover:text-orange-900 transition-colors p-1.5 text-sm"
                                 @click="editTour(slotProps.data)"
                             >
-                                <FontAwesomeIcon :icon="faEdit" class="h-5 w-5" />
+                                <FontAwesomeIcon :icon="faEdit" class="h-4 w-4" />
                             </button>
                             
                             <!-- Botón Ver imágenes -->
                             <button
                                 title="Ver imágenes"
-                                class="text-blue-600 hover:text-blue-900 transition-colors"
+                                class="text-blue-600 hover:text-blue-900 transition-colors p-1.5 text-sm"
                                 @click="viewImages(slotProps.data.imagenes)"
                             >
-                                <FontAwesomeIcon :icon="faEye" class="h-5 w-5" />
+                                <FontAwesomeIcon :icon="faEye" class="h-4 w-4" />
                             </button>
                             
                             <!-- Botón Eliminar -->
                             <button
                                 title="Eliminar tour"
-                                class="text-red-600 hover:text-red-900 transition-colors"
+                                class="text-red-600 hover:text-red-900 transition-colors p-1.5 text-sm"
                                 @click="confirmDeleteTour(slotProps.data)"
                             >
-                                <FontAwesomeIcon :icon="faTrash" class="h-5 w-5" />
+                                <FontAwesomeIcon :icon="faTrash" class="h-4 w-4" />
                             </button>
                         </div>
                     </template>
@@ -787,6 +1036,7 @@ const getMinDateRegreso = () => {
                 :header="btnTitle + ' Tour'"
                 :modal="true"
                 :style="{ width: '500px' }"
+                :closable="false"
             >
                 <div class="space-y-4">
                     <div class="w-full flex flex-col">
@@ -824,12 +1074,6 @@ const getMinDateRegreso = () => {
                             class="text-red-500 ml-28"
                             v-if="submitted && !tour.nombre"
                             >El nombre es obligatorio.</small
-                        >
-                        <!-- Mensaje de error cuando es menor a 10 caracteres al enviar -->
-                        <small
-                            class="text-red-500 ml-28"
-                            v-if="submitted && tour.nombre && tour.nombre.length < 10"
-                            >El nombre debe tener al menos 10 caracteres.</small
                         >
                     </div>
                     <div class="w-full flex flex-col">
@@ -1043,6 +1287,7 @@ const getMinDateRegreso = () => {
                                 hourFormat="12"
                                 dateFormat="yy-mm-dd"
                                 :minDate="getMinDate()"
+                                :maxDate="getMaxDateSalida()"
                                 :class="{
                                     'p-invalid': 
                                         (submitted && !tour.fecha_salida) ||
@@ -1058,12 +1303,6 @@ const getMinDateRegreso = () => {
                                 class="text-red-500 block text-xs mt-1"
                                 v-if="submitted && !tour.fecha_salida"
                                 >Fecha y hora de salida requerida.</small
-                            >
-                            <!-- Mensaje de fecha inválida -->
-                            <small
-                                class="text-red-500 block text-xs mt-1"
-                                v-if="tour.fecha_salida && !validateFechaSalida()"
-                                >La fecha debe ser futura y anterior al regreso.</small
                             >
                         </div>
                         <div class="flex-1">
@@ -1095,12 +1334,6 @@ const getMinDateRegreso = () => {
                                 class="text-red-500 block text-xs mt-1"
                                 v-if="submitted && !horaRegresoCalendar"
                                 >Fecha y hora de regreso requerida.</small
-                            >
-                            <!-- Mensaje de fecha inválida -->
-                            <small
-                                class="text-red-500 block text-xs mt-1"
-                                v-if="horaRegresoCalendar && !validateFechaRegreso()"
-                                >Debe ser posterior a la salida (mín. 1 hora).</small
                             >
                         </div>
                     </div>
@@ -1174,34 +1407,28 @@ const getMinDateRegreso = () => {
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
                             <label for="transporte_id" class="w-24 flex items-center gap-1">
-                                Transporte:
+                                Tipo de transporte:
                                 <span class="text-red-500 font-bold">*</span>
                             </label>
                             <Select
                                 v-model="tour.transporte_id"
-                                :options="transportes"
+                                :options="tipoTransportes"
                                 optionLabel="nombre"
                                 optionValue="id"
                                 id="transporte_id"
                                 name="transporte_id"
                                 class="flex-1"
-                                placeholder="Selecciona un transporte"
+                                placeholder="Selecciona un tipo de transporte"
                                 :class="{
                                     'p-invalid':
                                         submitted && !tour.transporte_id,
                                 }"
-                            >
-                                <template #option="slotProps">
-                                    <div class="flex justify-between items-center w-full">
-                                        <span>{{ slotProps.option.nombre }}</span>
-                                    </div>
-                                </template>
-                            </Select>
+                            />
                         </div>
                         <small
                             class="text-red-500 ml-28"
                             v-if="submitted && !tour.transporte_id"
-                            >El transporte es obligatorio.</small
+                            >El tipo de transporte es obligatorio.</small
                         >
                     </div>
                     <div class="w-full flex flex-col">
@@ -1277,7 +1504,9 @@ const getMinDateRegreso = () => {
                         <Button
                             :label="btnTitle"
                             icon="pi pi-check"
-                            class="btn-primary px-6 py-2"
+                            style="background-color: #ef4444 !important; color: white !important; border: none !important; padding: 0.5rem 1.5rem; border-radius: 0.375rem; transition: all 0.2s ease;"
+                            onmouseover="this.style.backgroundColor='#dc2626'"
+                            onmouseout="this.style.backgroundColor='#ef4444'"
                             @click="saveOrUpdate"
                         />
                     </div>
@@ -1312,8 +1541,47 @@ const getMinDateRegreso = () => {
                         <Button
                             label="Sí"
                             icon="pi pi-check"
-                            class="btn-primary px-6 py-2"
+                            style="background-color: #ef4444 !important; color: white !important; border: none !important; padding: 0.5rem 1.5rem; border-radius: 0.375rem; transition: all 0.2s ease;"
+                            onmouseover="this.style.backgroundColor='#dc2626'"
+                            onmouseout="this.style.backgroundColor='#ef4444'"
                             @click="deleteTour"
+                        />
+                    </div>
+                </template>
+            </Dialog>
+
+            <!-- Diálogo de confirmación para cambios no guardados -->
+            <Dialog
+                v-model:visible="unsavedChangesDialog"
+                header="Cambios sin guardar"
+                :modal="true"
+                :style="{ width: '400px' }"
+                :closable="false"
+            >
+                <div class="flex items-center gap-3">
+                    <i class="pi pi-exclamation-triangle text-gray-800" style="font-size: 24px;"></i>
+                    <span>Tienes información sin guardar. ¿Deseas salir sin guardar?</span>
+                </div>
+                <template #footer>
+                    <div class="flex justify-end gap-3 w-full">
+                        <Button
+                            label="Continuar"
+                            icon="pi pi-pencil"
+                            size="small"
+                            style="background-color: white !important; border: 1px solid #10b981 !important; color: #10b981 !important; padding: 0.4rem 1rem; border-radius: 0.375rem; transition: all 0.2s ease; font-size: 0.875rem;"
+                            onmouseover="this.style.backgroundColor='#f0fdf4'; this.style.borderColor='#059669'; this.style.color='#059669'"
+                            onmouseout="this.style.backgroundColor='white'; this.style.borderColor='#10b981'; this.style.color='#10b981'"
+                            text
+                            @click="continueEditing"
+                        />
+                        <Button
+                            label="Salir sin guardar"
+                            icon="pi pi-sign-out"
+                            size="small"
+                            style="background-color: #ef4444 !important; color: white !important; border: none !important; padding: 0.4rem 1rem; border-radius: 0.375rem; transition: all 0.2s ease; font-size: 0.875rem;"
+                            onmouseover="this.style.backgroundColor='#dc2626'"
+                            onmouseout="this.style.backgroundColor='#ef4444'"
+                            @click="closeDialogWithoutSaving"
                         />
                     </div>
                 </template>
@@ -1374,66 +1642,3 @@ const getMinDateRegreso = () => {
         </div>
     </AuthenticatedLayout>
 </template>
-
-<style scoped>
-/* Mejoras responsive para la tabla */
-@media (max-width: 640px) {
-    .responsive-table :deep(.p-datatable-thead th) {
-        padding: 0.5rem 0.25rem;
-        font-size: 0.75rem;
-        line-height: 1rem;
-    }
-    
-    .responsive-table :deep(.p-datatable-tbody td) {
-        padding: 0.5rem 0.25rem;
-        font-size: 0.75rem;
-        line-height: 1rem;
-    }
-    
-    .responsive-table :deep(.p-paginator) {
-        padding: 0.5rem;
-        font-size: 0.75rem;
-    }
-    
-    .responsive-table :deep(.p-paginator .p-paginator-pages .p-paginator-page) {
-        min-width: 2rem;
-        height: 2rem;
-        margin: 0 0.125rem;
-    }
-    
-    .responsive-table :deep(.p-paginator .p-dropdown) {
-        font-size: 0.75rem;
-    }
-    
-    .responsive-table :deep(.p-paginator .p-paginator-current) {
-        font-size: 0.75rem;
-    }
-}
-
-/* Mejoras para tablets */
-@media (min-width: 641px) and (max-width: 1024px) {
-    .responsive-table :deep(.p-datatable-thead th) {
-        padding: 0.75rem 0.5rem;
-        font-size: 0.875rem;
-    }
-    
-    .responsive-table :deep(.p-datatable-tbody td) {
-        padding: 0.75rem 0.5rem;
-        font-size: 0.875rem;
-    }
-}
-
-/* Botón primario reutilizable */
-.btn-primary {
-    background-color: #ef4444 !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 0.375rem;
-    transition: all 0.2s ease;
-    font-weight: 500;
-}
-
-.btn-primary:hover {
-    background-color: #dc2626 !important;
-}
-</style>

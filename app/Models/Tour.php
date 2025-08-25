@@ -19,6 +19,7 @@ class Tour extends Model
         'punto_salida',
         'fecha_salida',
         'fecha_regreso',
+        'estado',
         'categoria_tour_id',
         'transporte_id',
         'precio'

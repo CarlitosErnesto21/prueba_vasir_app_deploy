@@ -110,7 +110,7 @@
                   </div>
                   <div v-if="tour.transporte" class="flex items-start text-gray-600 text-sm sm:text-base">
                     <i class="pi pi-car mr-2 sm:mr-3 text-blue-600 mt-0.5 text-sm sm:text-base"></i>
-                    <span><strong>Transporte:</strong> {{ tour.transporte?.nombre }}</span>
+                    <span><strong>Transporte:</strong> {{ tour.transporte.nombre }}</span>
                   </div>
                   <div v-if="tour.cupo_min && tour.cupo_max" class="flex items-start text-gray-600 text-sm sm:text-base">
                     <i class="pi pi-users mr-2 sm:mr-3 text-blue-600 mt-0.5 text-sm sm:text-base"></i>
@@ -320,6 +320,12 @@ const calcularDuracion = (fechaSalida, fechaRegreso) => {
   return diffDays === 1 ? '1 día' : `${diffDays} días`
 }
 
+// Función para convertir texto a lista
+const textoALista = (texto) => {
+  if (!texto) return []
+  return texto.split('|').filter(item => item.trim()).map(item => item.trim())
+}
+
 // Función para obtener la imagen actual
 const obtenerImagenActual = () => {
   if (!props.tour.imagenes || props.tour.imagenes.length === 0) {
@@ -353,12 +359,6 @@ const imagenSiguiente = () => {
 const cambiarImagen = (index) => {
   currentImageIndex.value = index
   reiniciarCarrusel() // Reiniciar el carrusel después de navegación manual
-}
-
-// Función para convertir texto a lista
-const textoALista = (texto) => {
-  if (!texto) return []
-  return texto.split('|').filter(item => item.trim()).map(item => item.trim())
 }
 
 // Funciones del carrusel automático

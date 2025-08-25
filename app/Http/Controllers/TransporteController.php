@@ -16,7 +16,7 @@ class TransporteController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nombre' => 'required|string|max:100',
+            'nombre' => 'required|string|max:50',
             'capacidad' => 'required|integer|min:1',
         ]);
 
@@ -36,7 +36,7 @@ class TransporteController extends Controller
     public function update(Request $request, Transporte $transporte)
     {
         $validated = $request->validate([
-            'nombre' => 'required|string|max:100',
+            'nombre' => 'required|string|max:50',
             'capacidad' => 'required|integer|min:1',
         ]);
 

@@ -24,7 +24,7 @@ class TourController extends Controller
     {
         $validated = $request->validate([
             'nombre' => 'required|string|max:200',
-            'incluye' => 'required|string',
+            'incluye' => 'nullable|string',
             'no_incluye' => 'nullable|string',
             'cupo_min' => 'nullable|integer|min:1',
             'cupo_max' => 'nullable|integer|min:1',
@@ -80,7 +80,7 @@ class TourController extends Controller
     {
         $validated = $request->validate([
             'nombre' => 'required|string|max:200',
-            'incluye' => 'required|string',
+            'incluye' => 'nullable|string',
             'no_incluye' => 'nullable|string',
             'cupo_min' => 'nullable|integer|min:1',
             'cupo_max' => 'nullable|integer|min:1',
