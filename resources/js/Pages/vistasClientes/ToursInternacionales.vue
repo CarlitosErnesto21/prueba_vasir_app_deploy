@@ -6,7 +6,7 @@ import Dialog from 'primevue/dialog'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { router } from '@inertiajs/vue3'
 
-// Recibir los props del controlador
+// Recibir los props del controlador (opcional, como fallback)
 const props = defineProps({
   tours: {
     type: Array,
@@ -14,8 +14,70 @@ const props = defineProps({
   }
 })
 
-// Convertir los tours a un ref para mantener la reactividad
-const tours = ref(props.tours)
+// Estados reactivos
+const tours = ref([])
+const loading = ref(true)
+const error = ref(null)
+
+// URLs de la API
+const API_BASE_URL = '/api'
+// URL de la API
+const url = "/api/tours?categoria=internacional"
+
+// Computed properties para estadísticas dinámicas
+const estadisticas = computed(() => {
+  if (!tours.value || tours.value.length === 0) {
+    return {
+      totalDestinos: 0,
+      totalPaises: 0,
+      precioMinimo: 0,
+      paisesUnicos: []
+    }
+  }
+
+  const precios = tours.value.map(tour => parseFloat(tour.precio)).filter(precio => !isNaN(precio))
+  // Como no tenemos campo pais aún, usaremos punto_salida como ubicación
+  const ubicacionesUnicas = [...new Set(tours.value.map(tour => tour.punto_salida).filter(ubicacion => ubicacion))]
+  
+  return {
+    totalDestinos: tours.value.length,
+    totalPaises: ubicacionesUnicas.length,
+    precioMinimo: precios.length > 0 ? Math.min(...precios) : 0,
+    paisesUnicos: ubicacionesUnicas
+  }
+})
+
+// Función para obtener tours desde la API
+const obtenerTours = async () => {
+  try {
+    loading.value = true
+    error.value = null
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`)
+    }
+    
+    const data = await response.json()
+    tours.value = data.data || data || []
+    
+  } catch (err) {
+    console.error('Error al obtener tours:', err)
+    error.value = err.message
+    // Usar props como fallback si hay error en la API
+    tours.value = props.tours || []
+  } finally {
+    loading.value = false
+  }
+}
 
 // Función para formatear la fecha
 const formatearFecha = (fecha) => {
@@ -34,8 +96,13 @@ const calcularDuracion = (fechaSalida, fechaRegreso) => {
   
   const salida = new Date(fechaSalida)
   const regreso = new Date(fechaRegreso)
-  const diffTime = Math.abs(regreso - salida)
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  // Normalizar las fechas para que solo considere el día (sin hora)
+  salida.setHours(0, 0, 0, 0)
+  regreso.setHours(0, 0, 0, 0)
+  
+  const diffTime = regreso.getTime() - salida.getTime()
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1 // +1 porque incluimos el día de salida
   
   return diffDays === 1 ? '1 día' : `${diffDays} días`
 }
@@ -106,7 +173,10 @@ const detenerTodosLosCarruseles = () => {
 }
 
 // Lifecycle hooks
-onMounted(() => {
+onMounted(async () => {
+  // Obtener tours desde la API
+  await obtenerTours()
+  
   // Inicializar carruseles para todos los tours con múltiples imágenes
   tours.value.forEach(tour => {
     if (tour.imagenes && tour.imagenes.length > 1) {
@@ -220,18 +290,43 @@ const verMasInfo = (tour) => {
           <p class="text-sm text-gray-500">Experiencias únicas más allá de nuestras fronteras</p>
         </div>
 
+        <!-- Estado de carga -->
+        <div v-if="loading && tours.length === 0" class="text-center py-12">
+          <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+          <p class="mt-4 text-gray-600">Cargando tours internacionales...</p>
+        </div>
+
+        <!-- Estado de error -->
+        <div v-else-if="error && tours.length === 0" class="text-center py-12">
+          <div class="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg max-w-md mx-auto">
+            <div class="text-4xl mb-3">⚠️</div>
+            <h3 class="font-semibold mb-2">No se pudieron cargar los tours</h3>
+            <p class="text-sm text-red-600">Por favor, intenta recargar la página o contacta con nosotros.</p>
+          </div>
+        </div>
+
+        <!-- Estado vacío -->
+        <div v-else-if="!loading && tours.length === 0" class="text-center py-12">
+          <div class="text-6xl mb-4">🌍</div>
+          <h3 class="text-xl font-semibold text-gray-700 mb-2">No hay tours internacionales disponibles</h3>
+          <p class="text-gray-500 mb-4">Próximamente tendremos nuevos destinos internacionales.</p>
+          <p class="text-sm text-gray-400">Mientras tanto, puedes explorar nuestros tours nacionales.</p>
+        </div>
+
         <!-- Stats -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-6 sm:mb-8">
+        <div v-if="tours.length > 0" class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-6 sm:mb-8">
           <div class="bg-white rounded-lg p-3 sm:p-4 md:p-6 shadow-md text-center border border-gray-200">
-            <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-red-600">{{ tours.length }}</h3>
+            <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-red-600">{{ estadisticas.totalDestinos }}</h3>
             <p class="text-xs sm:text-sm md:text-base text-gray-600">Destinos</p>
           </div>
           <div class="bg-white rounded-lg p-3 sm:p-4 md:p-6 shadow-md text-center border border-gray-200">
-            <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-green-600">7</h3>
-            <p class="text-xs sm:text-sm md:text-base text-gray-600">Países</p>
+            <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-green-600">{{ estadisticas.totalPaises }}</h3>
+            <p class="text-xs sm:text-sm md:text-base text-gray-600">Ubicaciones</p>
           </div>
           <div class="bg-white rounded-lg p-3 sm:p-4 md:p-6 shadow-md text-center border border-gray-200">
-            <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">Desde $195</h3>
+            <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">
+              {{ estadisticas.precioMinimo > 0 ? `Desde $${estadisticas.precioMinimo}` : 'Consultar' }}
+            </h3>
             <p class="text-xs sm:text-sm md:text-base text-gray-600">Precios</p>
           </div>
           <div class="bg-white rounded-lg p-3 sm:p-4 md:p-6 shadow-md text-center border border-gray-200">
@@ -241,7 +336,7 @@ const verMasInfo = (tour) => {
         </div>
 
         <!-- Tours Grid -->
-        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div v-if="tours.length > 0" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card
             v-for="tour in tours"
             :key="tour.id"
@@ -355,17 +450,16 @@ const verMasInfo = (tour) => {
         </div>
 
         <!-- Países disponibles -->
-        <div class="mt-8 bg-white rounded-xl p-6 shadow-md border border-gray-200">
-          <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Destinos Disponibles</h3>
+        <div v-if="estadisticas.paisesUnicos.length > 0" class="mt-8 bg-white rounded-xl p-6 shadow-md border border-gray-200">
+          <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Puntos de Salida Disponibles</h3>
           <div class="flex flex-wrap justify-center gap-3">
-            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">🇬🇹 Guatemala</span>
-            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">🇨🇷 Costa Rica</span>
-            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">🇭🇳 Honduras</span>
-            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">🇳🇮 Nicaragua</span>
-            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">🇵🇦 Panamá</span>
-            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">🇧🇿 Belice</span>
-            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">🇲🇽 México</span>
-            <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium">🇺🇸 Estados Unidos</span>
+            <span 
+              v-for="ubicacion in estadisticas.paisesUnicos" 
+              :key="ubicacion"
+              class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium"
+            >
+              {{ ubicacion }}
+            </span>
           </div>
         </div>
       </div>
