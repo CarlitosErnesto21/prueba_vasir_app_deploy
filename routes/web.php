@@ -7,6 +7,8 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\TipoDocumentoController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\TourController;
+use App\Http\Controllers\SobreNosotrosController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Middleware\RutasAdmin;
@@ -49,7 +51,7 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
     })->name('controlPaisesProvincias');
 
     /////////////////////////////////////////////////////////////////
-    // Respaldo de Base de Datos
+    // Respaldo de Base de Datos (Solo Manual)
     Route::get('/configuracion/backup', [BackupController::class, 'showBackupPage'])->name('backup');
     
     // API routes for backup management - Solo para Administradores
@@ -59,16 +61,7 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
         Route::get('/api/backups/{id}/download', [BackupController::class, 'download']);
         Route::delete('/api/backups/{id}', [BackupController::class, 'delete']);
         Route::post('/api/backups/cleanup', [BackupController::class, 'cleanup']);
-        
-        // Nuevas rutas para configuración de backup automático
-        Route::get('/api/backup-settings', [BackupController::class, 'getBackupSettings']);
-        Route::post('/api/backup-settings', [BackupController::class, 'updateBackupSettings']);
     });
-    
-    // Ruta de prueba para backup
-    Route::get('/test-backup', function () {
-        return view('test-backup');
-    })->middleware('auth');
     
     // Asignación de Roles - Solo para Administradores
     Route::get('/configuracion/roles', [RoleController::class, 'index'])->name('roles')->middleware('role:admin');
@@ -124,7 +117,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
 // Rutas para vistas de clientes //***NO MODIFICAR ESTAS RUTAS***//
 Route::get('/paquetes', function () {
     return Inertia::render('vistasClientes/Paquetes');
@@ -134,19 +126,19 @@ Route::get('/reservaciones', function () {
     return Inertia::render('vistasClientes/Reservaciones');
 })->name('reservaciones');
 
-Route::get('/tours-nacionales', function () {
-    return Inertia::render('vistasClientes/ToursNacionales');
-})->name('tours-nacionales');
+Route::get('/tours-nacionales', [TourController::class, 'toursNacionales'])->name('tours-nacionales');
 
-Route::get('/tours-internacionales', function () {
-    return Inertia::render('vistasClientes/ToursInternacionales');
-})->name('tours-internacionales');
+Route::get('/tours-internacionales', [TourController::class, 'toursInternacionales'])->name('tours-internacionales');
+
+// Rutas para vista detallada de tours
+Route::get('/tours-nacionales/{id}', [TourController::class, 'mostrarTourNacional'])->name('tour-nacional.show');
+Route::get('/tours-internacionales/{id}', [TourController::class, 'mostrarTourInternacional'])->name('tour-internacional.show');
 
 Route::get('/tienda', function () {
     return Inertia::render('vistasClientes/Tienda');
 })->name('tienda');
 
-Route::get('/sobre-nosotros', [App\Http\Controllers\SobreNosotrosController::class, 'index'])->name('sobre-nosotros');
+Route::get('/sobre-nosotros', [SobreNosotrosController::class, 'index'])->name('sobre-nosotros');
 
 Route::get('/contactos', function () {
     return Inertia::render('vistasClientes/Contactos');

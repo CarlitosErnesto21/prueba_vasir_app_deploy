@@ -17,17 +17,20 @@ class SettingsController extends Controller
     {
         $mission = SiteSetting::get('company_mission');
         $vision = SiteSetting::get('company_vision');
+        $description = SiteSetting::get('company_description');
         
         // Log para debug
         Log::info('Settings loaded:', [
             'mission' => $mission,
-            'vision' => $vision
+            'vision' => $vision,
+            'description' => $description
         ]);
         
         return Inertia::render('Configuracion/Settings', [
             'siteSettings' => [
                 'mission' => $mission,
                 'vision' => $vision,
+                'description' => $description,
             ],
             'databaseInfo' => $this->getDatabaseInfo()
         ]);
@@ -199,12 +202,14 @@ class SettingsController extends Controller
         $request->validate([
             'mission' => 'required|string|max:1000',
             'vision' => 'required|string|max:1000',
+            'description' => 'required|string|max:1000',
         ]);
 
         // Log para debug
         Log::info('Updating settings:', [
             'mission' => $request->mission,
-            'vision' => $request->vision
+            'vision' => $request->vision,
+            'description' => $request->description
         ]);
 
         try {
@@ -232,27 +237,43 @@ class SettingsController extends Controller
                 ]
             );
 
+            // Actualizar o crear la descripción
+            $descriptionSetting = SiteSetting::updateOrCreate(
+                ['key' => 'company_description'],
+                [
+                    'value' => $request->description,
+                    'type' => 'textarea',
+                    'label' => 'Descripción de la Empresa',
+                    'description' => 'Descripción principal que aparece en el encabezado de la página Sobre Nosotros',
+                    'updated_by' => Auth::id()
+                ]
+            );
+
             // Log para confirmar la actualización
             Log::info('Settings updated successfully:', [
                 'mission_id' => $missionSetting->id,
                 'vision_id' => $visionSetting->id,
+                'description_id' => $descriptionSetting->id,
                 'mission_value' => $missionSetting->value,
-                'vision_value' => $visionSetting->value
+                'vision_value' => $visionSetting->value,
+                'description_value' => $descriptionSetting->value
             ]);
 
             // Limpiar cache si está habilitado
             if (config('cache.default') !== 'array') {
                 cache()->forget('site_settings_company_mission');
                 cache()->forget('site_settings_company_vision');
+                cache()->forget('site_settings_company_description');
             }
 
-            return back()->with('success', 'Misión y Visión actualizadas correctamente');
+            return back()->with('success', 'Configuración de la empresa actualizada correctamente');
             
         } catch (\Exception $e) {
             Log::error('Error updating settings:', [
                 'error' => $e->getMessage(),
                 'mission' => $request->mission,
-                'vision' => $request->vision
+                'vision' => $request->vision,
+                'description' => $request->description
             ]);
             
             return back()->with('error', 'Error al actualizar la configuración: ' . $e->getMessage());

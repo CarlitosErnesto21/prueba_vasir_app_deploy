@@ -2,432 +2,349 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-use App\Models\SiteSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 use Inertia\Inertia;
 
 class BackupController extends Controller
 {
-    /**
-     * Obtener la lista de backups disponibles
-     */
+    public function showBackupPage()
+    {
+        return Inertia::render('Configuracion/Backup');
+    }
+
     public function index()
     {
         try {
-            $backupDisk = Storage::disk(config('backup.backup.destination.disks.0', 'local'));
-            $backupPath = config('backup.backup.name', 'VASIR');
+            $backupDisk = Storage::disk('backup');
             
-            // Verificar si el directorio existe
-            if (!$backupDisk->exists($backupPath)) {
+            // Buscar archivos en la carpeta VASIR específicamente
+            $vasirPath = 'VASIR';
+            
+            if (!$backupDisk->exists($vasirPath)) {
                 return response()->json([
                     'success' => true,
-                    'backups' => []
+                    'backups' => [],
+                    'total_backups' => 0,
+                    'total_size' => '0 B'
                 ]);
             }
             
-            $files = $backupDisk->files($backupPath);
-            $backups = [];
+            $files = $backupDisk->files($vasirPath);
             
-            foreach ($files as $file) {
-                if (str_ends_with($file, '.zip')) {
-                    $backups[] = [
-                        'id' => base64_encode($file),
-                        'name' => basename($file),
-                        'path' => $file,
-                        'date' => Carbon::createFromTimestamp($backupDisk->lastModified($file))
-                                    ->setTimezone('America/El_Salvador')
-                                    ->format('d/m/Y H:i'),
-                        'size' => $this->formatBytes($backupDisk->size($file))
+            $backups = collect($files)
+                ->filter(function ($file) {
+                    return str_ends_with($file, '.zip');
+                })
+                ->map(function ($file) use ($backupDisk) {
+                    $size = $backupDisk->size($file);
+                    $lastModified = $backupDisk->lastModified($file);
+                    $filename = basename($file);
+                    
+                    return [
+                        'id' => basename($filename, '.zip'),
+                        'name' => $filename,
+                        'full_path' => $file,
+                        'size' => $this->formatBytes($size),
+                        'size_bytes' => $size,
+                        'created_at' => Carbon::createFromTimestamp($lastModified)->format('Y-m-d H:i:s'),
+                        'formatted_date' => Carbon::createFromTimestamp($lastModified)->format('d/m/Y H:i:s'),
                     ];
+                })
+                ->sortByDesc('created_at')
+                ->values();
+
+            return response()->json([
+                'success' => true,
+                'backups' => $backups,
+                'total_backups' => $backups->count(),
+                'total_size' => $this->formatBytes($backups->sum('size_bytes'))
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener la lista de backups: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function generate(Request $request)
+    {
+        try {
+            // Crear backup manualmente sin usar artisan para evitar problemas de notificaciones
+            $includeDatabase = !$request->input('only_files', false);
+            $includeFiles = !$request->input('only_db', false);
+            
+            $timestamp = now()->format('Y-m-d-H-i-s');
+            $filename = "vasir-{$timestamp}.zip";
+            $backupDisk = Storage::disk('backup');
+            $tempPath = storage_path('app/private/VASIR/temp');
+            
+            // Crear directorio temporal si no existe
+            if (!file_exists($tempPath)) {
+                mkdir($tempPath, 0755, true);
+            }
+            
+            $filesToZip = [];
+            
+            // Incluir dump de base de datos si se solicita
+            if ($includeDatabase) {
+                $databaseDumpPath = $tempPath . '/database.sql';
+                $databaseName = config('database.connections.mysql.database');
+                $username = config('database.connections.mysql.username');
+                $password = config('database.connections.mysql.password');
+                $host = config('database.connections.mysql.host');
+                $port = config('database.connections.mysql.port', 3306);
+                
+                // Crear archivo de configuración temporal para MySQL (más seguro)
+                $configFile = $tempPath . '/.my.cnf';
+                $configContent = "[client]\nuser={$username}\npassword={$password}\nhost={$host}\nport={$port}";
+                file_put_contents($configFile, $configContent);
+                
+                // Usar archivo de configuración en lugar de contraseña en línea de comandos
+                $command = "mysqldump --defaults-file=\"{$configFile}\" {$databaseName} > \"{$databaseDumpPath}\" 2>&1";
+                exec($command, $output, $returnCode);
+                
+                // Eliminar archivo de configuración temporal
+                if (file_exists($configFile)) {
+                    unlink($configFile);
+                }
+                
+                if ($returnCode === 0 && file_exists($databaseDumpPath)) {
+                    $filesToZip[] = $databaseDumpPath;
+                } else {
+                    // Si el dump falló, continuar sin él pero reportar
+                    error_log("MySQL dump failed: " . implode("\n", $output));
                 }
             }
             
-            // Ordenar por fecha más reciente
-            usort($backups, function($a, $b) {
-                return strcmp($b['date'], $a['date']);
-            });
+            // Incluir archivos importantes si se solicita
+            if ($includeFiles) {
+                // Solo incluir archivos que sean seguros y útiles
+                $importantFiles = [
+                    base_path('composer.json'),
+                    base_path('composer.lock'),
+                    base_path('package.json'),
+                    // NO incluimos .env por seguridad
+                ];
+                
+                foreach ($importantFiles as $file) {
+                    if (file_exists($file)) {
+                        $filesToZip[] = $file;
+                    }
+                }
+            }
+            
+            if (empty($filesToZip)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No hay archivos para respaldar'
+                ], 400);
+            }
+            
+            // Crear ZIP
+            $zipPath = storage_path("app/private/VASIR/{$filename}");
+            $zip = new \ZipArchive();
+            
+            $zipResult = $zip->open($zipPath, \ZipArchive::CREATE);
+            if ($zipResult !== TRUE) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "No se pudo crear el archivo ZIP. Error código: {$zipResult}"
+                ], 500);
+            }
+            
+            $addedFiles = 0;
+            foreach ($filesToZip as $file) {
+                if (file_exists($file) && is_readable($file)) {
+                    $zip->addFile($file, basename($file));
+                    $addedFiles++;
+                }
+            }
+            
+            if ($addedFiles === 0) {
+                $zip->close();
+                unlink($zipPath); // Eliminar ZIP vacío
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se pudieron agregar archivos al ZIP'
+                ], 500);
+            }
+            
+            $zip->close();
+            
+            // Limpiar archivos temporales
+            foreach ($filesToZip as $file) {
+                if (str_contains($file, $tempPath)) {
+                    unlink($file);
+                }
+            }
             
             return response()->json([
                 'success' => true,
-                'backups' => $backups
+                'message' => 'Backup generado exitosamente',
+                'filename' => $filename,
+                'size' => $this->formatBytes(filesize($zipPath))
             ]);
             
         } catch (\Exception $e) {
-            Log::error('Error al obtener lista de backups: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener la lista de backups'
+                'message' => 'Error al generar el backup: ' . $e->getMessage(),
+                'exception' => get_class($e),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
             ], 500);
         }
     }
 
-    /**
-     * Generar un nuevo backup
-     */
-    public function generate()
+    private function findBackupFile($backupDisk, $id)
     {
-        try {
-            // Contar backups antes
-            $backupDisk = Storage::disk(config('backup.backup.destination.disks.0', 'local'));
-            $backupPath = config('backup.backup.name', 'VASIR');
-            $filesBefore = $backupDisk->exists($backupPath) ? count($backupDisk->files($backupPath)) : 0;
-            
-            Log::info('Iniciando backup - Archivos antes: ' . $filesBefore);
-            
-            // Primero intentar el método original
-            $exitCode = Artisan::call('backup:run', [
-                '--only-db' => true,
-                '--disable-notifications' => true
-            ]);
-
-            $output = Artisan::output();
-            Log::info('Comando ejecutado - Exit code: ' . $exitCode);
-            
-            // Dar tiempo al sistema de archivos
-            sleep(2);
-            
-            // Verificar que el backup se creó realmente
-            $filesAfter = $backupDisk->exists($backupPath) ? count($backupDisk->files($backupPath)) : 0;
-            Log::info('Archivos después del primer intento: ' . $filesAfter);
-            
-            if ($filesAfter > $filesBefore) {
-                Log::info('Backup generado exitosamente con método original');
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Backup generado exitosamente',
-                    'backups_count' => $filesAfter
-                ]);
+        $files = $backupDisk->files('VASIR');
+        
+        foreach ($files as $file) {
+            if (str_contains($file, $id) && str_ends_with($file, '.zip')) {
+                return $file;
             }
-            
-            // Si el método original falló, usar método alternativo
-            Log::info('Método original falló, intentando método alternativo...');
-            
-            $success = $this->createManualBackup($backupDisk, $backupPath);
-            
-            if ($success) {
-                $filesAfterManual = $backupDisk->exists($backupPath) ? count($backupDisk->files($backupPath)) : 0;
-                Log::info('Backup manual exitoso - Archivos: ' . $filesAfterManual);
-                
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Backup generado exitosamente (método alternativo)',
-                    'backups_count' => $filesAfterManual
-                ]);
-            } else {
-                throw new \Exception('Ambos métodos de backup fallaron');
-            }
-            
-        } catch (\Exception $e) {
-            Log::error('Error al generar backup: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al generar el backup: ' . $e->getMessage()
-            ], 500);
         }
-    }
-    
-    private function createManualBackup($backupDisk, $backupPath)
-    {
-        try {
-            // Crear dump manual de la base de datos
-            $databaseName = config('database.connections.mysql.database');
-            $timestamp = Carbon::now('America/El_Salvador')->format('Y-m-d-H-i-s');
-            $filename = $timestamp . '.zip';
-            
-            // Crear directorio temporal
-            $tempDir = storage_path('app/backup-temp-manual');
-            if (!file_exists($tempDir)) {
-                mkdir($tempDir, 0755, true);
-            }
-            
-            $sqlFile = $tempDir . '/database.sql';
-            
-            // Obtener todas las tablas
-            $tables = DB::select('SHOW TABLES');
-            $tableKey = 'Tables_in_' . $databaseName;
-            
-            $sqlContent = "-- Database: $databaseName\n";
-            $sqlContent .= "-- Generated on: " . Carbon::now('America/El_Salvador')->format('Y-m-d H:i:s T') . "\n\n";
-            
-            foreach ($tables as $table) {
-                $tableName = $table->$tableKey;
-                
-                // Estructura de la tabla
-                $createTable = DB::select("SHOW CREATE TABLE `$tableName`")[0];
-                $sqlContent .= "\n-- Table: $tableName\n";
-                $sqlContent .= "DROP TABLE IF EXISTS `$tableName`;\n";
-                $sqlContent .= $createTable->{'Create Table'} . ";\n\n";
-                
-                // Datos de la tabla
-                $rows = DB::table($tableName)->get();
-                if ($rows->count() > 0) {
-                    $sqlContent .= "-- Data for table: $tableName\n";
-                    foreach ($rows as $row) {
-                        $values = [];
-                        foreach ($row as $value) {
-                            $values[] = is_null($value) ? 'NULL' : "'" . addslashes($value) . "'";
-                        }
-                        $sqlContent .= "INSERT INTO `$tableName` VALUES (" . implode(', ', $values) . ");\n";
-                    }
-                    $sqlContent .= "\n";
-                }
-            }
-            
-            // Guardar archivo SQL
-            file_put_contents($sqlFile, $sqlContent);
-            
-            // Crear ZIP
-            $zipFile = $tempDir . '/' . $filename;
-            $zip = new \ZipArchive();
-            
-            if ($zip->open($zipFile, \ZipArchive::CREATE) === TRUE) {
-                $zip->addFile($sqlFile, 'database.sql');
-                $zip->close();
-                
-                // Mover a la ubicación final
-                if (!$backupDisk->exists($backupPath)) {
-                    $backupDisk->makeDirectory($backupPath);
-                }
-                
-                $finalPath = $backupPath . '/' . $filename;
-                $backupDisk->put($finalPath, file_get_contents($zipFile));
-                
-                // Limpiar archivos temporales
-                unlink($sqlFile);
-                unlink($zipFile);
-                rmdir($tempDir);
-                
-                Log::info('Backup manual creado exitosamente: ' . $filename);
-                return true;
-            }
-            
-            return false;
-            
-        } catch (\Exception $e) {
-            Log::error('Error en backup manual: ' . $e->getMessage());
-            return false;
-        }
+        
+        return null;
     }
 
-    /**
-     * Descargar un backup específico
-     */
     public function download($id)
     {
         try {
-            $filePath = base64_decode($id);
-            $backupDisk = Storage::disk(config('backup.backup.destination.disks.0', 'local'));
+            $backupDisk = Storage::disk('backup');
+            $targetFile = $this->findBackupFile($backupDisk, $id);
             
-            if (!$backupDisk->exists($filePath)) {
+            if (!$targetFile || !$backupDisk->exists($targetFile)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Archivo de backup no encontrado'
+                    'message' => 'El archivo de backup no existe'
                 ], 404);
             }
+
+            $filePath = $backupDisk->path($targetFile);
+            $filename = basename($targetFile);
             
-            $fileName = basename($filePath);
-            $fileContent = $backupDisk->get($filePath);
-            
-            return Response::make($fileContent, 200, [
-                'Content-Type' => 'application/zip',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
-                'Content-Length' => strlen($fileContent)
-            ]);
-            
+            return response()->download($filePath, $filename);
         } catch (\Exception $e) {
-            Log::error('Error al descargar backup: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error al descargar el backup'
+                'message' => 'Error al descargar el backup: ' . $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Eliminar un backup específico
-     */
     public function delete($id)
     {
         try {
-            $filePath = base64_decode($id);
-            $backupDisk = Storage::disk(config('backup.backup.destination.disks.0', 'local'));
+            $backupDisk = Storage::disk('backup');
+            $targetFile = $this->findBackupFile($backupDisk, $id);
             
-            if (!$backupDisk->exists($filePath)) {
+            if (!$targetFile || !$backupDisk->exists($targetFile)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Archivo de backup no encontrado'
+                    'message' => 'El archivo de backup no existe'
                 ], 404);
             }
-            
-            $backupDisk->delete($filePath);
-            
-            Log::info('Backup eliminado: ' . $filePath);
-            
+
+            $backupDisk->delete($targetFile);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Backup eliminado exitosamente'
             ]);
-            
         } catch (\Exception $e) {
-            Log::error('Error al eliminar backup: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error al eliminar el backup'
+                'message' => 'Error al eliminar el backup: ' . $e->getMessage()
             ], 500);
         }
     }
 
-    /**
-     * Limpiar backups antiguos - mantener solo los últimos 3
-     */
     public function cleanup()
     {
         try {
-            $backupDisk = Storage::disk(config('backup.backup.destination.disks.0', 'local'));
-            $backupPath = config('backup.backup.name', 'VASIR');
+            $backupDisk = Storage::disk('backup');
+            $vasirPath = 'VASIR';
             
-            if (!$backupDisk->exists($backupPath)) {
+            if (!$backupDisk->exists($vasirPath)) {
                 return response()->json([
-                    'success' => false,
-                    'message' => 'No se encontró directorio de backups'
-                ], 404);
+                    'success' => true,
+                    'message' => 'No hay backups para limpiar',
+                    'deleted_count' => 0
+                ]);
             }
-
-            // Obtener todos los archivos de backup
-            $files = $backupDisk->files($backupPath);
             
-            // Filtrar solo archivos .zip
-            $zipFiles = array_filter($files, function($file) {
-                return pathinfo($file, PATHINFO_EXTENSION) === 'zip';
-            });
+            $files = $backupDisk->files($vasirPath);
+            $backupFiles = collect($files)
+                ->filter(function ($file) {
+                    return str_ends_with($file, '.zip');
+                })
+                ->map(function ($file) use ($backupDisk) {
+                    return [
+                        'path' => $file,
+                        'name' => basename($file),
+                        'modified' => $backupDisk->lastModified($file)
+                    ];
+                })
+                ->sortByDesc('modified') // Más recientes primero
+                ->values();
 
-            // Ordenar por fecha de modificación (más reciente primero)
-            usort($zipFiles, function($a, $b) use ($backupDisk) {
-                return $backupDisk->lastModified($b) - $backupDisk->lastModified($a);
-            });
-
-            $filesDeleted = 0;
-            $keepLatest = 3; // Mantener los últimos 3 backups
-
-            // Eliminar archivos antiguos (mantener solo los últimos N)
-            if (count($zipFiles) > $keepLatest) {
-                $filesToDelete = array_slice($zipFiles, $keepLatest);
-                
-                foreach ($filesToDelete as $file) {
-                    $backupDisk->delete($file);
-                    $filesDeleted++;
-                    Log::info('Backup eliminado por limpieza: ' . $file);
+            // Mantener solo los últimos 3 backups
+            $keepLatest = 3;
+            $toDelete = $backupFiles->skip($keepLatest);
+            
+            if ($toDelete->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Ya tienes solo los últimos {$keepLatest} backups. No hay nada que limpiar.",
+                    'deleted_count' => 0
+                ]);
+            }
+            
+            $deletedCount = 0;
+            $deletedFiles = [];
+            
+            foreach ($toDelete as $file) {
+                try {
+                    $backupDisk->delete($file['path']);
+                    $deletedCount++;
+                    $deletedFiles[] = $file['name'];
+                } catch (\Exception $e) {
+                    // Continuar con el siguiente archivo si uno falla
+                    continue;
                 }
             }
-
-            // También intentar la limpieza original de spatie
-            try {
-                Artisan::call('backup:clean', [
-                    '--disable-notifications' => true
-                ]);
-            } catch (\Exception $e) {
-                Log::warning('Limpieza original falló: ' . $e->getMessage());
-            }
-            
-            $message = $filesDeleted > 0 
-                ? "¡Limpieza exitosa!"
-                : "¡Limpieza completada!";
-            
-            Log::info('Limpieza completada: ' . $filesDeleted . ' archivos eliminados');
             
             return response()->json([
                 'success' => true,
-                'message' => $message,
-                'files_deleted' => $filesDeleted,
-                'files_remaining' => count($zipFiles) - $filesDeleted
+                'message' => "Limpieza completada. Se eliminaron {$deletedCount} backup(s) antiguos.",
+                'deleted_count' => $deletedCount,
+                'deleted_files' => $deletedFiles,
+                'remaining_backups' => $backupFiles->take($keepLatest)->count()
             ]);
             
         } catch (\Exception $e) {
-            Log::error('Error al limpiar backups: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Error al limpiar los backups: ' . $e->getMessage()
+                'message' => 'Error al limpiar los backups: ' . $e->getMessage(),
+                'exception' => get_class($e)
             ], 500);
         }
     }
 
-    /**
-     * Formatear bytes a formato legible
-     */
-    private function formatBytes($bytes, $precision = 2)
+    private function formatBytes($size, $precision = 2)
     {
-        $units = array('B', 'KB', 'MB', 'GB', 'TB');
-        
-        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
-            $bytes /= 1024;
+        if ($size <= 0) {
+            return '0 B';
         }
         
-        return round($bytes, $precision) . ' ' . $units[$i];
-    }
-
-    /**
-     * Mostrar la vista de backup con configuraciones
-     */
-    public function showBackupPage()
-    {
-        return Inertia::render('Configuracion/Backup', [
-            'backupSettings' => [
-                'auto_backup_enabled' => SiteSetting::get('auto_backup_enabled', 'false') === 'true',
-                'backup_frequency' => SiteSetting::get('backup_frequency', 'daily'),
-                'backup_retention_days' => (int) SiteSetting::get('backup_retention_days', '7')
-            ]
-        ]);
-    }
-
-    /**
-     * Actualizar configuraciones de backup automático
-     */
-    public function updateBackupSettings(Request $request)
-    {
-        try {
-            $request->validate([
-                'auto_backup_enabled' => 'required|boolean',
-                'backup_frequency' => 'required|in:every_2_minutes,hourly,daily,weekly,monthly',
-                'backup_retention_days' => 'required|integer|min:1|max:365'
-            ]);
-
-            SiteSetting::set('auto_backup_enabled', $request->auto_backup_enabled ? 'true' : 'false');
-            SiteSetting::set('backup_frequency', $request->backup_frequency);
-            SiteSetting::set('backup_retention_days', $request->backup_retention_days);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Configuración de respaldos actualizada correctamente'
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error de validación',
-                'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al guardar configuración: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Obtener configuraciones actuales de backup
-     */
-    public function getBackupSettings()
-    {
-        return response()->json([
-            'auto_backup_enabled' => SiteSetting::get('auto_backup_enabled', 'false') === 'true',
-            'backup_frequency' => SiteSetting::get('backup_frequency', 'daily'),
-            'backup_retention_days' => (int) SiteSetting::get('backup_retention_days', '7')
-        ]);
+        $base = log($size, 1024);
+        $suffixes = array('B', 'KB', 'MB', 'GB', 'TB');
+        
+        return round(pow(1024, $base - floor($base)), $precision) . ' ' . $suffixes[floor($base)];
     }
 }

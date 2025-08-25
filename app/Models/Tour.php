@@ -8,16 +8,21 @@ use Illuminate\Database\Eloquent\Model;
 class Tour extends Model
 {
     use HasFactory;
+    protected $table = 'tours';
 
     protected $fillable = [
         'nombre',
-        'descripcion',
+        'incluye',
+        'no_incluye',
+        'cupo_min',
+        'cupo_max',
         'punto_salida',
-        'fecha',
-        'precio',
-        'hora_regreso',
+        'fecha_salida',
+        'fecha_regreso',
+        'estado',
         'categoria_tour_id',
-        'transporte_id'
+        'transporte_id',
+        'precio'
     ];
 
     public function categoria()
@@ -32,5 +37,10 @@ class Tour extends Model
     public function detalleReservas()
     {
         return $this->hasMany(DetalleReservaTour::class, 'tour_id');
+    }
+
+    public function imagenes()
+    {
+        return $this->morphMany(Imagen::class, 'imageable');
     }
 }

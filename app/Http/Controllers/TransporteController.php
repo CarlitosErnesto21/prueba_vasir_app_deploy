@@ -9,7 +9,7 @@ class TransporteController extends Controller
 {
     public function index()
     {
-        $transportes = Transporte::with('tipoTransporte')->get();
+        $transportes = Transporte::all();
         return response()->json($transportes);
     }
 
@@ -17,7 +17,7 @@ class TransporteController extends Controller
     {
         $validated = $request->validate([
             'nombre' => 'required|string|max:50',
-            'tipo_transporte_id' => 'required|exists:tipos_transportes,id',
+            'capacidad' => 'required|integer|min:1',
         ]);
 
         $transporte = Transporte::create($validated);
@@ -30,7 +30,6 @@ class TransporteController extends Controller
 
     public function show(Transporte $transporte)
     {
-        $transporte->load('tipoTransporte');
         return response()->json($transporte);
     }
 
@@ -38,7 +37,7 @@ class TransporteController extends Controller
     {
         $validated = $request->validate([
             'nombre' => 'required|string|max:50',
-            'tipo_transporte_id' => 'required|exists:tipos_transportes,id',
+            'capacidad' => 'required|integer|min:1',
         ]);
 
         $transporte->update($validated);

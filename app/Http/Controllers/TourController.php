@@ -3,26 +3,40 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tour;
+use App\Models\Transporte;
 use Illuminate\Http\Request;
 
 class TourController extends Controller
 {
     /**
      * Display a listing of the resource.
+     * Soporta filtrado por categoría: ?categoria=nacional|internacional
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Obtener todos los tours con sus relaciones
-        $tours = Tour::with(['categoria', 'transporte'])->get();
+        $query = Tour::with(['categoria', 'transporte', 'imagenes'])
+            ->where('fecha_salida', '>=', now())
+            ->orderBy('fecha_salida', 'asc');
+        
+        // Filtrar por categoría si se especifica
+        if ($request->has('categoria')) {
+            $categoria = $request->input('categoria');
+            
+            if ($categoria === 'nacional') {
+                $query->whereHas('categoria', function($q) {
+                    $q->where('nombre', 'Nacional');
+                });
+            } elseif ($categoria === 'internacional') {
+                $query->whereHas('categoria', function($q) {
+                    $q->where('nombre', 'Internacional');
+                });
+            }
+        }
+        
+        $tours = $query->get();
+        
+        // Siempre devolver JSON para API
         return response()->json($tours);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -30,43 +44,57 @@ class TourController extends Controller
      */
     public function store(Request $request)
     {
-        // Validar los datos del formulario
         $validated = $request->validate([
-            'nombre' => 'required|string|max:50',
-            'descripcion' => 'required|string|max:100',
-            'punto_salida' => 'required|string|max:60',
-            'fecha' => 'required|date',
-            'precio' => 'required|numeric|min:0|max:999.99',
-            'hora_regreso' => 'required|date_format:H:i:s',
+            'nombre' => 'required|string|max:200',
+            'incluye' => 'nullable|string',
+            'no_incluye' => 'nullable|string',
+            'cupo_min' => 'nullable|integer|min:1',
+            'cupo_max' => 'nullable|integer|min:1',
+            'punto_salida' => 'required|string|max:200',
+            'fecha_salida' => 'required|date',
+            'fecha_regreso' => 'required|date',
+            'precio' => 'required|numeric|min:0|max:9999.99',
             'categoria_tour_id' => 'required|exists:categorias_tours,id',
             'transporte_id' => 'required|exists:transportes,id',
+            'imagenes' => 'nullable|array',
+            'imagenes.*' => 'image|max:2048',
         ]);
 
-        // Crear un nuevo tour
-        $tour = Tour::create($validated);
+        // Preparar datos para crear el tour
+        $tourData = $validated;
+        unset($tourData['imagenes']); // Remover imagenes del array principal
+
+        // Crear tour
+        $tour = Tour::create($tourData);
+
+        // Guardar imágenes nuevas
+        if ($request->hasFile('imagenes')) {
+            foreach ($request->file('imagenes') as $imagen) {
+                if ($imagen instanceof \Illuminate\Http\UploadedFile && $imagen->isValid()) {
+                    $nombreArchivo = uniqid() . '_' . $imagen->getClientOriginalName();
+                    $destino = public_path('images/tours');
+                    if (!file_exists($destino)) mkdir($destino, 0755, true);
+                    $imagen->move($destino, $nombreArchivo);
+                    $tour->imagenes()->create(['nombre' => $nombreArchivo]);
+                }
+            }
+        }
 
         return response()->json([
             'message' => 'Tour creado exitosamente',
-            'tour' => $tour,
+            'tour' => $tour->load(['imagenes', 'categoria', 'transporte']),
         ]);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Tour $tour)
+    public function show($id)
     {
-        // Mostrar los detalles de un tour específico con sus relaciones
-        $tour->load(['categoria', 'transporte']);
+        $tour = Tour::with(['categoria', 'transporte', 'imagenes'])
+            ->findOrFail($id);
+        
         return response()->json($tour);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Tour $tour)
-    {
-        //
     }
 
     /**
@@ -74,37 +102,167 @@ class TourController extends Controller
      */
     public function update(Request $request, Tour $tour)
     {
-        // Validar los datos del formulario
         $validated = $request->validate([
-            'nombre' => 'required|string|max:50',
-            'descripcion' => 'required|string|max:100',
-            'punto_salida' => 'required|string|max:60',
-            'fecha' => 'required|date',
-            'precio' => 'required|numeric|min:0|max:999.99',
-            'hora_regreso' => 'required|date_format:H:i:s',
+            'nombre' => 'required|string|max:200',
+            'incluye' => 'nullable|string',
+            'no_incluye' => 'nullable|string',
+            'cupo_min' => 'nullable|integer|min:1',
+            'cupo_max' => 'nullable|integer|min:1',
+            'punto_salida' => 'required|string|max:200',
+            'fecha_salida' => 'required|date',
+            'fecha_regreso' => 'required|date',
+            'precio' => 'required|numeric|min:0|max:9999.99',
             'categoria_tour_id' => 'required|exists:categorias_tours,id',
             'transporte_id' => 'required|exists:transportes,id',
+            'imagenes' => 'nullable|array',
+            'imagenes.*' => 'image|max:2048',
+            'removed_images' => 'nullable|array',
         ]);
 
-        // Actualizar el tour
-        $tour->update($validated);
+        // Preparar datos para actualizar el tour
+        $tourData = $validated;
+        unset($tourData['imagenes']); // Remover imagenes del array principal
+        unset($tourData['removed_images']); // Remover removed_images del array principal
+
+        // Actualizar tour
+        $tour->update($tourData);
+
+        // Guardar imágenes nuevas
+        if ($request->hasFile('imagenes')) {
+            foreach ($request->file('imagenes') as $imagen) {
+                if ($imagen instanceof \Illuminate\Http\UploadedFile && $imagen->isValid()) {
+                    $nombreArchivo = uniqid() . '_' . $imagen->getClientOriginalName();
+                    $destino = public_path('images/tours');
+                    if (!file_exists($destino)) mkdir($destino, 0755, true);
+                    $imagen->move($destino, $nombreArchivo);
+                    $tour->imagenes()->create(['nombre' => $nombreArchivo]);
+                }
+            }
+        }
+
+        // Eliminar imágenes seleccionadas
+        if ($request->has('removed_images')) {
+            foreach ($request->input('removed_images') as $imageName) {
+                $imagen = $tour->imagenes()->where('nombre', $imageName)->first();
+                if ($imagen) {
+                    $rutaImagen = public_path('images/tours/' . $imagen->nombre);
+                    if (file_exists($rutaImagen)) unlink($rutaImagen);
+                    $imagen->forceDelete();
+                }
+            }
+        }
 
         return response()->json([
             'message' => 'Tour actualizado exitosamente',
-            'tour' => $tour,
+            'tour' => $tour->load(['imagenes', 'categoria', 'transporte']),
         ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Tour $tour)
+    public function destroy($id)
     {
-        // Eliminar el tour
+        $tour = Tour::findOrFail($id);
+        $tour->loadMissing(['imagenes', 'categoria', 'transporte']);
+
+        // Eliminar imágenes físicas y registros
+        foreach ($tour->imagenes as $imagen) {
+            $rutaImagen = public_path('images/tours/' . $imagen->nombre);
+            if (file_exists($rutaImagen)) unlink($rutaImagen);
+            $imagen->forceDelete();
+        }
+
         $tour->delete();
 
         return response()->json([
             'message' => 'Tour eliminado exitosamente',
+        ]);
+    }
+
+    /**
+     * Mostrar tours nacionales para la vista de clientes
+     */
+    public function toursNacionales(Request $request)
+    {
+        // Obtener tours nacionales directamente
+        $tours = $this->getToursByCategory('nacional');
+
+        // Siempre devolver vista Inertia para rutas web
+        return inertia('vistasClientes/ToursNacionales', [
+            'tours' => $tours
+        ]);
+    }
+
+    /**
+     * Mostrar tours internacionales para la vista de clientes
+     */
+    public function toursInternacionales(Request $request)
+    {
+        // Obtener tours internacionales directamente
+        $tours = $this->getToursByCategory('internacional');
+
+        // Siempre devolver vista Inertia para rutas web
+        return inertia('vistasClientes/ToursInternacionales', [
+            'tours' => $tours
+        ]);
+    }
+
+    /**
+     * Método helper para obtener tours por categoría
+     */
+    private function getToursByCategory($categoria)
+    {
+        $query = Tour::with(['categoria', 'transporte', 'imagenes'])
+            ->where('fecha_salida', '>=', now())
+            ->orderBy('fecha_salida', 'asc');
+        
+        if ($categoria === 'nacional') {
+            $query->whereHas('categoria', function($q) {
+                $q->where('nombre', 'Nacional');
+            });
+        } elseif ($categoria === 'internacional') {
+            $query->whereHas('categoria', function($q) {
+                $q->where('nombre', 'Internacional');
+            });
+        }
+        
+        return $query->get();
+    }
+
+    /**
+     * Mostrar vista detallada de un tour nacional
+     */
+    public function mostrarTourNacional($id)
+    {
+        $tour = Tour::with(['categoria', 'transporte', 'imagenes'])
+            ->where('id', $id)
+            ->whereHas('categoria', function($q) {
+                $q->where('nombre', 'Nacional');
+            })
+            ->firstOrFail();
+
+        return inertia('vistasClientes/DetalleTour', [
+            'tour' => $tour,
+            'tipo' => 'nacional'
+        ]);
+    }
+
+    /**
+     * Mostrar vista detallada de un tour internacional
+     */
+    public function mostrarTourInternacional($id)
+    {
+        $tour = Tour::with(['categoria', 'transporte', 'imagenes'])
+            ->where('id', $id)
+            ->whereHas('categoria', function($q) {
+                $q->where('nombre', 'Internacional');
+            })
+            ->firstOrFail();
+
+        return inertia('vistasClientes/DetalleTour', [
+            'tour' => $tour,
+            'tipo' => 'internacional'
         ]);
     }
 }

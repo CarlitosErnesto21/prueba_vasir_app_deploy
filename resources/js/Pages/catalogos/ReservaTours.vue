@@ -4,7 +4,7 @@
     <Toast />
     <div class="py-6 px-2 sm:px-4 md:px-6 mt-10 mx-auto bg-red-50 shadow-md rounded-lg max-w-full">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-bold text-center w-full">Gestión de Reservas</h3>
+        <h3 class="text-xl font-bold text-center w-full">Gestión de Reserva</h3>
       </div>
       <!-- Filtros superiores con títulos alineados -->
       <div class="bg-white p-4 rounded shadow mb-4 border border-blue-300">
