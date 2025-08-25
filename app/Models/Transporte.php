@@ -11,12 +11,8 @@ class Transporte extends Model
     protected $table = 'transportes';
     protected $fillable = [
         'nombre',
-        'tipo_transporte_id',
+        'capacidad',
     ];
-    public function tipoTransporte()
-    {
-        return $this->belongsTo(TipoTransporte::class, 'tipo_transporte_id');
-    }
     public function tours()
     {
         return $this->hasMany(Tour::class, 'transporte_id');

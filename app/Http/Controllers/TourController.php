@@ -13,7 +13,7 @@ class TourController extends Controller
      */
     public function index()
     {
-        $tours = Tour::with(['categoria', 'transporte.tipoTransporte', 'imagenes'])->get();
+        $tours = Tour::with(['categoria', 'transporte', 'imagenes'])->get();
         return response()->json($tours);
     }
 
@@ -23,38 +23,27 @@ class TourController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nombre' => 'required|string|max:50',
-            'descripcion' => 'required|string|max:100',
-            'punto_salida' => 'required|string|max:60',
-            'fecha' => 'required|date',
+            'nombre' => 'required|string|max:200',
+            'incluye' => 'nullable|string',
+            'no_incluye' => 'nullable|string',
+            'cupo_min' => 'nullable|integer|min:1',
+            'cupo_max' => 'nullable|integer|min:1',
+            'punto_salida' => 'required|string|max:200',
+            'fecha_salida' => 'required|date',
+            'fecha_regreso' => 'required|date',
             'precio' => 'required|numeric|min:0|max:9999.99',
-            'hora' => 'required',
-            'ampm' => 'required|in:am,pm',
             'categoria_tour_id' => 'required|exists:categorias_tours,id',
-            'tipo_transporte_id' => 'required|exists:tipos_transportes,id',
+            'transporte_id' => 'required|exists:transportes,id',
             'imagenes' => 'nullable|array',
             'imagenes.*' => 'image|max:2048',
         ]);
 
-        // Combinar hora y am/pm
-        $validated['hora_regreso'] = $validated['hora'] . ' ' . $validated['ampm'];
-
-        // Convertir a formato 24h H:i:s
-        $date = \DateTime::createFromFormat('h:i a', $validated['hora_regreso']);
-        if (!$date) {
-            return response()->json(['message' => 'Formato de hora de regreso inválido.'], 422);
-        }
-        $validated['hora_regreso'] = $date->format('H:i:s');
-
-        // Asignar transporte disponible
-        $transporte = Transporte::where('tipo_transporte_id', $validated['tipo_transporte_id'])->first();
-        if (!$transporte) {
-            return response()->json(['message' => 'No hay transporte disponible para el tipo seleccionado.'], 422);
-        }
-        $validated['transporte_id'] = $transporte->id;
+        // Preparar datos para crear el tour
+        $tourData = $validated;
+        unset($tourData['imagenes']); // Remover imagenes del array principal
 
         // Crear tour
-        $tour = Tour::create($validated);
+        $tour = Tour::create($tourData);
 
         // Guardar imágenes nuevas
         if ($request->hasFile('imagenes')) {
@@ -71,7 +60,7 @@ class TourController extends Controller
 
         return response()->json([
             'message' => 'Tour creado exitosamente',
-            'tour' => $tour->load(['imagenes', 'categoria', 'transporte.tipoTransporte']),
+            'tour' => $tour->load(['imagenes', 'categoria', 'transporte']),
         ]);
     }
 
@@ -80,7 +69,7 @@ class TourController extends Controller
      */
     public function show(Tour $tour)
     {
-        $tour->load(['categoria', 'transporte.tipoTransporte', 'imagenes']);
+        $tour->load(['categoria', 'transporte', 'imagenes']);
         return response()->json($tour);
     }
 
@@ -90,39 +79,29 @@ class TourController extends Controller
     public function update(Request $request, Tour $tour)
     {
         $validated = $request->validate([
-            'nombre' => 'required|string|max:50',
-            'descripcion' => 'required|string|max:100',
-            'punto_salida' => 'required|string|max:60',
-            'fecha' => 'required|date',
+            'nombre' => 'required|string|max:200',
+            'incluye' => 'nullable|string',
+            'no_incluye' => 'nullable|string',
+            'cupo_min' => 'nullable|integer|min:1',
+            'cupo_max' => 'nullable|integer|min:1',
+            'punto_salida' => 'required|string|max:200',
+            'fecha_salida' => 'required|date',
+            'fecha_regreso' => 'required|date',
             'precio' => 'required|numeric|min:0|max:9999.99',
-            'hora' => 'required',
-            'ampm' => 'required|in:am,pm',
             'categoria_tour_id' => 'required|exists:categorias_tours,id',
-            'tipo_transporte_id' => 'required|exists:tipos_transportes,id',
+            'transporte_id' => 'required|exists:transportes,id',
             'imagenes' => 'nullable|array',
             'imagenes.*' => 'image|max:2048',
             'removed_images' => 'nullable|array',
         ]);
 
-        // Combinar hora y am/pm
-        $validated['hora_regreso'] = $validated['hora'] . ' ' . $validated['ampm'];
-
-        // Convertir a H:i:s
-        $date = \DateTime::createFromFormat('h:i a', $validated['hora_regreso']);
-        if (!$date) {
-            return response()->json(['message' => 'Formato de hora de regreso inválido.'], 422);
-        }
-        $validated['hora_regreso'] = $date->format('H:i:s');
-
-        // Asignar transporte disponible
-        $transporte = Transporte::where('tipo_transporte_id', $validated['tipo_transporte_id'])->first();
-        if (!$transporte) {
-            return response()->json(['message' => 'No hay transporte disponible para el tipo seleccionado.'], 422);
-        }
-        $validated['transporte_id'] = $transporte->id;
+        // Preparar datos para actualizar el tour
+        $tourData = $validated;
+        unset($tourData['imagenes']); // Remover imagenes del array principal
+        unset($tourData['removed_images']); // Remover removed_images del array principal
 
         // Actualizar tour
-        $tour->update($validated);
+        $tour->update($tourData);
 
         // Guardar imágenes nuevas
         if ($request->hasFile('imagenes')) {
@@ -151,7 +130,7 @@ class TourController extends Controller
 
         return response()->json([
             'message' => 'Tour actualizado exitosamente',
-            'tour' => $tour->load(['imagenes', 'categoria', 'transporte.tipoTransporte']),
+            'tour' => $tour->load(['imagenes', 'categoria', 'transporte']),
         ]);
     }
 
@@ -161,7 +140,7 @@ class TourController extends Controller
     public function destroy($id)
     {
         $tour = Tour::findOrFail($id);
-        $tour->loadMissing(['imagenes', 'categoria', 'transporte.tipoTransporte']);
+        $tour->loadMissing(['imagenes', 'categoria', 'transporte']);
 
         // Eliminar imágenes físicas y registros
         foreach ($tour->imagenes as $imagen) {
@@ -174,6 +153,70 @@ class TourController extends Controller
 
         return response()->json([
             'message' => 'Tour eliminado exitosamente',
+        ]);
+    }
+
+    /**
+     * Mostrar tours nacionales para la vista de clientes
+     */
+    public function toursNacionales()
+    {
+        $tours = Tour::with(['categoria', 'transporte', 'imagenes'])
+            ->where('categoria_tour_id', 4) // ID de categoría Nacional
+            ->where('fecha_salida', '>=', now())
+            ->orderBy('fecha_salida', 'asc')
+            ->get();
+
+        return inertia('vistasClientes/ToursNacionales', [
+            'tours' => $tours
+        ]);
+    }
+
+    /**
+     * Mostrar tours internacionales para la vista de clientes
+     */
+    public function toursInternacionales()
+    {
+        $tours = Tour::with(['categoria', 'transporte', 'imagenes'])
+            ->where('categoria_tour_id', 3) // ID de categoría Internacional
+            ->where('fecha_salida', '>=', now())
+            ->orderBy('fecha_salida', 'asc')
+            ->get();
+
+        return inertia('vistasClientes/ToursInternacionales', [
+            'tours' => $tours
+        ]);
+    }
+
+    /**
+     * Mostrar vista detallada de un tour nacional
+     */
+    public function mostrarTourNacional($id)
+    {
+        $tour = Tour::with(['categoria', 'transporte', 'imagenes'])
+            ->where('id', $id)
+            ->where('categoria_tour_id', 4) // ID de categoría Nacional
+            ->firstOrFail();
+
+        return inertia('vistasClientes/DetalleTour', [
+            'tour' => $tour,
+            'tipo' => 'nacional'
+        ]);
+    }
+
+    /**
+     * Mostrar vista detallada de un tour internacional
+     */
+    public function mostrarTourInternacional($id)
+    {
+        $tour = Tour::with(['categoria', 'transporte', 'imagenes'])
+            ->where('id', $id)
+            ->where('categoria_tour_id', 3) // ID de categoría Internacional
+            ->firstOrFail();
+
+        return inertia('vistasClientes/DetalleTour', [
+            'tour' => $tour,
+            'tipo' => 'internacional'
         ]);
     }
 }
