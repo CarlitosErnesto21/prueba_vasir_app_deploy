@@ -10,10 +10,32 @@ class TourController extends Controller
 {
     /**
      * Display a listing of the resource.
+     * Soporta filtrado por categoría: ?categoria=nacional|internacional
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tours = Tour::with(['categoria', 'transporte', 'imagenes'])->get();
+        $query = Tour::with(['categoria', 'transporte', 'imagenes'])
+            ->where('fecha_salida', '>=', now())
+            ->orderBy('fecha_salida', 'asc');
+        
+        // Filtrar por categoría si se especifica
+        if ($request->has('categoria')) {
+            $categoria = $request->input('categoria');
+            
+            if ($categoria === 'nacional') {
+                $query->whereHas('categoria', function($q) {
+                    $q->where('nombre', 'Nacional');
+                });
+            } elseif ($categoria === 'internacional') {
+                $query->whereHas('categoria', function($q) {
+                    $q->where('nombre', 'Internacional');
+                });
+            }
+        }
+        
+        $tours = $query->get();
+        
+        // Siempre devolver JSON para API
         return response()->json($tours);
     }
 
@@ -67,9 +89,11 @@ class TourController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Tour $tour)
+    public function show($id)
     {
-        $tour->load(['categoria', 'transporte', 'imagenes']);
+        $tour = Tour::with(['categoria', 'transporte', 'imagenes'])
+            ->findOrFail($id);
+        
         return response()->json($tour);
     }
 
@@ -159,14 +183,12 @@ class TourController extends Controller
     /**
      * Mostrar tours nacionales para la vista de clientes
      */
-    public function toursNacionales()
+    public function toursNacionales(Request $request)
     {
-        $tours = Tour::with(['categoria', 'transporte', 'imagenes'])
-            ->where('categoria_tour_id', 4) // ID de categoría Nacional
-            ->where('fecha_salida', '>=', now())
-            ->orderBy('fecha_salida', 'asc')
-            ->get();
+        // Obtener tours nacionales directamente
+        $tours = $this->getToursByCategory('nacional');
 
+        // Siempre devolver vista Inertia para rutas web
         return inertia('vistasClientes/ToursNacionales', [
             'tours' => $tours
         ]);
@@ -175,17 +197,37 @@ class TourController extends Controller
     /**
      * Mostrar tours internacionales para la vista de clientes
      */
-    public function toursInternacionales()
+    public function toursInternacionales(Request $request)
     {
-        $tours = Tour::with(['categoria', 'transporte', 'imagenes'])
-            ->where('categoria_tour_id', 3) // ID de categoría Internacional
-            ->where('fecha_salida', '>=', now())
-            ->orderBy('fecha_salida', 'asc')
-            ->get();
+        // Obtener tours internacionales directamente
+        $tours = $this->getToursByCategory('internacional');
 
+        // Siempre devolver vista Inertia para rutas web
         return inertia('vistasClientes/ToursInternacionales', [
             'tours' => $tours
         ]);
+    }
+
+    /**
+     * Método helper para obtener tours por categoría
+     */
+    private function getToursByCategory($categoria)
+    {
+        $query = Tour::with(['categoria', 'transporte', 'imagenes'])
+            ->where('fecha_salida', '>=', now())
+            ->orderBy('fecha_salida', 'asc');
+        
+        if ($categoria === 'nacional') {
+            $query->whereHas('categoria', function($q) {
+                $q->where('nombre', 'Nacional');
+            });
+        } elseif ($categoria === 'internacional') {
+            $query->whereHas('categoria', function($q) {
+                $q->where('nombre', 'Internacional');
+            });
+        }
+        
+        return $query->get();
     }
 
     /**
@@ -195,7 +237,9 @@ class TourController extends Controller
     {
         $tour = Tour::with(['categoria', 'transporte', 'imagenes'])
             ->where('id', $id)
-            ->where('categoria_tour_id', 4) // ID de categoría Nacional
+            ->whereHas('categoria', function($q) {
+                $q->where('nombre', 'Nacional');
+            })
             ->firstOrFail();
 
         return inertia('vistasClientes/DetalleTour', [
@@ -211,7 +255,9 @@ class TourController extends Controller
     {
         $tour = Tour::with(['categoria', 'transporte', 'imagenes'])
             ->where('id', $id)
-            ->where('categoria_tour_id', 3) // ID de categoría Internacional
+            ->whereHas('categoria', function($q) {
+                $q->where('nombre', 'Internacional');
+            })
             ->firstOrFail();
 
         return inertia('vistasClientes/DetalleTour', [

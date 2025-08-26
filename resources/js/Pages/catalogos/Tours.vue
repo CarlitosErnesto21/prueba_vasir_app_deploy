@@ -738,12 +738,12 @@ const validateFechaRegreso = () => {
     
     const fechaRegreso = new Date(horaRegresoCalendar.value);
     
-    // Si hay fecha de salida, validar que regreso sea posterior a salida
+    // Si hay fecha de salida, validar que regreso sea posterior a salida con mínimo 1 hora de diferencia
     if (tour.value.fecha_salida) {
         const fechaSalida = new Date(tour.value.fecha_salida);
-        
-        // Validar que el regreso sea al menos 1 hora después de la salida
         const diferenciaHoras = (fechaRegreso - fechaSalida) / (1000 * 60 * 60);
+        
+        // Validar que haya al menos 1 hora de diferencia
         if (diferenciaHoras < 1) {
             return false;
         }
@@ -752,13 +752,10 @@ const validateFechaRegreso = () => {
     return true;
 };
 
-// Función para obtener fecha mínima (ahora + 1 hora)
+// Función para obtener fecha mínima (1 hora desde ahora)
 const getMinDate = () => {
     const now = new Date();
-    now.setHours(now.getHours() + 1);
-    now.setMinutes(0); // Redondear a la hora completa para mejor UX
-    now.setSeconds(0);
-    now.setMilliseconds(0);
+    now.setHours(now.getHours() + 1); // 1 hora desde ahora
     return now;
 };
 
@@ -767,7 +764,7 @@ const getMinDateRegreso = () => {
     if (!tour.value.fecha_salida) return getMinDate();
     
     const fechaSalida = new Date(tour.value.fecha_salida);
-    fechaSalida.setHours(fechaSalida.getHours() + 1);
+    fechaSalida.setHours(fechaSalida.getHours() + 1); // 1 hora después de la salida
     return fechaSalida;
 };
 
@@ -776,8 +773,7 @@ const getMaxDateSalida = () => {
     if (!horaRegresoCalendar.value) return null;
     
     const fechaRegreso = new Date(horaRegresoCalendar.value);
-    // La fecha de salida máxima debe ser 1 hora antes del regreso
-    fechaRegreso.setHours(fechaRegreso.getHours() - 1);
+    fechaRegreso.setHours(fechaRegreso.getHours() - 1); // 1 hora antes del regreso
     return fechaRegreso;
 };
 </script>

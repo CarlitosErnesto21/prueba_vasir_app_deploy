@@ -27,8 +27,36 @@
           </ol>
         </nav>
 
+        <!-- Estado de carga -->
+        <div v-if="loading" class="bg-white rounded-lg shadow-lg overflow-hidden p-8">
+          <div class="flex items-center justify-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2" :class="tipo === 'nacional' ? 'border-red-600' : 'border-blue-600'"></div>
+            <span class="ml-3 text-gray-600">Cargando detalles del tour...</span>
+          </div>
+        </div>
+
+        <!-- Estado de error -->
+        <div v-else-if="error" class="bg-white rounded-lg shadow-lg overflow-hidden p-8">
+          <div class="text-center">
+            <div class="text-red-600 mb-4">
+              <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Error al cargar el tour</h3>
+            <p class="text-gray-600 mb-4">{{ error }}</p>
+            <button 
+              @click="obtenerTour" 
+              :class="tipo === 'nacional' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'"
+              class="px-4 py-2 text-white rounded-lg transition-colors"
+            >
+              Reintentar
+            </button>
+          </div>
+        </div>
+
         <!-- Contenido principal -->
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div v-else-if="tour" class="bg-white rounded-lg shadow-lg overflow-hidden">
           <!-- Galería de imágenes -->
           <div 
             class="relative w-full h-64 sm:h-72 md:h-80 lg:h-96 bg-gray-100 rounded-t-lg overflow-hidden flex items-center justify-center"
@@ -87,7 +115,7 @@
                 
                 <div class="mb-4 sm:mb-6">
                   <span class="inline-flex items-center px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-100 text-blue-800">
-                    {{ tour.categoria?.nombre }}
+                    {{ tour.categoria?.nombre || 'Categoría no asignada' }}
                   </span>
                 </div>
 
@@ -277,7 +305,7 @@
 <script setup>
 import Catalogo from '../Catalogo.vue'
 import { Link } from '@inertiajs/vue3'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
 
 // Props
@@ -293,9 +321,62 @@ const props = defineProps({
   }
 })
 
+// Estados reactivos
+const tourData = ref({})
+const loading = ref(true)
+const error = ref(null)
+
+// URL de la API
+const url = "/api/tours"
+
 // Variables para la galería de imágenes
 const currentImageIndex = ref(0)
 const carruselInterval = ref(null)
+
+// Computed para obtener el tour actual (API o props como fallback)
+const tour = computed(() => {
+  return Object.keys(tourData.value).length > 0 ? tourData.value : props.tour
+})
+
+// Función para obtener el tour desde la API
+const obtenerTour = async () => {
+  if (!props.tour?.id) {
+    loading.value = false
+    return
+  }
+
+  try {
+    loading.value = true
+    error.value = null
+    
+    const tourId = props.tour.id
+    const apiUrl = `${url}/${tourId}`
+    
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`)
+    }
+    
+    const data = await response.json()
+    tourData.value = data
+    
+  } catch (err) {
+    console.error('Error al obtener el tour:', err)
+    error.value = err.message
+    // Usar props como fallback si hay error en la API
+    tourData.value = props.tour || {}
+  } finally {
+    loading.value = false
+  }
+}
 
 // Función para formatear fecha
 const formatearFecha = (fecha) => {
@@ -314,8 +395,13 @@ const calcularDuracion = (fechaSalida, fechaRegreso) => {
   
   const salida = new Date(fechaSalida)
   const regreso = new Date(fechaRegreso)
-  const diffTime = Math.abs(regreso - salida)
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  // Normalizar las fechas para que solo considere el día (sin hora)
+  salida.setHours(0, 0, 0, 0)
+  regreso.setHours(0, 0, 0, 0)
+  
+  const diffTime = regreso.getTime() - salida.getTime()
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1 // +1 porque incluimos el día de salida
   
   return diffDays === 1 ? '1 día' : `${diffDays} días`
 }
@@ -328,11 +414,11 @@ const textoALista = (texto) => {
 
 // Función para obtener la imagen actual
 const obtenerImagenActual = () => {
-  if (!props.tour.imagenes || props.tour.imagenes.length === 0) {
-    return 'https://via.placeholder.com/800x500/2563eb/ffffff?text=Sin+Imagen'
+  if (!tour.value?.imagenes || tour.value.imagenes.length === 0) {
+    return 'https://via.placeholder.com/800x500/2563eb/ffffff?text=Sin+Imagen+Disponible'
   }
   
-  const imagen = props.tour.imagenes[currentImageIndex.value]
+  const imagen = tour.value.imagenes[currentImageIndex.value]
   const nombreImagen = typeof imagen === 'string' ? imagen : imagen.nombre
   
   return `/images/tours/${nombreImagen}`
@@ -340,17 +426,17 @@ const obtenerImagenActual = () => {
 
 // Funciones de navegación de imágenes
 const imagenAnterior = () => {
-  if (props.tour.imagenes && props.tour.imagenes.length > 1) {
+  if (tour.value.imagenes && tour.value.imagenes.length > 1) {
     currentImageIndex.value = currentImageIndex.value === 0 
-      ? props.tour.imagenes.length - 1 
+      ? tour.value.imagenes.length - 1 
       : currentImageIndex.value - 1
     reiniciarCarrusel() // Reiniciar el carrusel después de navegación manual
   }
 }
 
 const imagenSiguiente = () => {
-  if (props.tour.imagenes && props.tour.imagenes.length > 1) {
-    currentImageIndex.value = (currentImageIndex.value + 1) % props.tour.imagenes.length
+  if (tour.value.imagenes && tour.value.imagenes.length > 1) {
+    currentImageIndex.value = (currentImageIndex.value + 1) % tour.value.imagenes.length
     reiniciarCarrusel() // Reiniciar el carrusel después de navegación manual
   }
 }
@@ -363,9 +449,9 @@ const cambiarImagen = (index) => {
 
 // Funciones del carrusel automático
 const iniciarCarrusel = () => {
-  if (props.tour.imagenes && props.tour.imagenes.length > 1) {
+  if (tour.value.imagenes && tour.value.imagenes.length > 1) {
     carruselInterval.value = setInterval(() => {
-      currentImageIndex.value = (currentImageIndex.value + 1) % props.tour.imagenes.length
+      currentImageIndex.value = (currentImageIndex.value + 1) % tour.value.imagenes.length
     }, 3000) // Cambiar cada 3 segundos
   }
 }
@@ -394,6 +480,7 @@ const reanudarCarrusel = () => {
 
 // Lifecycle hooks
 onMounted(() => {
+  obtenerTour()
   iniciarCarrusel()
 })
 

@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('tours', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
-            $table->text('incluye');
-            $table->text('no_incluye');
+            $table->text('incluye')->nullable();
+            $table->text('no_incluye')->nullable();
             $table->integer('cupo_min');
             $table->integer('cupo_max');
             $table->string('punto_salida');
-            $table->date('fecha_salida');
-            $table->date('fecha_regreso');
+            $table->datetime('fecha_salida');
+            $table->datetime('fecha_regreso');
             $table->enum('estado', ['DISPONIBLE', 'AGOTADO', 'EN_CURSO', 'COMPLETADO', 'CANCELADO', 'SUSPENDIDO', 'REPROGRAMADO'])->default('DISPONIBLE');
             $table->decimal('precio', 10, 2);
             // llaves foraneas a categorias_tours y transportes

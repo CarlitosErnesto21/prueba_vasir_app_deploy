@@ -7,6 +7,8 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\TipoDocumentoController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\TourController;
+use App\Http\Controllers\SobreNosotrosController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Middleware\RutasAdmin;
@@ -124,22 +126,19 @@ Route::get('/reservaciones', function () {
     return Inertia::render('vistasClientes/Reservaciones');
 })->name('reservaciones');
 
-Route::get('/tours-nacionales', [App\Http\Controllers\TourController::class, 'toursNacionales'])->name('tours-nacionales');
+Route::get('/tours-nacionales', [TourController::class, 'toursNacionales'])->name('tours-nacionales');
 
-Route::get('/tours-internacionales', [App\Http\Controllers\TourController::class, 'toursInternacionales'])->name('tours-internacionales');
+Route::get('/tours-internacionales', [TourController::class, 'toursInternacionales'])->name('tours-internacionales');
 
 // Rutas para vista detallada de tours
-Route::get('/tours-nacionales/{id}', [App\Http\Controllers\TourController::class, 'mostrarTourNacional'])->name('tour-nacional.show');
-Route::get('/tours-internacionales/{id}', [App\Http\Controllers\TourController::class, 'mostrarTourInternacional'])->name('tour-internacional.show');
-
-// API para obtener información detallada de un tour
-Route::get('/api/tours-clientes/{id}', [App\Http\Controllers\TourController::class, 'show'])->name('tours-clientes.show');
+Route::get('/tours-nacionales/{id}', [TourController::class, 'mostrarTourNacional'])->name('tour-nacional.show');
+Route::get('/tours-internacionales/{id}', [TourController::class, 'mostrarTourInternacional'])->name('tour-internacional.show');
 
 Route::get('/tienda', function () {
     return Inertia::render('vistasClientes/Tienda');
 })->name('tienda');
 
-Route::get('/sobre-nosotros', [App\Http\Controllers\SobreNosotrosController::class, 'index'])->name('sobre-nosotros');
+Route::get('/sobre-nosotros', [SobreNosotrosController::class, 'index'])->name('sobre-nosotros');
 
 Route::get('/contactos', function () {
     return Inertia::render('vistasClientes/Contactos');
