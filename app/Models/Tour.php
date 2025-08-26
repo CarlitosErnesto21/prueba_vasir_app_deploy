@@ -12,6 +12,7 @@ class Tour extends Model
 
     protected $fillable = [
         'nombre',
+        'categoria',
         'incluye',
         'no_incluye',
         'cupo_min',

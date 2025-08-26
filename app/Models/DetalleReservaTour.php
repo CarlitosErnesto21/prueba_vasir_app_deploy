@@ -9,9 +9,10 @@ class DetalleReservaTour extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'cupos',
+        'fecha',
+        'cupos_reservados',
         'precio_unitario',
-        'subtotal',
+        'precio_total',
         'reserva_id',
         'tour_id'
     ];
