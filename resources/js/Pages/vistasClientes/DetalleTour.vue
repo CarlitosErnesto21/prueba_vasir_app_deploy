@@ -115,7 +115,7 @@
                 
                 <div class="mb-4 sm:mb-6">
                   <span class="inline-flex items-center px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-100 text-blue-800">
-                    {{ tour.categoria?.nombre || 'Categoría no asignada' }}
+                    {{ tour.categoria === 'NACIONAL' ? 'Nacional' : tour.categoria === 'INTERNACIONAL' ? 'Internacional' : 'Categoría no asignada' }}
                   </span>
                 </div>
 

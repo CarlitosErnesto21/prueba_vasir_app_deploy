@@ -13,9 +13,15 @@ return new class extends Migration
     {
         Schema::create('detalles_reservas_aerolineas', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre', 50);
             $table->date('fecha');
-            $table->enum('clase', ['economica', 'ejecutiva', 'primera clase']);
+            $table->enum('clase', ['PRIMERA_CLASE', 'CLASE_EJECUTIVA', 'TURISTA_PREMIUM', 'CLASE_TURISTA']);
+            $table->string('numero_vuelo', 10);
+            $table->string('origen', 50);
+            $table->string('destino', 50);
+            $table->datetime('fecha_salida');
+            $table->datetime('fecha_llegada');
+            $table->string('asiento', 10);
+            $table->decimal('precio', 7, 2);
             // llaves foraneeas a reservas y aerolineas
             $table->unsignedBigInteger('reserva_id');
             $table->unsignedBigInteger('aerolinea_id');

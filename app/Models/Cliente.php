@@ -8,7 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class Cliente extends Model
 {
     use HasFactory;
-    protected $fillable=['numero_identificacion', 'fecha_nacimiento', 'genero', 'direccion', 'telefono', 'user_id', 'tipo_documento_id'];
+    protected $fillable=[
+        'nombre',
+        'apellido',
+        'numero_identificacion',
+        'fecha_nacimiento',
+        'genero',
+        'direccion',
+        'telefono',
+        'user_id', 
+        'tipo_documento_id'
+    ];
 
     public function user()
     {

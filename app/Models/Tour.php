@@ -12,6 +12,7 @@ class Tour extends Model
 
     protected $fillable = [
         'nombre',
+        'categoria',
         'incluye',
         'no_incluye',
         'cupo_min',
@@ -20,15 +21,9 @@ class Tour extends Model
         'fecha_salida',
         'fecha_regreso',
         'estado',
-        'categoria_tour_id',
         'transporte_id',
         'precio'
     ];
-
-    public function categoria()
-    {
-        return $this->belongsTo(CategoriaTour::class, 'categoria_tour_id');
-    }
 
     public function transporte()
     {
