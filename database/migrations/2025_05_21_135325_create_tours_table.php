@@ -25,9 +25,7 @@ return new class extends Migration
             $table->enum('estado', ['DISPONIBLE', 'AGOTADO', 'EN_CURSO', 'COMPLETADO', 'CANCELADO', 'SUSPENDIDO', 'REPROGRAMADO'])->default('DISPONIBLE');
             $table->decimal('precio', 10, 2);
             // llaves foraneas a categorias_tours y transportes
-            $table->unsignedBigInteger('categoria_tour_id');
             $table->unsignedBigInteger('transporte_id');
-            $table->foreign('categoria_tour_id')->references('id')->on('categorias_tours')->onDelete('cascade');
             $table->foreign('transporte_id')->references('id')->on('transportes')->onDelete('cascade');
             $table->timestamps();
         });
