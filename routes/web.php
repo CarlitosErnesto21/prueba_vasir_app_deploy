@@ -108,7 +108,8 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
         return Inertia::render('informes/Informes');
     })->middleware(['auth', 'verified'])->name('informes');
 
-    Route::get('/descargar-informe', [InformePDFController::class, 'descargarInforme']);
+    Route::get('/descargar-informe', [InformePDFController::class, 'descargarInforme'])
+        ->middleware(['auth', 'verified']);
 });
 
 Route::middleware('auth')->group(function () {

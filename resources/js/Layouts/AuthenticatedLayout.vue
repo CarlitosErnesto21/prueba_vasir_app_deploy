@@ -5,8 +5,7 @@ import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
 import  { faRoute, faDoorOpen, faCircleXmark, faUserCircle, 
     faChevronCircleDown, faUser, faHotel, faPlaneDeparture, faGear, faBoxesStacked, 
     faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,faListCheck,
-    faFileInvoice,
-    faMap} from "@fortawesome/free-solid-svg-icons";   
+    faFileInvoice } from "@fortawesome/free-solid-svg-icons";   
 
 import axios from 'axios';
 import { route } from 'ziggy-js';
@@ -345,16 +344,6 @@ function manageClientes() {
                             title="Control de categorias">
                             <FontAwesomeIcon :icon="faListCheck" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Gestión categorías</span>
-                        </li>
-                        <li
-                            class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
-                            :class="isSidebarCollapsed ? 'justify-center' : 'justify-start'"
-                            @click="router.visit(route('controlPaisesProvincias'))"
-                            tabindex="0"
-                            @keydown.enter="router.visit(route('controlPaisesProvincias'))"
-                            title="Control de paises y provincias">
-                            <FontAwesomeIcon :icon="faMap" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
-                            <span v-if="!isSidebarCollapsed">Control paises y provincias</span>
                         </li>
                     </ul>
                 </nav>
