@@ -22,6 +22,10 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
+    Route::get('catalogos/Transportes', function () {
+        return Inertia::render('catalogos/Transportes');
+    })->name('transportes');
+
     Route::get('catalogos/Productos', function () {
         return Inertia::render('catalogos/Productos');
     })->name('productos');
