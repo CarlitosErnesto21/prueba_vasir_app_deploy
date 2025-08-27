@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('tours', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
+            $table->enum('categoria', ['NACIONAL', 'INTERNACIONAL']);
             $table->text('incluye')->nullable();
             $table->text('no_incluye')->nullable();
             $table->integer('cupo_min');

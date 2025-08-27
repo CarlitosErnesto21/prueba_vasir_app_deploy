@@ -14,7 +14,10 @@ return new class extends Migration
         Schema::create('reservas', function (Blueprint $table) {
             $table->id();
             $table->date('fecha');
-            $table->enum('estado', ['Pendiente', 'Confirmada', 'Cancelada']);
+            $table->enum('estado', ['PENDIENTE', 'CONFIRMADA', 'RECHAZADA', 'REPROGRAMADA', 'FINALIZADA']);
+            $table->integer('mayores_edad');
+            $table->integer('menores_edad');
+            $table->decimal('total', 7, 2);
             // llave foraneea a la tabla clientes y empleadosa
             $table->unsignedBigInteger('cliente_id');
             $table->unsignedBigInteger('empleado_id');

@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('detalles_reservas_tours', function (Blueprint $table) {
             $table->id();
-            $table->integer('cupos');
+            $table->date('fecha');
+            $table->integer('cupos_reservados');
             $table->decimal('precio_unitario', 5, 2);
-            $table->decimal('subtotal', 6, 2);
+            $table->decimal('precio_total', 6, 2);
             // llave foranea a reservas y tours
             $table->unsignedBigInteger('reserva_id');
             $table->unsignedBigInteger('tour_id');
@@ -30,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('detalles_reservas');
+        Schema::dropIfExists('detalles_reservas_tours');
     }
 };

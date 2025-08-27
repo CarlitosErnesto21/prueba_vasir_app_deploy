@@ -11,6 +11,9 @@ class Reserva extends Model
     protected $fillable = [
         'fecha',
         'estado',
+        'mayores_edad',
+        'menores_edad',
+        'total',
         'cliente_id',
         'empleado_id'
     ];
