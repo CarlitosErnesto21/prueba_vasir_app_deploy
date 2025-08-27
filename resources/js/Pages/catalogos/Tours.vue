@@ -21,6 +21,7 @@ const tours = ref([]);
 const tour = ref({
     id: null,
     nombre: "",
+    categoria: null,
     incluye: "",
     no_incluye: "",
     cupo_min: null,
@@ -30,7 +31,6 @@ const tour = ref({
     fecha_regreso: null,
     estado: "DISPONIBLE",
     precio: null,
-    categoria_tour_id: null,
     transporte_id: null,
     imagenes: [],
 });
@@ -47,7 +47,7 @@ const hasUnsavedChanges = ref(false);
 const originalTourData = ref(null);
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    categoria_tour_id: { value: null, matchMode: FilterMatchMode.EQUALS },
+    categoria: { value: null, matchMode: FilterMatchMode.EQUALS },
     'transporte.nombre': { value: null, matchMode: FilterMatchMode.EQUALS },
     estado: { value: null, matchMode: FilterMatchMode.EQUALS },
     fecha_salida: { value: null, matchMode: FilterMatchMode.DATE_IS },
@@ -63,8 +63,11 @@ const btnTitle = ref("Guardar");
 const horaRegresoCalendar = ref(null);
 const url = "/api/tours";
 const IMAGE_PATH = "/images/tours/";
-const categoriasTours = ref([]);
 const tipoTransportes = ref([]);
+const categoriasOptions = ref([
+    { label: 'Nacional', value: 'NACIONAL' },
+    { label: 'Internacional', value: 'INTERNACIONAL' }
+]);
 const estadosOptions = ref([
     { label: 'Disponible', value: 'DISPONIBLE' },
     { label: 'Agotado', value: 'AGOTADO' },
@@ -95,9 +98,9 @@ const filteredTours = computed(() => {
     }
     
     // Filtro por categoría
-    if (filters.value.categoria_tour_id.value) {
+    if (filters.value.categoria.value) {
         filtered = filtered.filter(tour => 
-            tour.categoria_tour_id === filters.value.categoria_tour_id.value
+            tour.categoria === filters.value.categoria.value
         );
     }
     
@@ -167,7 +170,7 @@ watch([tour, horaRegresoCalendar, incluyeLista, noIncluyeLista, imagenPreviewLis
                               tour.value.fecha_salida || 
                               horaRegresoCalendar.value || 
                               tour.value.precio ||
-                              tour.value.categoria_tour_id ||
+                              tour.value.categoria ||
                               tour.value.transporte_id ||
                               incluyeLista.value.length > 0 ||
                               noIncluyeLista.value.length > 0 ||
@@ -182,6 +185,7 @@ function resetForm() {
     tour.value = {
         id: null,
         nombre: "",
+        categoria: null,
         incluye: "",
         no_incluye: "",
         cupo_min: null,
@@ -191,7 +195,6 @@ function resetForm() {
         fecha_regreso: null,
         estado: "DISPONIBLE",
         precio: null,
-        categoria_tour_id: null,
         transporte_id: null,
         imagenes: [],
     };
@@ -243,7 +246,6 @@ const listaATexto = (lista) => {
 // Obtener tours, categorías y tipos de transporte
 onMounted(() => {
     fetchTours();
-    fetchCategoriasTours();
     fetchTipoTransportes();
 });
 
@@ -255,11 +257,9 @@ const fetchTours = async () => {
             imagenes: (t.imagenes || []).map((img) =>
                 typeof img === "string" ? img : img.nombre
             ),
-            categoria_nombre: t.categoria?.nombre || "",
             transporte_nombre: t.transporte?.nombre || "",
             transporte_capacidad: t.transporte?.capacidad || "",
             // Agregar campos para filtros
-            categoria_tour_id: t.categoria?.id || t.categoria_tour_id,
             'transporte.nombre': t.transporte?.nombre,
         })).sort((a, b) => {
             // Ordenar por fecha de creación descendente (más recientes primero)
@@ -269,16 +269,6 @@ const fetchTours = async () => {
         });
     } catch (err) {
         toast.add({ severity: "error", summary: "Error", detail: "No se pudieron cargar los tours.", life: 4000 });
-    }
-};
-
-const fetchCategoriasTours = async () => {
-    try {
-        const response = await axios.get("/api/categorias-tours");
-        categoriasTours.value = response.data || [];
-    } catch {
-        categoriasTours.value = [];
-        toast.add({ severity: "error", summary: "Error", detail: "No se pudieron cargar las categorías.", life: 4000 });
     }
 };
 
@@ -294,7 +284,7 @@ const fetchTipoTransportes = async () => {
 
 // Funciones para manejar filtros
 const onCategoriaFilterChange = () => {
-    filters.value.categoria_tour_id.value = selectedCategoria.value;
+    filters.value.categoria.value = selectedCategoria.value;
 };
 
 const onTipoTransporteFilterChange = () => {
@@ -354,7 +344,7 @@ const clearFilters = () => {
     selectedFechaInicio.value = null;
     selectedFechaFin.value = null;
     filters.value.global.value = null;
-    filters.value.categoria_tour_id.value = null;
+    filters.value.categoria.value = null;
     filters.value['transporte.nombre'].value = null;
     filters.value.estado.value = null;
     filters.value.fecha_salida.value = null;
@@ -392,7 +382,6 @@ const editTour = (t) => {
     
     tour.value = {
         ...t,
-        categoria_tour_id: t.categoria?.id || t.categoria_tour_id || null,
         transporte_id: t.transporte?.id || t.transporte_id || null,
     };
 
@@ -474,7 +463,7 @@ const saveOrUpdate = async () => {
         return;
     }
 
-    if (!tour.value.fecha_salida || !tour.value.precio || !tour.value.categoria_tour_id || !tour.value.transporte_id || imagenPreviewList.value.length === 0) {
+    if (!tour.value.fecha_salida || !tour.value.precio || !tour.value.categoria || !tour.value.transporte_id || imagenPreviewList.value.length === 0) {
         toast.add({ severity: "warn", summary: "Campos requeridos", detail: "Por favor verifica que todos los campos obligatorios estén completos.", life: 4000 });
         return;
     }
@@ -523,7 +512,7 @@ const saveOrUpdate = async () => {
         
         // Campos numéricos con validación
         formData.append("precio", tour.value.precio || "");
-        formData.append("categoria_tour_id", tour.value.categoria_tour_id || "");
+        formData.append("categoria", tour.value.categoria || "");
         formData.append("transporte_id", tour.value.transporte_id || "");
 
         // Agregar campos opcionales
@@ -862,11 +851,12 @@ const getMaxDateSalida = () => {
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                                 <!-- Categoría -->
                                 <div class="sm:col-span-1">
+                                    <!--PENDIENTE-->
                                     <Select
                                         v-model="selectedCategoria"
-                                        :options="categoriasTours"
-                                        optionLabel="nombre"
-                                        optionValue="id"
+                                        :options="categoriasOptions" 
+                                        optionLabel="label"
+                                        optionValue="value"
                                         placeholder="Categoría"
                                         class="w-full h-9 text-sm"
                                         @change="onCategoriaFilterChange"
@@ -1373,33 +1363,36 @@ const getMaxDateSalida = () => {
                             o igual a 999.99.
                         </small>
                     </div>
+                    <!--Categoría-->
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
-                            <label for="categoria_tour_id" class="w-24 flex items-center gap-1">
+                            <label for="categoria" class="w-24 flex items-center gap-1">
                                 Categoría:
                                 <span class="text-red-500 font-bold">*</span>
                             </label>
+                            
                             <Select
-                                v-model="tour.categoria_tour_id"
-                                :options="categoriasTours"
-                                optionLabel="nombre"
-                                optionValue="id"
-                                id="categoria_tour_id"
-                                name="categoria_tour_id"
+                                v-model="tour.categoria"
+                                :options="categoriasOptions"
+                                optionLabel="label"
+                                optionValue="value"
+                                id="categoria"
+                                name="categoria"
                                 class="flex-1"
                                 placeholder="Selecciona una categoría"
                                 :class="{
                                     'p-invalid':
-                                        submitted && !tour.categoria_tour_id,
+                                        submitted && !tour.categoria,
                                 }"
                             />
                         </div>
                         <small
                             class="text-red-500 ml-28"
-                            v-if="submitted && !tour.categoria_tour_id"
+                            v-if="submitted && !tour.categoria"
                             >La categoría es obligatoria.</small
                         >
                     </div>
+
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
                             <label for="transporte_id" class="w-24 flex items-center gap-1">
