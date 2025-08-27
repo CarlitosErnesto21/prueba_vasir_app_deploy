@@ -334,14 +334,22 @@ const viewImages = (imagenesHotel) => {
     <AuthenticatedLayout>
         <Toast />
         <div class="py-6 px-7 mt-10 mx-auto bg-red-100 shadow-md rounded-lg">
-            <div class="flex justify-between items-center mb-4">
+            <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4 gap-4">
                 <h3 class="text-xl font-bold">Catálogo hoteles</h3>
-                <Button
-                    label="Agregar hotel"
-                    icon="pi pi-plus"
-                    class="p-button-sm p-button-danger"
-                    @click="openNew"
-                />
+                <div class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto lg:justify-end">
+                    <Button
+                    label="Control Paises"
+                    icon="pi pi-globe"
+                    class="p-button-sm p-button-info w-full sm:w-auto"
+                    @click="$inertia.get('/catalogos/ControlPaisesProvincias')"
+                    />
+                    <Button
+                        label="Agregar hotel"
+                        icon="pi pi-plus"
+                        class="p-button-sm p-button-danger w-full sm:w-auto"
+                        @click="openNew"
+                    />
+                </div>
             </div>
 
             <DataTable
