@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('tours', function (Blueprint $table) {
@@ -23,17 +20,14 @@ return new class extends Migration
             $table->datetime('fecha_salida');
             $table->datetime('fecha_regreso');
             $table->enum('estado', ['DISPONIBLE', 'AGOTADO', 'EN_CURSO', 'COMPLETADO', 'CANCELADO', 'SUSPENDIDO', 'REPROGRAMADO'])->default('DISPONIBLE');
-            $table->decimal('precio', 10, 2);
-            // llaves foraneas a categorias_tours y transportes
+                        $table->decimal('precio', 10, 2);
+            // llave foránea a transportes
             $table->unsignedBigInteger('transporte_id');
             $table->foreign('transporte_id')->references('id')->on('transportes')->onDelete('cascade');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('tours');
