@@ -14,22 +14,15 @@ class TourController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Tour::with(['categoria', 'transporte', 'imagenes'])
-            ->where('fecha_salida', '>=', now())
+        $query = Tour::with(['transporte', 'imagenes'])
             ->orderBy('fecha_salida', 'asc');
         
         // Filtrar por categoría si se especifica
         if ($request->has('categoria')) {
-            $categoria = $request->input('categoria');
+            $categoria = strtoupper($request->input('categoria'));
             
-            if ($categoria === 'nacional') {
-                $query->whereHas('categoria', function($q) {
-                    $q->where('nombre', 'Nacional');
-                });
-            } elseif ($categoria === 'internacional') {
-                $query->whereHas('categoria', function($q) {
-                    $q->where('nombre', 'Internacional');
-                });
+            if (in_array($categoria, ['NACIONAL', 'INTERNACIONAL'])) {
+                $query->where('categoria', $categoria);
             }
         }
         
@@ -48,13 +41,13 @@ class TourController extends Controller
             'nombre' => 'required|string|max:200',
             'incluye' => 'nullable|string',
             'no_incluye' => 'nullable|string',
-            'cupo_min' => 'nullable|integer|min:1',
-            'cupo_max' => 'nullable|integer|min:1',
-            'punto_salida' => 'required|string|max:200',
-            'fecha_salida' => 'required|date',
-            'fecha_regreso' => 'required|date',
+            'cupo_min' => 'required|integer|min:1',
+            'cupo_max' => 'required|integer|min:1',
+            'punto_salida' => 'required|string|max:255',
+            'fecha_salida' => 'required|date|after:today',
+            'fecha_regreso' => 'required|date|after:fecha_salida',
             'precio' => 'required|numeric|min:0|max:9999.99',
-            'categoria_tour_id' => 'required|exists:categorias_tours,id',
+            'categoria' => 'required|in:NACIONAL,INTERNACIONAL',
             'transporte_id' => 'required|exists:transportes,id',
             'imagenes' => 'nullable|array',
             'imagenes.*' => 'image|max:2048',
@@ -82,7 +75,7 @@ class TourController extends Controller
 
         return response()->json([
             'message' => 'Tour creado exitosamente',
-            'tour' => $tour->load(['imagenes', 'categoria', 'transporte']),
+            'tour' => $tour->load(['imagenes', 'transporte']),
         ]);
     }
 
@@ -91,7 +84,7 @@ class TourController extends Controller
      */
     public function show($id)
     {
-        $tour = Tour::with(['categoria', 'transporte', 'imagenes'])
+        $tour = Tour::with(['transporte', 'imagenes'])
             ->findOrFail($id);
         
         return response()->json($tour);
@@ -112,7 +105,7 @@ class TourController extends Controller
             'fecha_salida' => 'required|date',
             'fecha_regreso' => 'required|date',
             'precio' => 'required|numeric|min:0|max:9999.99',
-            'categoria_tour_id' => 'required|exists:categorias_tours,id',
+            'categoria' => 'required|in:NACIONAL,INTERNACIONAL',
             'transporte_id' => 'required|exists:transportes,id',
             'imagenes' => 'nullable|array',
             'imagenes.*' => 'image|max:2048',
@@ -154,7 +147,7 @@ class TourController extends Controller
 
         return response()->json([
             'message' => 'Tour actualizado exitosamente',
-            'tour' => $tour->load(['imagenes', 'categoria', 'transporte']),
+            'tour' => $tour->load(['imagenes', 'transporte']),
         ]);
     }
 
@@ -164,7 +157,7 @@ class TourController extends Controller
     public function destroy($id)
     {
         $tour = Tour::findOrFail($id);
-        $tour->loadMissing(['imagenes', 'categoria', 'transporte']);
+        $tour->loadMissing(['imagenes', 'transporte']);
 
         // Eliminar imágenes físicas y registros
         foreach ($tour->imagenes as $imagen) {
@@ -213,18 +206,13 @@ class TourController extends Controller
      */
     private function getToursByCategory($categoria)
     {
-        $query = Tour::with(['categoria', 'transporte', 'imagenes'])
+        $query = Tour::with(['transporte', 'imagenes'])
             ->where('fecha_salida', '>=', now())
             ->orderBy('fecha_salida', 'asc');
         
-        if ($categoria === 'nacional') {
-            $query->whereHas('categoria', function($q) {
-                $q->where('nombre', 'Nacional');
-            });
-        } elseif ($categoria === 'internacional') {
-            $query->whereHas('categoria', function($q) {
-                $q->where('nombre', 'Internacional');
-            });
+        $categoriaEnum = strtoupper($categoria);
+        if (in_array($categoriaEnum, ['NACIONAL', 'INTERNACIONAL'])) {
+            $query->where('categoria', $categoriaEnum);
         }
         
         return $query->get();
@@ -235,11 +223,9 @@ class TourController extends Controller
      */
     public function mostrarTourNacional($id)
     {
-        $tour = Tour::with(['categoria', 'transporte', 'imagenes'])
+        $tour = Tour::with(['transporte', 'imagenes'])
             ->where('id', $id)
-            ->whereHas('categoria', function($q) {
-                $q->where('nombre', 'Nacional');
-            })
+            ->where('categoria', 'NACIONAL')
             ->firstOrFail();
 
         return inertia('vistasClientes/DetalleTour', [
@@ -253,11 +239,9 @@ class TourController extends Controller
      */
     public function mostrarTourInternacional($id)
     {
-        $tour = Tour::with(['categoria', 'transporte', 'imagenes'])
+        $tour = Tour::with(['transporte', 'imagenes'])
             ->where('id', $id)
-            ->whereHas('categoria', function($q) {
-                $q->where('nombre', 'Internacional');
-            })
+            ->where('categoria', 'INTERNACIONAL')
             ->firstOrFail();
 
         return inertia('vistasClientes/DetalleTour', [

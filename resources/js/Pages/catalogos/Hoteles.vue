@@ -7,6 +7,8 @@ import { FilterMatchMode } from "@primevue/core/api";
 import FileUpload from "primevue/fileupload";
 import Toast from "primevue/toast";
 import Select from "primevue/select";
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faEdit, faEye, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import axios from "axios";
 import Carousel from "primevue/carousel";
 
@@ -332,14 +334,22 @@ const viewImages = (imagenesHotel) => {
     <AuthenticatedLayout>
         <Toast />
         <div class="py-6 px-7 mt-10 mx-auto bg-red-100 shadow-md rounded-lg">
-            <div class="flex justify-between items-center mb-4">
+            <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4 gap-4">
                 <h3 class="text-xl font-bold">Catálogo hoteles</h3>
-                <Button
-                    label="Agregar hotel"
-                    icon="pi pi-plus"
-                    class="p-button-sm p-button-danger"
-                    @click="openNew"
-                />
+                <div class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto lg:justify-end">
+                    <Button
+                    label="Control Paises"
+                    icon="pi pi-globe"
+                    class="p-button-sm p-button-info w-full sm:w-auto"
+                    @click="$inertia.get('/catalogos/ControlPaisesProvincias')"
+                    />
+                    <Button
+                        label="Agregar hotel"
+                        icon="pi pi-plus"
+                        class="p-button-sm p-button-danger w-full sm:w-auto"
+                        @click="openNew"
+                    />
+                </div>
             </div>
 
             <DataTable
@@ -393,21 +403,29 @@ const viewImages = (imagenesHotel) => {
                 <Column header="Acciones" :exportable="false">
                     <template #body="slotProps">
                         <div class="flex gap-2">
-                            <Button
-                                icon="pi pi-eye"
-                                class="p-button-rounded p-button-info p-button-md"
-                                @click="viewImages(slotProps.data.imagenes)"
-                            />
-                            <Button
-                                icon="pi pi-pencil"
-                                class="p-button-rounded p-button-warn p-button-md"
+                        
+
+                             <button
+                                class="text-orange-600 hover:text-orange-900 transition-colors"
                                 @click="editHotel(slotProps.data)"
-                            />
-                            <Button
-                                icon="pi pi-trash"
-                                class="p-button-rounded p-button-danger p-button-md"
+                                title="Editar"
+                            >
+                                <FontAwesomeIcon :icon="faEdit" class="h-5 w-5" />
+                            </button>
+                            <button
+                                class="text-blue-600 hover:text-blue-900 transition-colors"
+                                @click="viewImages(slotProps.data.imagenes)"
+                            >
+                                <FontAwesomeIcon :icon="faEye" class="h-5 w-5" />
+                            </button>
+
+                            <button
+                                class="text-red-600 hover:text-red-900 transition-colors"
                                 @click="confirmDeleteHotel(slotProps.data)"
-                            />
+                                title="Eliminar"
+                            >
+                                <FontAwesomeIcon :icon="faTrashCan" class="h-5 w-5" />
+                            </button>
                         </div>
                     </template>
                 </Column>
@@ -608,99 +626,110 @@ const viewImages = (imagenesHotel) => {
                     </div>
                 </div>
 
+
+                
                 <template #footer>
                     <div class="flex justify-center gap-4 w-full">
-                        <Button
-                            label="Cancelar"
-                            icon="pi pi-times"
-                            class="p-button-rounded p-button-danger p-button-md mr-2"
-                            text
+                        <button
                             @click="hideDialog"
-                        />
-                        <Button
+                            class="flex items-center border border-green-600 text-green-600 hover:bg-green-50 disabled:border-gray-400 disabled:text-gray-400 font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
+                            >
+                            <i class="pi pi-times mr-2"></i>
+                            Cancelar
+                        </button>
+                        <button
                             :label="btnTitle"
-                            icon="pi pi-check"
-                            class="p-button-rounded p-button-warn p-button-md mr-2"
                             @click="saveOrUpdate"
-                        />
+                            class="bg-red-600 text-white hover:bg-red-700 disabled:bg-gray-400 disabled:text-gray-200 font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
+                            >
+                            <i class="pi pi-check mr-2"></i>
+                            Guardar
+                        </button>
                     </div>
                 </template>
             </Dialog>
 
-            <Dialog
-                v-model:visible="deleteDialog"
-                header="Confirmar"
-                :modal="true"
-                :style="{ width: '350px' }"
-            >
-                <span
-                    >¿Eliminar el hotel <b>{{ hotel.nombre }}</b
-                    >?</span
-                >
-                <template #footer>
-                    <Button
-                        label="No"
-                        icon="pi pi-times"
-                        text
-                        @click="deleteDialog = false"
-                        class="p-button-rounded p-button-warn p-button-md mr-2"
-                    />
-                    <Button
-                        label="Sí"
-                        icon="pi pi-check"
-                        severity="danger"
-                        @click="deleteHotel"
-                    />
-                </template>
-            </Dialog>
+           <Dialog
+    v-model:visible="deleteDialog"
+    header="Confirmar"
+    :modal="true"
+    :style="{ width: '350px' }"
+>
+    <div class="flex items-center gap-3">
+        <!-- Ícono de advertencia -->
+        <i class="pi pi-exclamation-triangle text-black-500" style="font-size: 1.50rem;"></i>
+        <!-- Texto del diálogo -->
+        <span>¿Eliminar el hotel <b>{{ hotel.nombre }}</b>?</span>
+    </div>
+    <template #footer>
+        <button
+            @click="deleteDialog = false"
+            class="border border-green-600 text-green-600 hover:bg-green-50 disabled:border-gray-400 disabled:text-gray-400 font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
+        >
+            No
+        </button>
+
+        <button
+            @click="deleteHotel"
+            class="bg-red-600 text-white hover:bg-red-700 disabled:bg-gray-400 disabled:text-gray-200 font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
+        >
+            Sí
+        </button>
+    </template>
+</Dialog>
+
 
             <Dialog
-                v-model:visible="showImageDialog"
-                header="Imágenes del hotel"
-                :modal="true"
-                :style="{ width: '700px' }"
-            >
-                <div
-                    v-if="selectedImages.length"
-                    class="flex flex-col items-center justify-center"
-                >
-                    <!-- Carousel for images -->
-                    <Carousel
-                        :value="selectedImages"
-                        :numVisible="1"
-                        :numScroll="1"
-                        :circular="true"
-                        v-model:page="carouselIndex"
-                        class="w-full"
-                        :showIndicators="selectedImages.length > 1"
-                        :showNavigators="selectedImages.length > 1"
-                        style="max-width: 610px"
-                    >
-                        <template #item="slotProps">
-                            <div
-                                class="flex justify-center items-center w-full h-96"
-                            >
-                                <img
-                                    :src="slotProps.data"
-                                    alt="Imagen hotel"
-                                    class="w-auto h-full max-h-96 object-contain rounded shadow"
-                                />
-                            </div>
-                        </template>
-                    </Carousel>
-                </div>
-                <div v-else class="text-center text-gray-500 py-8">
-                    No hay imágenes para este hotel.
-                </div>
-                <template #footer>
-                    <Button
-                        label="Cerrar"
-                        icon="pi pi-times"
-                        class="p-button-rounded-md p-button-danger"
-                        @click="showImageDialog = false"
+    v-model:visible="showImageDialog"
+    header="Imágenes del hotel"
+    :modal="true"
+    :style="{ width: '700px' }"
+>
+    <div
+        v-if="selectedImages.length"
+        class="flex flex-col items-center justify-center"
+    >
+        <!-- Carousel for images -->
+        <Carousel
+            :value="selectedImages"
+            :numVisible="1"
+            :numScroll="1"
+            :circular="true"
+            v-model:page="carouselIndex"
+            class="w-full"
+            :showIndicators="selectedImages.length > 1"
+            :showNavigators="selectedImages.length > 1"
+            style="max-width: 610px"
+        >
+            <template #item="slotProps">
+                <div class="flex justify-center items-center w-full h-96">
+                    <img
+                        :src="slotProps.data"
+                        alt="Imagen hotel"
+                        class="w-auto h-full max-h-96 object-contain rounded shadow"
                     />
-                </template>
-            </Dialog>
+                </div>
+            </template>
+        </Carousel>
+    </div>
+
+    <div v-else class="text-center text-gray-500 py-8">
+        No hay imágenes para este hotel.
+    </div>
+    
+    <template #footer>
+        <!-- Contenedor centrado -->
+        <div class="flex justify-center w-full">
+            <button
+                @click="showImageDialog = false"
+                class="border border-green-600 text-green-600 hover:bg-green-50 disabled:border-gray-400 disabled:text-gray-400 font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
+            >
+                Cerrar
+            </button>
+        </div>
+    </template>
+</Dialog>
+
         </div>
     </AuthenticatedLayout>
 </template>

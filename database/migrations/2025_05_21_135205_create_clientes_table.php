@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('clientes', function (Blueprint $table) {
             $table->id();
+            $table->string('nombre', 80);
+            $table->string('apellido', 80);
             $table->string('numero_identificacion', 25);
             $table->date('fecha_nacimiento');
-            $table->enum('genero', ['Masculino', 'Femenino']);
-            $table->string('direccion', 150);
+            $table->enum('genero', ['MASCULINO', 'FEMENINO']);
+            $table->string('direccion', 200);
             $table->string('telefono', 20);
-            // Llave foranea a la tablausers
+            // Llave foranea a la tabla users
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             // Llave foranea a la tabla tipos_documentos

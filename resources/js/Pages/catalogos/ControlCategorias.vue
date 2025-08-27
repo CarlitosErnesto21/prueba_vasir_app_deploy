@@ -1,5 +1,5 @@
 <template>
-  <Head title="Categorías de Tours" />
+  <Head title="Control de categorías" />
   <AuthenticatedLayout>
     <Toast />
     <div class="py-6 px-2 sm:px-4 md:px-6 mt-10 mx-auto bg-red-50 shadow-md rounded-lg max-w-3xl">
@@ -91,17 +91,15 @@ const toast = useToast()
 // Datos
 const categorias = ref([])
 const tiposCategoria = [
-  { label: 'Tours', value: 'tours' },
   { label: 'Productos', value: 'productos' }, 
   { label: 'Hoteles', value: 'hoteles' }
 ]
 
 // NUEVAS variables para filtro y búsqueda
-const tipoEstadoSeleccionado = ref('tours')
+const tipoEstadoSeleccionado = ref('productos')
 const busquedaNombreGeneral = ref('')
 
 const tiposEstado = [
-  { label: 'Tours', value: 'tours' },
   { label: 'Productos', value: 'productos' },
   { label: 'Hoteles', value: 'hoteles' }
 ]
@@ -120,8 +118,7 @@ const categoriaEliminar = ref(null)
 const cargarCategoriasPorTipo = async (tipo) => {
   try {
     const ruta = tipo === 'hoteles' ? 'categorias-hoteles' : 
-                tipo === 'productos' ? 'categorias-productos' : 
-                'categorias-tours';
+                 'categorias-productos';
     console.log('Cargando categorías de:', `/api/${ruta}`)
     const response = await axios.get(`/api/${ruta}`)
     console.log('Datos recibidos:', response.data)
@@ -171,8 +168,7 @@ async function guardarCategoria() {
   try {
     const tipo = nuevaCategoria.value.tipo;
     const ruta = tipo === 'hoteles' ? 'categorias-hoteles' : 
-                tipo === 'productos' ? 'categorias-productos' : 
-                'categorias-tours';
+                 'categorias-productos';
     console.log('Enviando petición a:', `/api/${ruta}`, 'con datos:', { nombre: nuevaCategoria.value.nombre })
     const response = await axios.post(`/api/${ruta}`, { nombre: nuevaCategoria.value.nombre })
     console.log('Respuesta:', response)
@@ -205,9 +201,7 @@ async function actualizarCategoria() {
   try {
     const tipo = categoriaEdit.value.tipo;
     const ruta = tipo === 'hoteles' ? 'categorias-hoteles' : 
-                tipo === 'productos' ? 'categorias-productos' : 
-                'categorias-tours';
-
+                'categorias-productos';
     const response = await axios({
       method: 'POST',
       url: `/api/${ruta}/${categoriaEdit.value.id}`,
@@ -242,9 +236,7 @@ async function eliminarCategoria() {
   try {
     const tipo = categoriaEliminar.value.tipo;
     const ruta = tipo === 'hoteles' ? 'categorias-hoteles' : 
-                tipo === 'productos' ? 'categorias-productos' : 
-                'categorias-tours';
-    
+              'categorias-productos';
     console.log('Intentando eliminar:', {
       tipo,
       ruta,
@@ -276,4 +268,3 @@ async function eliminarCategoria() {
   }
 }
 </script>
-
