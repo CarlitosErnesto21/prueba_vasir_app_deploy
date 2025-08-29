@@ -1,27 +1,11 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from "vue";
-import { usePage, Link, router } from "@inertiajs/vue3";
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import {
-    faRoute,
-    faDoorOpen,
-    faCircleXmark,
-    faUserCircle,
-    faChevronCircleDown,
-    faUser,
-    faHotel,
-    faPlaneDeparture,
-    faGear,
-    faBoxesStacked,
-    faClipboardList,
-    faBox,
-    faHouseChimneyUser,
-    faBarsProgress,
-    faListCheck,
-    faFileInvoice,
-    faMap,
-    faBus,
-} from "@fortawesome/free-solid-svg-icons";
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
+import { usePage, Link, router } from '@inertiajs/vue3';
+import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
+import  { faRoute, faDoorOpen, faCircleXmark, faUserCircle, 
+    faChevronCircleDown, faUser, faHotel, faPlaneDeparture, faGear, faBoxesStacked, 
+    faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,faListCheck,
+    faFileInvoice } from "@fortawesome/free-solid-svg-icons";   
 
 import axios from "axios";
 import { route } from "ziggy-js";
@@ -574,19 +558,9 @@ function manageClientes() {
                             @click="router.visit(route('catPTH'))"
                             tabindex="0"
                             @keydown.enter="router.visit(route('catPTH'))"
-                            title="Control de categorias"
-                        >
-                            <FontAwesomeIcon
-                                :icon="faListCheck"
-                                :class="[
-                                    isSidebarCollapsed ? '' : 'mr-3',
-                                    'drop-shadow-md',
-                                ]"
-                                class="h-6"
-                            />
-                            <span v-if="!isSidebarCollapsed"
-                                >Gestión categorías</span
-                            >
+                            title="Control de categorias">
+                            <FontAwesomeIcon :icon="faListCheck" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
+                            <span v-if="!isSidebarCollapsed">Gestión categorías</span>
                         </li>
                     </ul>
                 </nav>

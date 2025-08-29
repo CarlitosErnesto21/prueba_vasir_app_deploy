@@ -12,9 +12,14 @@ class DatabaseSeeder extends Seeder
   
     public function run()
     {
+        $this->command->info('🌱 Iniciando seeders de VASIR...');
+
         $this->call([
-            RolePermissionSeeder::class,
-            SiteSettingsSeeder::class,
+            ControlSeeder::class,          //Roles y permisos
+            SiteSettingsSeeder::class,     //Configuraciones del sitio
         ]);
+
+        $this->command->info('🎊 ¡Base de datos inicializada correctamente!');
+        $this->command->info('📧 El primer usuario registrado será administrador automáticamente');
     }
 }

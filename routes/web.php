@@ -26,7 +26,7 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
         return Inertia::render('catalogos/Transportes');
     })->name('transportes');
 
-    Route::get('catalogos/Productos', function () {
+    Route::get('Catalogos/Productos', function () {
         return Inertia::render('catalogos/Productos');
     })->name('productos');
 
@@ -56,7 +56,7 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
 
     /////////////////////////////////////////////////////////////////
     // Respaldo de Base de Datos (Solo Manual)
-    Route::get('/configuracion/backup', [BackupController::class, 'showBackupPage'])->name('backup');
+    Route::get('/configuracion/backup', [BackupController::class, 'showBackupPage'])->name('backup')->middleware('password.confirm');
     
     // API routes for backup management - Solo para Administradores
     Route::middleware(['auth'])->group(function () {
@@ -112,7 +112,8 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
         return Inertia::render('informes/Informes');
     })->middleware(['auth', 'verified'])->name('informes');
 
-    Route::get('/descargar-informe', [InformePDFController::class, 'descargarInforme']);
+    Route::get('/descargar-informe', [InformePDFController::class, 'descargarInforme'])
+        ->middleware(['auth', 'verified']);
 });
 
 Route::middleware('auth')->group(function () {

@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class DetalleReservaTour extends Model
 {
     use HasFactory;
+    
+    protected $table = 'detalles_reservas_tours';
+    
     protected $fillable = [
         'fecha',
         'cupos_reservados',
