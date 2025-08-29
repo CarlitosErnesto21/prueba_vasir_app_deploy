@@ -588,56 +588,6 @@ function manageClientes() {
                                 >Gestión categorías</span
                             >
                         </li>
-                        <li
-                            class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
-                            :class="
-                                isSidebarCollapsed
-                                    ? 'justify-center'
-                                    : 'justify-start'
-                            "
-                            @click="
-                                router.visit(route('controlPaisesProvincias'))
-                            "
-                            tabindex="0"
-                            @keydown.enter="
-                                router.visit(route('controlPaisesProvincias'))
-                            "
-                            title="Control de paises y provincias"
-                        >
-                            <FontAwesomeIcon
-                                :icon="faMap"
-                                :class="[
-                                    isSidebarCollapsed ? '' : 'mr-3',
-                                    'drop-shadow-md',
-                                ]"
-                                class="h-6"
-                            />
-                            <span v-if="!isSidebarCollapsed"
-                                >Control paises y provincias</span
-                            >
-                        </li>
-                        <li
-                            class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
-                            :class="
-                                isSidebarCollapsed
-                                    ? 'justify-center'
-                                    : 'justify-start'
-                            "
-                            @click="router.visit(route('transportes'))"
-                            tabindex="0"
-                            @keydown.enter="router.visit(route('transportes'))"
-                            title="Transportes"
-                        >
-                            <FontAwesomeIcon
-                                :icon="faBus"
-                                :class="[
-                                    isSidebarCollapsed ? '' : 'mr-3',
-                                    'drop-shadow-md',
-                                ]"
-                                class="h-6"
-                            />
-                            <span v-if="!isSidebarCollapsed">Transportes</span>
-                        </li>
                     </ul>
                 </nav>
                 <ul
