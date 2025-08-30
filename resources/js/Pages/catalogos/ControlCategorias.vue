@@ -1,76 +1,3 @@
-<template>
-  <Head title="Control de categorías" />
-  <AuthenticatedLayout>
-    <Toast />
-    <div class="py-6 px-2 sm:px-4 md:px-6 mt-10 mx-auto bg-red-50 shadow-md rounded-lg max-w-3xl">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-bold text-center w-full">Control de Categorías</h3>
-        <Button label="Agregar Categoría" icon="pi pi-plus" class="p-button-danger" @click="abrirModalAgregar" />
-      </div>
-      <div class="flex flex-col md:flex-row items-center gap-4 mt-10 mb-2">
-        <label for="tipo-estado" class="font-semibold mb-0">Ver categorías:</label>
-        <Dropdown
-          id="tipo-estado"
-          v-model="tipoEstadoSeleccionado"
-          :options="tiposEstado"
-          optionValue="value"
-          optionLabel="label"
-          class="w-36"
-        />
-
-        <label for="busqueda-nombre-general" class="sr-only">Buscar por nombre</label>
-        <InputText
-          id="busqueda-nombre-general"
-          name="busqueda-nombre-general"
-          v-model="busquedaNombreGeneral"
-          placeholder="Buscar por nombre..."
-          class="w-64"
-        />
-      </div>
-      <DataTable :value="categoriasFiltradas" class="mb-4 min-w-[400px] w-full" :rows="8" :paginator="categoriasFiltradas.length > 8" :rowsPerPageOptions="[8, 16]">
-        <Column field="nombre" header="Nombre" />
-        <Column header="Acciones" style="text-align: right; width: 200px">
-          <template #body="slotProps">
-            <div class="flex justify-end">
-              <Button label="Editar" icon="pi pi-pencil" class="p-button-sm p-button-info mr-2" @click="abrirModalEditar(slotProps.data)" />
-              <Button label="Eliminar" icon="pi pi-trash" class="p-button-sm p-button-danger" @click="confirmarEliminar(slotProps.data)" />
-            </div>
-          </template>
-        </Column>
-      </DataTable>
-      <!-- Modal Agregar -->
-      <Dialog v-model:visible="modalAgregar" header="Agregar Categoría" :modal="true" :closable="false" style="width:350px">
-        <div class="flex flex-col gap-3">
-          <Dropdown v-model="nuevaCategoria.tipo" :options="tiposCategoria" optionLabel="label" optionValue="value" placeholder="Tipo de categoría" class="w-full" />
-          <InputText v-model="nuevaCategoria.nombre" placeholder="Nombre" class="w-full" />
-        </div>
-        <template #footer>
-          <Button label="Guardar" icon="pi pi-check" class="p-button-rounded p-button-warn mr-2" @click="guardarCategoria" :disabled="!nuevaCategoria.nombre" />
-          <Button label="Cerrar" icon="pi pi-times" class="p-button-rounded p-button-danger mr-2" @click="modalAgregar = false" />
-        </template>
-      </Dialog>
-     
-      <Dialog v-model:visible="modalEditar" header="Editar Categoría" :modal="true" :closable="false" style="width:350px">
-        <div class="flex flex-col gap-3">
-          <Dropdown v-model="categoriaEdit.tipo" :options="tiposCategoria" optionLabel="label" optionValue="value" placeholder="Tipo de categoría" class="w-full" />
-          <InputText v-model="categoriaEdit.nombre" placeholder="Nombre" class="w-full" />
-        </div>
-        <template #footer>
-          <Button label="Actualizar" icon="pi pi-check" @click="actualizarCategoria" :disabled="!categoriaEdit.nombre" />
-          <Button label="Cerrar" icon="pi pi-times" class="p-button-text" @click="modalEditar = false" />
-        </template>
-      </Dialog>
-      
-      <Dialog v-model:visible="modalEliminar" header="Eliminar Categoría" :modal="true" :closable="false" style="width:350px">
-        <div class="mb-4">¿Seguro que deseas eliminar la categoría <b>{{ categoriaEliminar?.nombre }}</b>?</div>
-        <template #footer>
-          <Button label="Eliminar" icon="pi pi-trash" class="p-button-danger" @click="eliminarCategoria" />
-          <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="modalEliminar = false" />
-        </template>
-      </Dialog>
-    </div>
-  </AuthenticatedLayout>
-</template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
@@ -85,6 +12,8 @@ import InputText from 'primevue/inputtext'
 import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import axios from 'axios'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faEdit, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 
 const toast = useToast()
 
@@ -268,3 +197,97 @@ async function eliminarCategoria() {
   }
 }
 </script>
+
+<template>
+  <Head title="Control de categorías" />
+  <AuthenticatedLayout>
+    <Toast />
+    <div class="py-6 px-2 sm:px-4 md:px-6 mt-10 mx-auto bg-red-50 shadow-md rounded-lg max-w-3xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">Control de Categorías</h3>
+        <Button 
+          label="Agregar Categoría" 
+          icon="pi pi-plus"
+          class="p-button-danger" 
+          @click="abrirModalAgregar" />
+      </div>
+
+      <div class="flex flex-col md:flex-row items-center gap-4 mt-10 mb-2">
+        <label for="tipo-estado" class="font-semibold mb-0">Ver categorías:</label>
+        <Dropdown
+          id="tipo-estado"
+          v-model="tipoEstadoSeleccionado"
+          :options="tiposEstado"
+          optionValue="value"
+          optionLabel="label"
+          class="w-36"
+        />
+
+        <label for="busqueda-nombre-general" class="sr-only">Buscar por nombre</label>
+        <InputText
+          id="busqueda-nombre-general"
+          name="busqueda-nombre-general"
+          v-model="busquedaNombreGeneral"
+          placeholder="Buscar por nombre..."
+          class="w-64"
+        />
+      </div>
+      <DataTable :value="categoriasFiltradas" class="mb-4 min-w-[400px] w-full" :rows="8" :paginator="categoriasFiltradas.length > 8" :rowsPerPageOptions="[8, 16]">
+        <Column field="nombre" header="Nombre" />
+        <Column header="Acciones" :exportable="false">
+          <template #body="slotProps">
+            <div class="flex gap-3">
+              <!-- Botón Editar -->
+              <button
+                class="text-blue-600 hover:text-blue-900 transition-colors"
+                @click="abrirModalEditar(slotProps.data)"
+                title="Editar"
+              >
+                <FontAwesomeIcon :icon="faEdit" class="h-5 w-5" />
+              </button>
+
+              <!-- Botón Eliminar -->
+              <button
+                class="text-red-600 hover:text-red-900 transition-colors"
+                @click="confirmarEliminar(slotProps.data)"
+                title="Eliminar"
+              >
+                <FontAwesomeIcon :icon="faTrashCan" class="h-5 w-5" />
+              </button>
+            </div>
+          </template>
+        </Column>
+      </DataTable>
+      <!-- Modal Agregar -->
+      <Dialog v-model:visible="modalAgregar" header="Agregar Categoría" :modal="true" :closable="false" style="width:350px">
+        <div class="flex flex-col gap-3">
+          <Dropdown v-model="nuevaCategoria.tipo" :options="tiposCategoria" optionLabel="label" optionValue="value" placeholder="Tipo de categoría" class="w-full" />
+          <InputText v-model="nuevaCategoria.nombre" placeholder="Nombre" class="w-full" />
+        </div>
+        <template #footer>
+          <Button label="Guardar" icon="pi pi-check" class="p-button-rounded p-button-warn mr-2" @click="guardarCategoria" :disabled="!nuevaCategoria.nombre" />
+          <Button label="Cerrar" icon="pi pi-times" class="p-button-rounded p-button-danger mr-2" @click="modalAgregar = false" />
+        </template>
+      </Dialog>
+     
+      <Dialog v-model:visible="modalEditar" header="Editar Categoría" :modal="true" :closable="false" style="width:350px">
+        <div class="flex flex-col gap-3">
+          <Dropdown v-model="categoriaEdit.tipo" :options="tiposCategoria" optionLabel="label" optionValue="value" placeholder="Tipo de categoría" class="w-full" />
+          <InputText v-model="categoriaEdit.nombre" placeholder="Nombre" class="w-full" />
+        </div>
+        <template #footer>
+          <Button label="Actualizar" icon="pi pi-check" @click="actualizarCategoria" :disabled="!categoriaEdit.nombre" />
+          <Button label="Cerrar" icon="pi pi-times" class="p-button-text" @click="modalEditar = false" />
+        </template>
+      </Dialog>
+      
+      <Dialog v-model:visible="modalEliminar" header="Eliminar Categoría" :modal="true" :closable="false" style="width:350px">
+        <div class="mb-4">¿Seguro que deseas eliminar la categoría <b>{{ categoriaEliminar?.nombre }}</b>?</div>
+        <template #footer>
+          <Button label="Eliminar" icon="pi pi-trash" class="p-button-danger" @click="eliminarCategoria" />
+          <Button label="Cancelar" icon="pi pi-times" class="p-button-text" @click="modalEliminar = false" />
+        </template>
+      </Dialog>
+    </div>
+  </AuthenticatedLayout>
+</template>
