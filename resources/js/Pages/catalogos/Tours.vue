@@ -1,11 +1,11 @@
 ﻿<script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head } from "@inertiajs/vue3";
+import { Head, Link } from "@inertiajs/vue3";
 import { ref, onMounted, computed, watch, nextTick } from "vue";
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode } from "@primevue/core/api";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faEdit, faEye, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faCar, faEdit, faEye, faTrash } from "@fortawesome/free-solid-svg-icons";
 import DatePicker from "primevue/datepicker";
 import axios from "axios";
 
@@ -778,19 +778,13 @@ const getMaxDateSalida = () => {
             <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4 gap-4">
                 <h3 class="text-lg sm:text-xl font-bold">Catálogo de Tours</h3>
                 <div class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto lg:justify-end">
+                    <Link :href="route('transportes')" 
+                         class="p-button-sm p-button-info w-full sm:w-auto rounded-lg">
+                        <FontAwesomeIcon :icon="faCar" size="lg" class="drop-shadow-md"/>
+                        <span class="ml-2 whitespace-nowrap">Control Transportes</span>
+                    </Link>
                     <Button
-                        label="Control de transportes"
-                        icon="pi pi-car"
-                        class="p-lg p-button-info w-full sm:w-auto"
-                        @click="$inertia.get('/catalogos/Transportes')"
-                    />
-                    <Button
-                        label="Agregar tour"
-                        icon="pi pi-plus"
-                        style="background-color: #ef4444 !important; color: white !important; border: none !important; padding: 0.5rem 1.5rem; border-radius: 0.375rem; transition: all 0.2s ease; font-weight: 500;"
-                        onmouseover="this.style.backgroundColor='#dc2626'"
-                        onmouseout="this.style.backgroundColor='#ef4444'"
-                        class="w-full sm:w-auto"
+                        label="Agregar tour" icon="pi pi-plus" class="p-button-sm p-button-danger w-full sm:w-auto"
                         @click="openNew"
                     />
                 </div>
