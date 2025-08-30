@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AerolineaController;
+use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\EmpleadoController;
 use App\Http\Controllers\HotelController;
@@ -36,3 +37,5 @@ Route::apiResource('inventarios', InventarioController::class);
 Route::apiResource('paises', PaisController::class);
 Route::apiResource('provincias', ProvinciaController::class);
 Route::apiResource('transportes', TransporteController::class);
+Route::apiResource('clientes', ClienteController::class);
+Route::get('tipo-documentos', [App\Http\Controllers\TipoDocumentoController::class, 'index']);
