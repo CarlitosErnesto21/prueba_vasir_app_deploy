@@ -16,7 +16,6 @@ class Venta extends Model
         'fecha',
         'total',
         'estado',
-        'reserva_id',
         'cliente_id',
         'empleado_id',
         'metodo_pago_id',
@@ -26,12 +25,7 @@ class Venta extends Model
         'fecha' => 'date',
     ];
 
-    // Relaciones existentes
-    public function reserva(): BelongsTo
-    {
-        return $this->belongsTo(Reserva::class, 'reserva_id');
-    }
-    
+    // Relaciones existentes    
     public function cliente(): BelongsTo
     {
         return $this->belongsTo(Cliente::class, 'cliente_id');
