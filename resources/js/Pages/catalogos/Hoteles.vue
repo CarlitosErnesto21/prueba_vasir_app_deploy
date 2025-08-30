@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head } from "@inertiajs/vue3";
+import { Head, Link } from "@inertiajs/vue3";
 import { ref, onMounted } from "vue";
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode } from "@primevue/core/api";
@@ -8,7 +8,7 @@ import FileUpload from "primevue/fileupload";
 import Toast from "primevue/toast";
 import Select from "primevue/select";
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faEdit, faEye, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faEye, faGlobe, faMapLocation, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import axios from "axios";
 import Carousel from "primevue/carousel";
 
@@ -336,17 +336,13 @@ const viewImages = (imagenesHotel) => {
         <div class="py-6 px-7 mt-10 mx-auto bg-red-100 shadow-md rounded-lg">
             <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4 gap-4">
                 <h3 class="text-xl font-bold">Catálogo hoteles</h3>
-                <div class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto lg:justify-end">
-                    <Button
-                    label="Control Paises"
-                    icon="pi pi-globe"
-                    class="p-button-sm p-button-info w-full sm:w-auto"
-                    @click="$inertia.get('/catalogos/ControlPaisesProvincias')"
-                    />
-                    <Button
-                        label="Agregar hotel"
-                        icon="pi pi-plus"
-                        class="p-button-sm p-button-danger w-full sm:w-auto"
+                <div class="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto lg:justify-end">
+                    <Link :href="route('controlPaisesProvincias')" 
+                        class="p-button-sm p-button-info w-full sm:w-auto rounded-lg">
+                        <FontAwesomeIcon :icon="faGlobe" size="lg" class="drop-shadow-md"/>
+                        <span class="ml-2 whitespace-nowrap">Control paises</span>
+                    </Link>
+                    <Button label="Agregar hotel" icon="pi pi-plus" class="p-button-sm p-button-danger w-full sm:w-auto"
                         @click="openNew"
                     />
                 </div>
