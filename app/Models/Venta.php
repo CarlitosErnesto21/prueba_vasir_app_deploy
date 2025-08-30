@@ -4,37 +4,72 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Venta extends Model
 {
     use HasFactory;
+    
     protected $fillable = [
         'fecha',
         'total',
+        'estado',
         'reserva_id',
         'cliente_id',
         'empleado_id',
         'metodo_pago_id',
     ];
 
-    public function reserva()
+    protected $casts = [
+        'fecha' => 'date',
+    ];
+
+    // Relaciones existentes
+    public function reserva(): BelongsTo
     {
         return $this->belongsTo(Reserva::class, 'reserva_id');
     }
-    public function cliente()
+    
+    public function cliente(): BelongsTo
     {
         return $this->belongsTo(Cliente::class, 'cliente_id');
     }
-    public function empleado()
+    
+    public function empleado(): BelongsTo
     {
         return $this->belongsTo(Empleado::class, 'empleado_id');
     }
-    public function metodoPago()
+    
+    public function metodoPago(): BelongsTo
     {
         return $this->belongsTo(MetodoPago::class, 'metodo_pago_id');
     }
-    public function detalleVenta()
+    
+    public function detalleVentas(): HasMany
     {
         return $this->hasMany(DetalleVenta::class, 'venta_id');
+    }
+
+    public function movimientosInventario(): MorphMany
+    {
+        return $this->morphMany(Inventario::class, 'referenciable');
+    }
+
+    // ⭐ MÉTODOS DE ESTADO
+    public function estaPendiente(): bool
+    {
+        return $this->estado === 'pendiente';
+    }
+
+    public function estaCompletada(): bool
+    {
+        return $this->estado === 'completada';
+    }
+
+    public function estaCancelada(): bool
+    {
+        return $this->estado === 'cancelada';
     }
 }

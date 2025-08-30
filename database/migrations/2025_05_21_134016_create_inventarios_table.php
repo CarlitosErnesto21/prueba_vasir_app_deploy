@@ -13,8 +13,23 @@ return new class extends Migration
     {
         Schema::create('inventarios', function (Blueprint $table) {
             $table->id();
+            $table->datetime('fecha_movimiento');
             $table->integer('cantidad');
-            $table->enum('estado', ['Disponible', 'Agotado']);
+            $table->enum('tipo_movimiento', ['ENTRADA', 'SALIDA']);
+            $table->string('motivo', 100)->nullable();
+            $table->text('observacion')->nullable();
+
+            //Llaves foráneas
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->unsignedBigInteger('producto_id');
+            $table->foreign('producto_id')->references('id')->on('productos')->onDelete('cascade');
+
+            //Relación polimórfica
+            $table->unsignedBigInteger('referenciable_id')->nullable();
+            $table->string('referenciable_type')->nullable();
+            $table->index(['referenciable_type', 'referenciable_id']);
+
             $table->timestamps();
         });
     }
