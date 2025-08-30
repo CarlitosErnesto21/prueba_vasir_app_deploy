@@ -13,13 +13,11 @@
                             <p class="text-red-100 mt-2">Administre clientes, perfiles y accesos del sistema</p>
                         </div>
                         <div class="flex space-x-3">
-                            <button 
-                                @click="goToTiposDocumento"
-                                class="bg-white text-red-600 px-4 py-2 rounded-lg font-semibold hover:bg-red-50 transition-colors duration-200 flex items-center"
-                            >
-                                <FontAwesomeIcon :icon="faIdCard" class="mr-2" />
-                                Tipos de Documentos
-                            </button>
+                            <Link :href="route('tipodocumentos')" 
+                                class="p-button-sm p-button-info w-full sm:w-auto rounded-lg">
+                                <FontAwesomeIcon :icon="faIdCard" size="lg" class="drop-shadow-md"/>
+                                <span class="ml-2 whitespace-nowrap">Agregar tipo documento</span>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -112,7 +110,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -132,7 +130,7 @@ const showDetallesModal = ref(false);
 const clienteSeleccionado = ref(null);
 const loading = ref(false);
 const clientes = ref([]);
-const tiposDocumento = ref([]);
+const tipoDocumentos = ref([]);
 
 // Cargar datos desde el backend
 const loadClientes = async () => {
@@ -147,11 +145,11 @@ const loadClientes = async () => {
     }
 };
 
-const loadTiposDocumento = async () => {
+const loadTipoDocumentos = async () => {
     try {
         const response = await axios.get('/api/tipo-documentos');
         if (response.data.success) {
-            tiposDocumento.value = response.data.tipos;
+            tipoDocumentos.value = response.data.tipos;
         }
     } catch (error) {
         console.error('Error loading tipos documento:', error);
@@ -161,7 +159,7 @@ const loadTiposDocumento = async () => {
 // Cargar datos al montar el componente
 onMounted(() => {
     loadClientes();
-    loadTiposDocumento();
+    loadTipoDocumentos();
 });
 
 const filteredClientes = computed(() => {
@@ -212,12 +210,6 @@ const getStatusLabel = (status) => {
     return labels[status] || status;
 };
 
-// Función para navegar a tipos de documento
-const goToTiposDocumento = () => {
-    router.visit('/configuracion/tipos-documento');
-};
-
-// Eliminar funciones de crear/editar cliente
 // Función para ver detalles del cliente
 const verDetalles = (cliente) => {
     clienteSeleccionado.value = cliente;

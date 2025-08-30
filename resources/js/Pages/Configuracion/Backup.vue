@@ -6,13 +6,11 @@
                 <div class="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
-                            <button 
-                                @click="router.visit(route('settings'))"
+                            <Link :href="route('settings')" 
                                 class="flex items-center text-white hover:text-red-200 transition-colors duration-200 p-2 rounded-lg hover:bg-red-800 mr-4"
-                                title="Regresar a Configuración"
-                            >
+                                title="Regresar a configuración">
                                 <FontAwesomeIcon :icon="faArrowLeft" class="h-5 w-5" />
-                            </button>
+                            </Link>
                             <div>
                                 <h1 class="text-2xl font-bold text-white flex items-center">
                                     <FontAwesomeIcon :icon="faFileArchive" class="mr-3" />
@@ -137,7 +135,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
