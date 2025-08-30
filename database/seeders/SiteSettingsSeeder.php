@@ -7,61 +7,65 @@ use App\Models\SiteSetting;
 
 class SiteSettingsSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
+        $this->command->info('⚙️ Creando configuraciones del sitio...');
+        
         $settings = [
             [
-                'key' => 'company_mission',
-                'value' => '', // Campo vacío para que el admin lo configure
+                'key' => 'mision',
+                'value' => '',
                 'type' => 'textarea',
-                'label' => 'Misión de la Empresa',
+                'label' => 'Misión',
                 'description' => 'Misión corporativa que aparece en la página Sobre Nosotros'
             ],
             [
-                'key' => 'company_vision',
-                'value' => '', // Campo vacío para que el admin lo configure
+                'key' => 'vision',
+                'value' => '',
                 'type' => 'textarea',
-                'label' => 'Visión de la Empresa',
+                'label' => 'Visión',
                 'description' => 'Visión corporativa que aparece en la página Sobre Nosotros'
             ],
             [
-                'key' => 'company_description',
-                'value' => '', // Campo vacío para que el admin lo configure
+                'key' => 'descripcion_principal',
+                'value' => '',
                 'type' => 'textarea',
-                'label' => 'Descripción de la Empresa',
+                'label' => 'Descripción Principal',
                 'description' => 'Descripción principal que aparece en el encabezado de la página Sobre Nosotros'
             ],
             [
-                'key' => 'auto_backup_enabled',
+                'key' => 'respaldos_automaticos',
                 'value' => 'false',
                 'type' => 'boolean',
-                'label' => 'Habilitar Respaldos Automáticos',
+                'label' => 'Respaldos Automáticos',
                 'description' => 'Activar o desactivar los respaldos automáticos de la base de datos'
             ],
+            
+            // ✅ CONFIGURACIONES PARA ADMIN AUTOMÁTICO
             [
-                'key' => 'backup_frequency',
-                'value' => 'daily',
-                'type' => 'select',
-                'label' => 'Frecuencia de Respaldo',
-                'description' => 'Con qué frecuencia se realizarán los respaldos automáticos'
+                'key' => 'first_admin_created',
+                'value' => 'false',
+                'type' => 'boolean',
+                'label' => 'Primer Administrador Creado',
+                'description' => 'Indica si ya se ha creado el primer administrador del sistema'
             ],
             [
-                'key' => 'backup_retention_days',
-                'value' => '7',
-                'type' => 'number',
-                'label' => 'Días de Retención',
-                'description' => 'Cuántos días mantener los respaldos antes de eliminarlos'
+                'key' => 'auto_admin_registration',
+                'value' => 'true',
+                'type' => 'boolean',
+                'label' => 'Registro Automático de Admin',
+                'description' => 'Permite que el primer usuario registrado sea automáticamente administrador'
             ]
         ];
 
         foreach ($settings as $setting) {
-            SiteSetting::updateOrCreate(
+            SiteSetting::firstOrCreate(
                 ['key' => $setting['key']],
                 $setting
             );
         }
+        
+        $this->command->info('✅ Configuraciones del sitio creadas correctamente');
+        $this->command->info('🔧 Admin automático configurado para el primer usuario');
     }
 }

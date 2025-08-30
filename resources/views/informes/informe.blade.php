@@ -199,20 +199,16 @@
                     @php $totalMes = 0; @endphp
                     @foreach($mesData['tours'] as $tour)
                     @php
-                        $cuposVendidos = rand(10, 14);
-                        $menores = rand(0, $cuposVendidos);
-                        $mayores = $cuposVendidos - $menores;
-                        $subtotal = $cuposVendidos * $tour['precio'];
-                        $totalMes += $subtotal;
+                        $totalMes += $tour['subtotal'];
                     @endphp
                     <tr>
                         <td class="td-informe">{{ $tour['fecha'] }}</td>
                         <td class="td-informe">{{ $tour['nombre'] }}</td>
-                        <td class="td-informe">{{ $menores }}</td>
-                        <td class="td-informe">{{ $mayores }}</td>
-                        <td class="td-informe">{{ $cuposVendidos }}</td>
+                        <td class="td-informe">{{ $tour['menores'] }}</td>
+                        <td class="td-informe">{{ $tour['mayores'] }}</td>
+                        <td class="td-informe">{{ $tour['cupos_vendidos'] }}</td>
                         <td class="td-informe">${{ number_format($tour['precio'], 2) }}</td>
-                        <td class="td-informe">${{ number_format($subtotal, 2) }}</td>
+                        <td class="td-informe">${{ number_format($tour['subtotal'], 2) }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -226,6 +222,18 @@
             @php $totalGeneral += $totalMes; @endphp
         </div>
     @endforeach
+
+    {{-- Mostrar meses sin datos si los hay --}}
+    @if(!empty($mesesSinDatos))
+        <div class="tabla-separador">
+            <div class="mes-titulo" style="color: #666; font-style: italic; text-align: center; margin-top: 20px; margin-bottom: 10px;">
+                Los siguientes meses no tienen registros de tours o ventas:
+            </div>
+            <div style="text-align: center; color: #888; font-size: 0.8rem; margin-bottom: 15px;">
+                {{ implode(', ', $mesesSinDatos) }}
+            </div>
+        </div>
+    @endif
 
     {{-- Tabla de total general --}}
     <div class="tabla-total-general">

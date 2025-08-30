@@ -775,17 +775,25 @@ const getMaxDateSalida = () => {
         <Toast class="z-[9999]" />
         
         <div class="py-4 sm:py-6 px-4 sm:px-7 mt-6 sm:mt-10 mx-auto bg-red-100 shadow-md rounded-lg max-w-full">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-0">
+            <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4 gap-4">
                 <h3 class="text-lg sm:text-xl font-bold">Catálogo de Tours</h3>
-                <Button
-                    label="Agregar tour"
-                    icon="pi pi-plus"
-                    style="background-color: #ef4444 !important; color: white !important; border: none !important; padding: 0.5rem 1.5rem; border-radius: 0.375rem; transition: all 0.2s ease; font-weight: 500;"
-                    onmouseover="this.style.backgroundColor='#dc2626'"
-                    onmouseout="this.style.backgroundColor='#ef4444'"
-                    class="w-full sm:w-auto"
-                    @click="openNew"
-                />
+                <div class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto lg:justify-end">
+                    <Button
+                        label="Control de transportes"
+                        icon="pi pi-car"
+                        class="p-lg p-button-info w-full sm:w-auto"
+                        @click="$inertia.get('/catalogos/Transportes')"
+                    />
+                    <Button
+                        label="Agregar tour"
+                        icon="pi pi-plus"
+                        style="background-color: #ef4444 !important; color: white !important; border: none !important; padding: 0.5rem 1.5rem; border-radius: 0.375rem; transition: all 0.2s ease; font-weight: 500;"
+                        onmouseover="this.style.backgroundColor='#dc2626'"
+                        onmouseout="this.style.backgroundColor='#ef4444'"
+                        class="w-full sm:w-auto"
+                        @click="openNew"
+                    />
+                </div>
             </div>
 
             <DataTable
