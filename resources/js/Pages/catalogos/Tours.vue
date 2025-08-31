@@ -5,7 +5,7 @@ import { ref, onMounted, computed, watch, nextTick } from "vue";
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode } from "@primevue/core/api";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faCar, faEdit, faEye, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faBusSimple, faCar, faEdit, faEye, faFilter, faImagePortrait, faImages, faPencil, faPlus, faTrash, faTrashCan, faXmark } from "@fortawesome/free-solid-svg-icons";
 import DatePicker from "primevue/datepicker";
 import axios from "axios";
 
@@ -348,7 +348,6 @@ const clearFilters = () => {
     filters.value['transporte.nombre'].value = null;
     filters.value.estado.value = null;
     filters.value.fecha_salida.value = null;
-    
     toast.add({ 
         severity: "info", 
         summary: "Filtros limpiados", 
@@ -771,25 +770,22 @@ const getMaxDateSalida = () => {
 <template>
     <Head title="Tours" />
     <AuthenticatedLayout>
-        <!-- Toast Component for notifications with high z-index -->
-        <Toast class="z-[9999]" />
-        
-        <div class="py-4 sm:py-6 px-4 sm:px-7 mt-6 sm:mt-10 mx-auto bg-red-100 shadow-md rounded-lg max-w-full">
+        <Toast class="z-[9999]" />        
+        <div class="py-4 sm:py-6 px-4 sm:px-7 mt-6 sm:mt-10 mx-auto bg-red-50 shadow-md rounded-lg h-screen-full">
             <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4 gap-4">
                 <h3 class="text-lg sm:text-xl font-bold">Catálogo de Tours</h3>
                 <div class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto lg:justify-end">
                     <Link :href="route('transportes')" 
-                         class="p-button-sm p-button-info w-full sm:w-auto rounded-lg">
-                        <FontAwesomeIcon :icon="faCar" size="lg" class="drop-shadow-md"/>
-                        <span class="ml-2 whitespace-nowrap">Control Transportes</span>
+                         class="bg-blue-500 border border-blue-500 p-2 text-sm text-white shadow-md hover:shadow-lg rounded-md hover:-translate-y-1 transition-transform duration-300">
+                        <FontAwesomeIcon :icon="faBusSimple" class="h-4"/>
+                        <span>&nbsp;Control Transportes</span>
                     </Link>
-                    <Button
-                        label="Agregar tour" icon="pi pi-plus" class="p-button-sm p-button-danger w-full sm:w-auto"
-                        @click="openNew"
-                    />
+                    <button
+                        class="bg-red-500 border border-red-500 p-2 text-sm text-white shadow-md hover:shadow-lg rounded-md hover:-translate-y-1 transition-transform duration-300" @click="openNew">
+                        <FontAwesomeIcon :icon="faPlus" class="h-4 w-4 text-white" /><span>&nbsp;Agregar tour</span>
+                    </button>   
                 </div>
             </div>
-
             <DataTable
                 :value="filteredTours"
                 v-model:selection="selectedTours"
@@ -818,114 +814,64 @@ const getMaxDateSalida = () => {
                 }"
             >
                 <template #header>
-                    <div class="bg-white p-3 rounded-lg shadow-sm border mb-4">
-                        <!-- Encabezado compacto -->
+                    <div class="bg-blue-50 p-3 rounded-lg shadow-sm border mb-4">
                         <div class="flex items-center justify-between mb-3">
                             <div class="flex items-center gap-3">
                                 <h3 class="text-base font-medium text-gray-800 flex items-center gap-2">
-                                    <i class="pi pi-filter text-blue-600 text-sm"></i>
-                                    Filtros
+                                    <i class="pi pi-filter text-blue-600 text-sm"></i><span>Filtros</span>
                                 </h3>
                                 <div class="bg-blue-50 border border-blue-200 text-blue-700 px-3 py-1 rounded text-sm font-medium">
                                     {{ filteredTours.length }} resultado{{ filteredTours.length !== 1 ? 's' : '' }}
                                 </div>
                             </div>
-                            <Button
-                                label="Limpiar"
-                                icon="pi pi-filter-slash"
-                                class="p-button-outlined p-button-sm text-xs px-3 py-1"
-                                @click="clearFilters"
-                            />
+                            <button class="bg-red-500 hover:bg-red-600 border border-red-500 px-3 py-1 text-sm text-white shadow-md rounded-md" @click="clearFilters">
+                                <FontAwesomeIcon :icon="faFilter" class="h-4 w-4 text-white" /><span>&nbsp;Limpiar filtros</span>
+                            </button>
                         </div>
-                        
                         <!-- Filtros en dos filas compactas -->
                         <div class="space-y-3">
-                            <!-- Fila 1: Buscador -->
+                            <!-- Fila 1: Búsqueda global -->
                             <div>
-                                <InputText
-                                    v-model="filters['global'].value"
-                                    placeholder="🔍 Buscar tours..."
-                                    class="w-full h-9 text-sm"
-                                />
+                                <InputText v-model="filters['global'].value" placeholder="🔍 Buscar tours..." class="w-full h-9 text-sm" style="background-color: white; border-color: #93c5fd;"/>
                             </div>
                             
-                            <!-- Fila 2: Filtros con mejor responsive -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                            <!-- Fila 2: Filtros con layout específico -->
+                            <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-3">
                                 <!-- Categoría -->
-                                <div class="sm:col-span-1">
-                                    <!--PENDIENTE-->
-                                    <Select
-                                        v-model="selectedCategoria"
-                                        :options="categoriasOptions" 
-                                        optionLabel="label"
-                                        optionValue="value"
-                                        placeholder="Categoría"
-                                        class="w-full h-9 text-sm"
-                                        @change="onCategoriaFilterChange"
-                                        :clearable="true"
+                                <div>
+                                    <Select v-model="selectedCategoria" :options="categoriasOptions" optionLabel="label" optionValue="value" placeholder="Categoría" class="w-full h-9 text-sm" style="background-color: white; border-color: #93c5fd;" 
+                                        @change="onCategoriaFilterChange" :clearable="true"
                                     />
                                 </div>
                                 
                                 <!-- Transporte -->
-                                <div class="sm:col-span-1">
-                                    <Select
-                                        v-model="selectedTipoTransporte"
-                                        :options="tipoTransportes"
-                                        optionLabel="nombre"
-                                        optionValue="id"
-                                        placeholder="Transporte"
-                                        class="w-full h-9 text-sm"
-                                        @change="onTipoTransporteFilterChange"
-                                        :clearable="true"
+                                <div>
+                                    <Select v-model="selectedTipoTransporte" :options="tipoTransportes" optionLabel="nombre" optionValue="id" placeholder="Transporte" class="w-full h-9 text-sm" style="background-color: white; border-color: #93c5fd;"
+                                        @change="onTipoTransporteFilterChange" :clearable="true"
                                     />
                                 </div>
                                 
                                 <!-- Estado -->
-                                <div class="sm:col-span-2 md:col-span-1">
-                                    <Select
-                                        v-model="selectedEstado"
-                                        :options="estadosOptions"
-                                        optionLabel="label"
-                                        optionValue="value"
-                                        placeholder="Estado"
-                                        class="w-full h-9 text-sm"
-                                        @change="onEstadoFilterChange"
-                                        :clearable="true"
+                                <div>
+                                    <Select v-model="selectedEstado" :options="estadosOptions" optionLabel="label" optionValue="value" placeholder="Estado" class="w-full h-9 text-sm" style="background-color: white; border-color: #93c5fd;"
+                                        @change="onEstadoFilterChange" :clearable="true"
                                     />
                                 </div>
                                 
                                 <!-- Fecha desde -->
-                                <div class="sm:col-span-1 md:col-span-1 lg:col-span-1">
-                                    <DatePicker
-                                        v-model="selectedFechaInicio"
-                                        placeholder="Fecha desde"
-                                        class="w-full h-9 text-sm"
-                                        @date-select="onFechaInicioFilterChange"
-                                        @clear="onFechaInicioFilterChange"
-                                        :showIcon="true"
-                                        dateFormat="dd/mm/yy"
-                                        :maxDate="selectedFechaFin"
-                                    />
+                                <div class="col-span-1 sm:col-span-1 md:col-span-1 lg:col-span-1">
+                                    <DatePicker v-model="selectedFechaInicio" placeholder="Fecha desde" class="w-full h-9 text-sm" @date-select="onFechaInicioFilterChange" @clear="onFechaInicioFilterChange" :showIcon="true" dateFormat="dd/mm/yy" :maxDate="selectedFechaFin"/>
                                 </div>
                                 
                                 <!-- Fecha hasta -->
-                                <div class="sm:col-span-1 md:col-span-1 lg:col-span-1">
-                                    <DatePicker
-                                        v-model="selectedFechaFin"
-                                        placeholder="Fecha hasta"
-                                        class="w-full h-9 text-sm"
-                                        @date-select="onFechaFinFilterChange"
-                                        @clear="onFechaFinFilterChange"
-                                        :showIcon="true"
-                                        dateFormat="dd/mm/yy"
-                                        :minDate="selectedFechaInicio"
-                                    />
+                                <div class="col-span-1 sm:col-span-1 md:col-span-1 lg:col-span-1">
+                                    <DatePicker v-model="selectedFechaFin" placeholder="Fecha hasta" class="w-full h-9 text-sm" @date-select="onFechaFinFilterChange" @clear="onFechaFinFilterChange" :showIcon="true" dateFormat="dd/mm/yy" :minDate="selectedFechaInicio"/> 
                                 </div>
                             </div>
                         </div>
                     </div>
                 </template>
-                <Column field="nombre" header="Nombre" sortable class="w-56 min-w-56">
+                <Column field="nombre" header="Nombre" sortable class="w-44 min-w-44">
                     <template #body="slotProps">
                         <div class="text-sm font-medium leading-relaxed">
                             {{ slotProps.data.nombre }}
@@ -956,113 +902,65 @@ const getMaxDateSalida = () => {
                 <Column field="fecha_salida" header="Fecha salida" class="w-36 min-w-36">
                     <template #body="slotProps">
                         <div class="text-sm leading-relaxed">
-                            {{
-                                slotProps.data.fecha_salida
-                                    ? new Date(slotProps.data.fecha_salida).toLocaleString(
-                                          "es-ES",
-                                          {
-                                              day: "2-digit",
-                                              month: "2-digit",
-                                              year: "numeric",
-                                              hour: "2-digit",
-                                              minute: "2-digit",
-                                              hour12: true,
-                                          }
-                                      )
-                                    : ""
-                            }}
+                            {{slotProps.data.fecha_salida ? new Date(slotProps.data.fecha_salida).toLocaleString("es-ES",{day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true,}): ""}}
                         </div>
                     </template>
                 </Column>
                 <Column field="precio" header="Precio" class="w-24 min-w-24">
                     <template #body="slotProps">
                         <div class="text-sm font-medium leading-relaxed">
-                            {{
-                                isNaN(Number(slotProps.data.precio))
-                                    ? ""
-                                    : `$${Number(slotProps.data.precio).toFixed(2)}`
-                            }}
+                            {{isNaN(Number(slotProps.data.precio)) ? "" : `$${Number(slotProps.data.precio).toFixed(2)}` }}
                         </div>
                     </template>
                 </Column>
-                <Column header="Acciones" :exportable="false" class="w-28 min-w-28">
+                <Column :exportable="false" class="w-56 min-w-56">
+                    <template #header>
+                        <div class="text-center w-full font-bold">
+                            Acciones
+                        </div>
+                    </template>
                     <template #body="slotProps">
-                        <div class="flex gap-1 justify-center items-center h-full">
-                            <!-- Botón Editar -->
+                        <div class="flex gap-1 justify-center items-center w-64">
                             <button
-                                title="Editar tour"
-                                class="text-orange-600 hover:text-orange-900 transition-colors p-1.5 text-sm"
-                                @click="editTour(slotProps.data)"
-                            >
-                                <FontAwesomeIcon :icon="faEdit" class="h-4 w-4" />
+                                class="bg-orange-200/30 border py-2 px-1 text-sm shadow-md hover:shadow-lg rounded-md hover:-translate-y-1 transition-transform duration-300"
+                                @click="editTour(slotProps.data)">
+                                <FontAwesomeIcon :icon="faPencil" class="h-4 w-4 text-orange-600" />
+                                &nbsp;Editar
                             </button>
-                            
-                            <!-- Botón Ver imágenes -->
                             <button
-                                title="Ver imágenes"
-                                class="text-blue-600 hover:text-blue-900 transition-colors p-1.5 text-sm"
-                                @click="viewImages(slotProps.data.imagenes)"
-                            >
-                                <FontAwesomeIcon :icon="faEye" class="h-4 w-4" />
+                                class="bg-blue-200/50 border py-2 px-1 text-sm shadow-md hover:shadow-lg rounded-md hover:-translate-y-1 transition-transform duration-300"
+                                @click="viewImages(slotProps.data.imagenes)">
+                                <FontAwesomeIcon :icon="faImages" class="h-4 w-4 text-blue-600" />
+                                &nbsp;Imgs
                             </button>
-                            
-                            <!-- Botón Eliminar -->
                             <button
-                                title="Eliminar tour"
-                                class="text-red-600 hover:text-red-900 transition-colors p-1.5 text-sm"
-                                @click="confirmDeleteTour(slotProps.data)"
-                            >
-                                <FontAwesomeIcon :icon="faTrash" class="h-4 w-4" />
+                                class="bg-red-200/30 border py-2 px-1 text-sm shadow-md hover:shadow-lg rounded-md hover:-translate-y-1 transition-transform duration-300"
+                                @click="confirmDeleteTour(slotProps.data)">
+                                <FontAwesomeIcon :icon="faTrashCan" class="h-4 w-4 text-red-600" />
+                                &nbsp;Eliminar
                             </button>
                         </div>
                     </template>
                 </Column>
             </DataTable>
-
-            <Dialog
-                v-model:visible="dialog"
-                :header="btnTitle + ' Tour'"
-                :modal="true"
-                :style="{ width: '500px' }"
-                :closable="false"
-            >
+            <Dialog v-model:visible="dialog" :header="btnTitle + ' Tour'" :modal="true" :style="{ width: '500px' }" :closable="false">
                 <div class="space-y-4">
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
                             <label for="nombre" class="w-24 flex items-center gap-1">
-                                Nombre:
-                                <span class="text-red-500 font-bold">*</span>
+                                Nombre: <span class="text-red-500 font-bold">*</span>
                             </label>
-                            <InputText
-                                v-model.trim="tour.nombre"
-                                id="nombre"
-                                name="nombre"
-                                :maxlength="200"
-                                :class="{
-                                    'p-invalid': submitted && (!tour.nombre || tour.nombre.length < 10 || tour.nombre.length > 200),
-                                }"
-                                class="flex-1"
-                                @input="validateNombre"
-                            />
+                            <InputText v-model.trim="tour.nombre" id="nombre" name="nombre" :maxlength="200" :class="{'p-invalid': submitted && (!tour.nombre || tour.nombre.length < 10 || tour.nombre.length > 200), }" class="flex-1" @input="validateNombre"/>
                         </div>
-                        <!-- Mensaje cuando tiene menos de 10 caracteres -->
-                        <small
-                            class="text-red-500 ml-28"
-                            v-if="tour.nombre && tour.nombre.length < 10"
-                            >El nombre debe tener al menos 10 caracteres. Actual: {{ tour.nombre.length }}/10</small
-                        >
-                        <!-- Mensaje cuando está cerca del límite o lo excede -->
-                        <small
-                            class="text-orange-500 ml-28"
-                            v-if="tour.nombre && tour.nombre.length >= 180 && tour.nombre.length <= 200"
-                            >Caracteres restantes: {{ 200 - tour.nombre.length }}</small
-                        >
-                        <!-- Mensaje de error cuando está vacío y se intentó enviar -->
-                        <small
-                            class="text-red-500 ml-28"
-                            v-if="submitted && !tour.nombre"
-                            >El nombre es obligatorio.</small
-                        >
+                        <small class="text-red-500 ml-28" v-if="tour.nombre && tour.nombre.length < 10">
+                            El nombre debe tener al menos 10 caracteres. Actual: {{ tour.nombre.length }}/10
+                        </small>
+                        <small class="text-orange-500 ml-28" v-if="tour.nombre && tour.nombre.length >= 180 && tour.nombre.length <= 200">
+                            Caracteres restantes: {{ 200 - tour.nombre.length }}
+                        </small>
+                        <small class="text-red-500 ml-28" v-if="submitted && !tour.nombre">
+                            El nombre es obligatorio.
+                        </small>
                     </div>
                     <div class="w-full flex flex-col">
                         <div class="flex items-start gap-4">
@@ -1070,43 +968,23 @@ const getMaxDateSalida = () => {
                                 Incluye:
                             </label>
                             <div class="flex-1">
-                                <!-- Input para agregar nuevo item -->
                                 <div class="flex gap-2 mb-3">
-                                    <input
-                                        v-model="nuevoItemIncluye"
-                                        type="text"
-                                        placeholder="Agregar nuevo elemento..."
+                                    <input v-model="nuevoItemIncluye" type="text" placeholder="Agregar nuevo elemento..."
                                         class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         @keyup.enter="agregarItemIncluye"
                                     />
-                                    <button
-                                        type="button"
-                                        @click="agregarItemIncluye"
-                                        :disabled="!nuevoItemIncluye.trim()"
-                                        class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        <i class="pi pi-plus"></i>
+                                    <button type="button" @click="agregarItemIncluye" :disabled="!nuevoItemIncluye.trim()" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors">
+                                        <FontAwesomeIcon :icon="faPlus" class="h-5"/>
                                     </button>
                                 </div>
-                                
-                                <!-- Lista de items -->
                                 <div class="space-y-2 max-h-40 overflow-y-auto">
-                                    <div
-                                        v-for="(item, index) in incluyeLista"
-                                        :key="index"
-                                        class="flex items-center justify-between bg-gray-50 p-2 rounded-md border"
-                                    >
+                                    <div v-for="(item, index) in incluyeLista" :key="index" class="flex items-center justify-between bg-gray-50 p-2 rounded-md border">
                                         <span class="flex-1">{{ item }}</span>
-                                        <button
-                                            type="button"
-                                            @click="eliminarItemIncluye(index)"
-                                            class="text-red-500 hover:text-red-700 p-1"
-                                        >
-                                            <i class="pi pi-times"></i>
+                                        <button type="button" @click="eliminarItemIncluye(index)" class="text-red-500 hover:text-red-700 p-1">
+                                            <FontAwesomeIcon :icon="faXmark" class="h-5"/>
                                         </button>
                                     </div>
                                 </div>
-                                
                                 <!-- Mensaje cuando no hay items -->
                                 <div v-if="incluyeLista.length === 0" class="text-gray-500 text-sm mt-2">
                                     Sin elementos agregados.
@@ -1120,44 +998,24 @@ const getMaxDateSalida = () => {
                             <div class="flex-1">
                                 <!-- Input para agregar nuevo item -->
                                 <div class="flex gap-2 mb-3">
-                                    <input
-                                        v-model="nuevoItemNoIncluye"
-                                        type="text"
-                                        placeholder="Agregar nuevo elemento..."
+                                    <input v-model="nuevoItemNoIncluye" type="text" placeholder="Agregar nuevo elemento..."
                                         class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        @keyup.enter="agregarItemNoIncluye"
-                                    />
-                                    <button
-                                        type="button"
-                                        @click="agregarItemNoIncluye"
-                                        :disabled="!nuevoItemNoIncluye.trim()"
-                                        class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        <i class="pi pi-plus"></i>
+                                        @keyup.enter="agregarItemNoIncluye"/>
+                                    <button type="button" @click="agregarItemNoIncluye" :disabled="!nuevoItemNoIncluye.trim()"
+                                        class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors">
+                                        <FontAwesomeIcon :icon="faPlus" class="h-5"/>
                                     </button>
                                 </div>
-                                
-                                <!-- Lista de items -->
                                 <div class="space-y-2 max-h-40 overflow-y-auto" v-if="noIncluyeLista.length > 0">
-                                    <div
-                                        v-for="(item, index) in noIncluyeLista"
-                                        :key="index"
-                                        class="flex items-center justify-between bg-gray-50 p-2 rounded-md border"
-                                    >
+                                    <div v-for="(item, index) in noIncluyeLista" :key="index" class="flex items-center justify-between bg-gray-50 p-2 rounded-md border">
                                         <span class="flex-1">{{ item }}</span>
-                                        <button
-                                            type="button"
-                                            @click="eliminarItemNoIncluye(index)"
-                                            class="text-red-500 hover:text-red-700 p-1"
-                                        >
-                                            <i class="pi pi-times"></i>
+                                        <button type="button" @click="eliminarItemNoIncluye(index)" class="text-red-500 hover:text-red-700 p-1">
+                                            <FontAwesomeIcon :icon="faXmark" class="h-5"/>
                                         </button>
                                     </div>
                                 </div>
-                                
-                                <!-- Mensaje cuando no hay items (opcional para este campo) -->
                                 <div v-if="noIncluyeLista.length === 0" class="text-gray-500 text-sm mt-2">
-                                    Sin elementos. Este campo es opcional.
+                                    Sin elementos agregados.
                                 </div>
                             </div>
                         </div>
@@ -1168,20 +1026,8 @@ const getMaxDateSalida = () => {
                                 Punto de salida:
                                 <span class="text-red-500 font-bold">*</span>
                             </label>
-                            <InputText
-                                v-model.trim="tour.punto_salida"
-                                id="punto_salida"
-                                name="punto_salida"
-                                :maxlength="200"
-                                :class="{
-                                    'p-invalid':
-                                        submitted && (!tour.punto_salida || tour.punto_salida.length < 5),
-                                }"
-                                class="flex-1"
-                                @input="validatePuntoSalida"
-                            />
+                            <InputText v-model.trim="tour.punto_salida" id="punto_salida" name="punto_salida" :maxlength="200" :class="{'p-invalid': submitted && (!tour.punto_salida || tour.punto_salida.length < 5), }" class="flex-1" @input="validatePuntoSalida"/>
                         </div>
-                        <!-- Mensaje cuando tiene menos de 5 caracteres -->
                         <small
                             class="text-red-500 ml-28"
                             v-if="tour.punto_salida && tour.punto_salida.length < 5"
@@ -1470,11 +1316,9 @@ const getMaxDateSalida = () => {
                                 alt="Vista previa"
                                 class="w-full h-full object-cover rounded border"
                             />
-                            <button
-                                @click="removeImage(index)"
-                                class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow"
-                                style="transform: translate(50%, -50%)"
-                            >
+                            <button @click="removeImage(index)"
+                                class="absolute top-2 right-2 bg-gray-600/80 hover:bg-gray-700/80 text-white font-bold py-1 px-2 rounded-full shadow"
+                                style="transform: translate(50%, -50%)">
                                 <i class="pi pi-times text-xs"></i>
                             </button>
                         </div>
