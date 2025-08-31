@@ -5,7 +5,7 @@ import { ref, onMounted, computed, watch, nextTick } from "vue";
 import { useToast } from "primevue/usetoast";
 import { FilterMatchMode } from "@primevue/core/api";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faArrowLeft, faBusSimple, faCheck, faFilter, faPencil, faSignOut, faTrashCan, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faBusSimple, faCheck, faExclamationTriangle, faFilter, faPencil, faSignOut, faTrashCan, faXmark } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
 const toast = useToast();
@@ -127,7 +127,6 @@ const saveOrUpdate = async () => {
         toast.add({ severity: "warn", summary: "Campos requeridos", detail: "La capacidad debe ser al menos 1.", life: 4000 });
         return;
     }
-
     try {
         let response;
         if (!transporte.value.id) {
@@ -195,7 +194,6 @@ const clearFilters = () => {
     filters.value.capacidad.value = null;
 };
 </script>
-
 <template>
     <Head title="Catálogo de Transportes" />
     <AuthenticatedLayout>   
@@ -224,7 +222,7 @@ const clearFilters = () => {
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                 currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} transportes"
                 class="overflow-x-auto max-w-full"
-                style="display: block; max-width: 84vw"
+                style="display: block; max-width: 84vw;"
                 responsiveLayout="scroll"
                 :pt="{
                     root: { class: 'text-sm' },
@@ -262,23 +260,33 @@ const clearFilters = () => {
                         </div>
                     </div>
                 </template>
-                <Column field="nombre" header="Nombre" sortable class="w-56 min-w-56">
+                <Column field="nombre" header="Nombre" sortable class="w-40 min-w-34">
                     <template #body="slotProps">
                         <div class="text-sm font-medium leading-relaxed">
                             {{ slotProps.data.nombre }}
                         </div>
                     </template>
                 </Column>
-                <Column field="capacidad" header="Capacidad" class="w-40 min-w-32">
+                <Column field="capacidad" class="w-40 min-w-20">
+                    <template #header>
+                        <div class="text-center w-full font-bold">
+                            Capacidad
+                        </div>
+                    </template>
                     <template #body="slotProps">
-                        <div class="text-sm leading-relaxed">
+                        <div class="text-sm leading-relaxed text-center">
                             {{ slotProps.data.capacidad }}
                         </div>
                     </template>
                 </Column>
-                <Column header="Acciones" :exportable="false" class="w-40 min-w-56 text-center sm:text-center">
+                <Column :exportable="false" class="w-40 min-w-52">
+                    <template #header>
+                        <div class="text-center w-full font-bold">
+                            Acciones
+                        </div>
+                    </template>
                     <template #body="slotProps">
-                        <div class="flex gap-2 h-full">
+                        <div class="flex gap-2 h-full justify-center items-center">
                             <button
                                 class="bg-orange-200/30 border p-2 text-sm shadow-md hover:shadow-lg rounded-md hover:-translate-y-1 transition-transform duration-300"
                                 @click="editTransporte(slotProps.data)">
@@ -337,9 +345,13 @@ const clearFilters = () => {
                     </div>
                 </template>
             </Dialog>
-            <Dialog v-model:visible="deleteDialog" header="Confirmar" :modal="true" :style="{ width: '350px' }" :closable="false">
-                <div class="flex items-center gap-3"><i class="pi pi-exclamation-triangle text-gray-800" style="font-size: 30px;"></i>
-                    <span>¿Eliminar el transporte <b>{{ transporte.nombre }}</b>?</span>
+            <Dialog v-model:visible="deleteDialog" header="Eliminar transporte" :modal="true" :style="{ width: '350px' }" :closable="false">
+                <div class="flex items-center gap-3">
+                    <FontAwesomeIcon :icon="faExclamationTriangle" class="h-8 w-8 text-red-500" />
+                    <div class="flex flex-col">
+                        <span>¿Estás seguro de eliminar el transporte: <b>{{ transporte.nombre }}</b>?</span>
+                        <span class="text-red-600 text-sm font-medium mt-1">Esta acción es irreversible.</span>
+                    </div>
                 </div>
                 <template #footer>
                     <div class="flex justify-center gap-4 w-full">
