@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('productos', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre', 80);
+            $table->string('nombre', 100);
             $table->string('descripcion', 255);
-            $table->decimal('precio', 8, 2);
-            // llave foranea a categorias_productos e inventario
-            $table->unsignedBigInteger('inventario_id');
-            $table->foreign('inventario_id')->references('id')->on('inventarios')->onDelete('cascade');
+            $table->decimal('precio', 6, 2);
+            $table->integer('stock_actual')->default(0);
+            $table->integer('stock_minimo')->default(0);
+
+            //Llaves foráneas
             $table->unsignedBigInteger('categoria_id');
             $table->foreign('categoria_id')->references('id')->on('categorias_productos')->onDelete('cascade');
             $table->timestamps();

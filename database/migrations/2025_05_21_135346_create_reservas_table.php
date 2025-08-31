@@ -20,8 +20,8 @@ return new class extends Migration
             $table->decimal('total', 7, 2);
             // llave foraneea a la tabla clientes y empleadosa
             $table->unsignedBigInteger('cliente_id');
-            $table->unsignedBigInteger('empleado_id');
             $table->foreign('cliente_id')->references('id')->on('clientes')->onDelete('cascade');
+            $table->unsignedBigInteger('empleado_id');            
             $table->foreign('empleado_id')->references('id')->on('empleados')->onDelete('cascade');
             $table->timestamps();
         });

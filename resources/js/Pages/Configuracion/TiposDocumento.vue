@@ -10,13 +10,11 @@
                     <div class="p-6 bg-white border-b border-gray-200">
                         <div class="flex justify-between items-center">
                             <div class="flex items-center space-x-4">
-                                <button 
-                                    @click="router.visit(route('clientes'))"
+                                <Link :href="route('clientes')" 
                                     class="flex items-center text-gray-600 hover:text-red-600 transition-colors duration-200 p-2 rounded-lg hover:bg-gray-100"
-                                    title="Regresar a Clientes"
-                                >
+                                    title="Regresar a Clientes">
                                     <FontAwesomeIcon :icon="faArrowLeft" class="h-5 w-5" />
-                                </button>
+                                </Link>
                                 <div>
                                     <h3 class="text-lg font-medium text-gray-900">Tipos de Documento</h3>
                                     <p class="mt-1 text-sm text-gray-500">
@@ -210,7 +208,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
 import Toast from 'primevue/toast';
@@ -224,10 +222,11 @@ import {
     faFileAlt,
     faArrowLeft
 } from '@fortawesome/free-solid-svg-icons';
+import { route } from 'ziggy-js';
 
 // Props desde el controller
 const props = defineProps({
-    tiposDocumentos: Array
+    tipoDocumentos: Array
 });
 
 // Toast para notificaciones
@@ -242,7 +241,7 @@ const showCreateModal = ref(false);
 const showEditModal = ref(false);
 const editingTipo = ref(null);
 const loading = ref(false);
-const tipos = ref(props.tiposDocumentos || []);
+const tipos = ref(props.tipoDocumentos || []);
 
 const tipoForm = ref({
     nombre: ''
@@ -263,7 +262,7 @@ const tiposDisponibles = computed(() => tipos.value.filter(t => (t.clientes_coun
 // Métodos
 const loadTipos = async () => {
     try {
-        const response = await axios.get('/api/tipos-documento');
+        const response = await axios.get('/api/tipo-documentos');
         if (response.data.success) {
             tipos.value = response.data.tipos;
         }
@@ -280,7 +279,7 @@ const loadTipos = async () => {
 const createTipo = async () => {
     loading.value = true;
     try {
-        const response = await axios.post('/api/tipos-documento', tipoForm.value);
+        const response = await axios.post('/api/tipo-documentos', tipoForm.value);
         
         if (response.data.success) {
             tipos.value.push(response.data.tipo_documento);
@@ -315,7 +314,7 @@ const updateTipo = async () => {
     
     loading.value = true;
     try {
-        const response = await axios.put(`/api/tipos-documento/${editingTipo.value.id}`, tipoForm.value);
+        const response = await axios.put(`/api/tipo-documentos/${editingTipo.value.id}`, tipoForm.value);
         
         if (response.data.success) {
             const index = tipos.value.findIndex(t => t.id === editingTipo.value.id);
@@ -352,7 +351,7 @@ const deleteTipo = async (tipo) => {
         rejectLabel: 'Cancelar',
         accept: async () => {
             try {
-                const response = await axios.delete(`/api/tipos-documento/${tipo.id}`);
+                const response = await axios.delete(`/api/tipo-documentos/${tipo.id}`);
                 if (response.data.success) {
                     const index = tipos.value.findIndex(t => t.id === tipo.id);
                     if (index !== -1) {

@@ -262,13 +262,11 @@
                                     <p class="text-sm text-gray-600 mb-4">
                                         Cree un respaldo completo de la base de datos para proteger su información.
                                     </p>
-                                    <button 
-                                        @click="goToBackup"
-                                        class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center shadow-lg"
-                                    >
+                                    <Link :href="route('backups')" 
+                                        class="px-6 py-3 bg-red-600 text-white w-56 rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center shadow-lg">
                                         <FontAwesomeIcon :icon="faFileArchive" class="mr-2" />
                                         Crear Respaldo
-                                    </button>
+                                    </Link>
                                 </div>
                                 <div>
                                     <h3 class="text-lg font-medium text-gray-800 mb-2">Información de la Base de Datos</h3>
@@ -315,7 +313,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import { useToast } from 'primevue/usetoast';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
@@ -440,9 +438,5 @@ const resetSettings = () => {
     if (confirm('¿Está seguro de restablecer todos los cambios?')) {
         settings.value = {...originalSettings.value};
     }
-};
-
-const goToBackup = () => {
-    router.visit(route('backup'));
 };
 </script>
