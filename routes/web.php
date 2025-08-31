@@ -3,7 +3,6 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InformePDFController;
 use App\Http\Controllers\RoleController;
-use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TourController;
@@ -12,61 +11,31 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Middleware\RutasAdmin;
 
-Route::get('/', function () {
-    return Inertia::render('Inicio');
-})->name('inicio');
+//Ruta principal
+Route::get('/', fn() => Inertia::render('Inicio'))->name('inicio');
 
+// Rutas protegidas
 Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
 
-    Route::get('transportes', function () {
-        return Inertia::render('catalogos/Transportes');
-    })->name('transportes');
+    Route::get('dashboard', fn() => Inertia::render('Dashboard'))->name('dashboard');
+    Route::get('transportes', fn() => Inertia::render('catalogos/Transportes'))->name('transportes');
+    Route::get('productos', fn() => Inertia::render('catalogos/Productos'))->name('productos');
+    Route::get('hoteles', fn() => Inertia::render('catalogos/Hoteles'))->name('hoteles');
+    Route::get('gestion-reserva-tours', fn() => Inertia::render('catalogos/ReservaTours'))->name('reservatours');
+    Route::get('tours', fn() => Inertia::render('catalogos/Tours'))->name('tours');
+    Route::get('aerolineas', fn() => Inertia::render('catalogos/Aerolineas'))->name('aerolineas');
+    Route::get('categorias', fn() => Inertia::render('catalogos/ControlCategorias'))->name('catPTH');
+    Route::get('control-paises-provincias', fn() => Inertia::render('catalogos/ControlPaisesProvincias'))->name('controlPaisesProvincias');
+    Route::get('tipo-documentos', fn() => Inertia::render('Configuracion/TiposDocumento'))->name('tipodocumentos');
+    Route::get('generar-informes', fn() => Inertia::render('Informes/Informes'))->name('informes');
+    Route::get('clientes', fn() => Inertia::render('Configuracion/Clientes'))->name('clientes');
 
-    Route::get('productos', function () {
-        return Inertia::render('catalogos/Productos');
-    })->name('productos');
-
-    Route::get('hoteles', function () {
-        return Inertia::render('catalogos/Hoteles');
-    })->name('hoteles');
-
-    Route::get('gestion-reserva-tours', function () {
-        return Inertia::render('catalogos/ReservaTours');
-    })->name('reservatours');
-
-    Route::get('tours', function () {
-        return Inertia::render('catalogos/Tours');
-    })->name('tours');
-
-    Route::get('aerolineas', function () {
-        return Inertia::render('catalogos/Aerolineas');
-    })->name('aerolineas');
-
-    Route::get('categorias', function () {
-        return Inertia::render('catalogos/ControlCategorias');
-    })->name('catPTH');
-
-    Route::get('control-paises-provincias', function () {
-        return Inertia::render('catalogos/ControlPaisesProvincias');
-    })->name('controlPaisesProvincias');
-
-    Route::get('tipo-documentos', function () {
-        return Inertia::render('Configuracion/TiposDocumento');
-    })->name('tipodocumentos');
-
-    Route::get('generar-informes', function () {
-        return Inertia::render('Informes/Informes');
-    })->name('informes');
-
+    //Rutas para informes
     Route::get('/descargar-informe', [InformePDFController::class, 'descargarInforme']);
-
     Route::get('/configuracion/backup', [BackupController::class, 'showBackupPage'])->name('backups')->middleware('password.confirm');
-
     Route::get('/configuracion/roles', [RoleController::class, 'index'])->name('roles')->middleware('role:admin');
-    
+
+    //Rutas para gestión de roles
     Route::post('/roles/users/{user}/update-roles', [RoleController::class, 'updateUserRoles'])->middleware('role:admin');
     Route::post('/roles/users/{user}/assign-role', [RoleController::class, 'assignRole'])->middleware('role:admin');
     Route::post('/roles/users/{user}/remove-role', [RoleController::class, 'removeRole'])->middleware('role:admin');
@@ -81,53 +50,26 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
     // Configuración del Sistema - Solo para Administradores
     Route::get('/configuracion/settings', [SettingsController::class, 'index'])->name('settings')->middleware('role:admin');
     Route::post('/configuracion/settings', [SettingsController::class, 'update'])->name('settings.update')->middleware('role:admin');
-    
-    // Gestión de Clientes
-    Route::get('/configuracion/clientes', [ClienteController::class, 'index'])->name('clientes');
-    
-    // API routes for client management
-    Route::get('/api/clientes', [ClienteController::class, 'getClientes']);
-    Route::post('/api/clientes', [ClienteController::class, 'store']);
-    Route::put('/api/clientes/{cliente}', [ClienteController::class, 'update']);
-    Route::patch('/api/clientes/{cliente}/toggle-status', [ClienteController::class, 'toggleStatus']);
-    Route::delete('/api/clientes/{cliente}', [ClienteController::class, 'destroy']);
-    Route::get('/api/tipos-documento-options', [ClienteController::class, 'getTiposDocumento']);
-
-    // Gestión de Tipos de Documento
-    //Route::get('/configuracion/tipos-documento', [TipoDocumentoController::class, 'index'])->name('tipos-documento');
 });
 
+//Rutas de perfil
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Rutas para vistas de clientes //***NO MODIFICAR ESTAS RUTAS***//
-Route::get('paquetes', function () {
-    return Inertia::render('vistasClientes/Paquetes');
-})->name('paquetes');
+//Rutas de clientes
+Route::get('paquetes', fn() => Inertia::render('vistasClientes/Paquetes'))->name('paquetes');
+Route::get('reservaciones', fn() => Inertia::render('vistasClientes/Reservaciones'))->name('reservaciones');
+Route::get('tours-nacionales', fn() => Inertia::render('vistasClientes/ToursNacionales'))->name('tours-nacionales');
+Route::get('tours-internacionales', fn() => Inertia::render('vistasClientes/ToursInternacionales'))->name('tours-internacionales');
+Route::get('tienda', fn() => Inertia::render('vistasClientes/Tienda'))->name('tienda');
+Route::get('sobre-nosotros', [SobreNosotrosController::class, 'index'])->name('sobre-nosotros');
+Route::get('contactos', fn() => Inertia::render('vistasClientes/Contactos'))->name('contactos');
 
-Route::get('reservaciones', function () {
-    return Inertia::render('vistasClientes/Reservaciones');
-})->name('reservaciones');
-
-Route::get('tours-nacionales', [TourController::class, 'toursNacionales'])->name('tours-nacionales');
-
-Route::get('tours-internacionales', [TourController::class, 'toursInternacionales'])->name('tours-internacionales');
-
-// Rutas para vista detallada de tours
+//Estas rutas muestran un tour ya sea nacional o internacional
 Route::get('/tours-nacionales/{id}', [TourController::class, 'mostrarTourNacional'])->name('tour-nacional.show');
 Route::get('/tours-internacionales/{id}', [TourController::class, 'mostrarTourInternacional'])->name('tour-internacional.show');
-
-Route::get('tienda', function () {
-    return Inertia::render('vistasClientes/Tienda');
-})->name('tienda');
-
-Route::get('sobre-nosotros', [SobreNosotrosController::class, 'index'])->name('sobre-nosotros');
-
-Route::get('contactos', function () {
-    return Inertia::render('vistasClientes/Contactos');
-})->name('contactos');
 
 require __DIR__.'/auth.php';
