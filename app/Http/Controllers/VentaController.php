@@ -3,17 +3,33 @@
 namespace App\Http\Controllers;
 
 use App\Models\Venta;
+use App\Models\Producto;
+use App\Models\Cliente;
+use App\Models\Empleado;
+use App\Models\MetodoPago;
+use App\Services\InventarioService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Exception;
 
 class VentaController extends Controller
 {
+    protected $inventarioService;
+
+    public function __construct(InventarioService $inventarioService)
+    {
+        $this->inventarioService = $inventarioService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        // Obtener todas las ventas con sus relaciones
-        $ventas = Venta::with(['reserva', 'cliente', 'empleado', 'metodoPago', 'detalleVenta'])->get();
+        // ✅ CORREGIDO: detalleVentas (plural) y sin reserva (según tu migración)
+        $ventas = Venta::with(['cliente', 'empleado', 'metodoPago', 'detalleVentas.producto.categoria'])
+            ->orderBy('fecha', 'desc')
+            ->get();
         return response()->json($ventas);
     }
 
@@ -22,7 +38,22 @@ class VentaController extends Controller
      */
     public function create()
     {
-        //
+        // Obtener datos necesarios para crear venta
+        $clientes = Cliente::select('id', 'nombre', 'telefono')->orderBy('nombre')->get();
+        $empleados = Empleado::select('id', 'nombre')->orderBy('nombre')->get();
+        $metodosPago = MetodoPago::select('id', 'nombre')->orderBy('nombre')->get();
+        $productos = Producto::with('categoria')
+            ->where('stock_actual', '>', 0)
+            ->select('id', 'nombre', 'precio', 'stock_actual', 'categoria_id')
+            ->orderBy('nombre')
+            ->get();
+
+        return response()->json([
+            'clientes' => $clientes,
+            'empleados' => $empleados,
+            'metodos_pago' => $metodosPago,
+            'productos' => $productos
+        ]);
     }
 
     /**
@@ -30,23 +61,64 @@ class VentaController extends Controller
      */
     public function store(Request $request)
     {
-        // Validar los datos del formulario
         $validated = $request->validate([
             'fecha' => 'required|date',
-            'total' => 'required|numeric|min:0',
-            'reserva_id' => 'required|exists:reservas,id',
             'cliente_id' => 'required|exists:clientes,id',
             'empleado_id' => 'required|exists:empleados,id',
             'metodo_pago_id' => 'required|exists:metodos_pagos,id',
+            // ✅ CORREGIDO: productos como array (no total directo)
+            'productos' => 'required|array|min:1',
+            'productos.*.producto_id' => 'required|exists:productos,id',
+            'productos.*.cantidad' => 'required|integer|min:1',
+            'productos.*.precio_unitario' => 'required|numeric|min:0',
         ]);
 
-        // Crear una nueva venta
-        $venta = Venta::create($validated);
+        try {
+            $venta = DB::transaction(function () use ($validated) {
+                // ✅ CORREGIDO: estado inicial pendiente, sin reserva_id
+                $venta = Venta::create([
+                    'fecha' => $validated['fecha'],
+                    'cliente_id' => $validated['cliente_id'],
+                    'empleado_id' => $validated['empleado_id'],
+                    'metodo_pago_id' => $validated['metodo_pago_id'],
+                    'estado' => 'pendiente',  // ✅ Estado inicial
+                    'total' => 0
+                ]);
 
-        return response()->json([
-            'message' => 'Venta creada exitosamente',
-            'venta' => $venta,
-        ]);
+                $total = 0;
+
+                // Crear detalles de venta
+                foreach ($validated['productos'] as $productoData) {
+                    $subtotal = $productoData['cantidad'] * $productoData['precio_unitario'];
+                    
+                    // ✅ CORREGIDO: usar detalleVentas
+                    $venta->detalleVentas()->create([
+                        'producto_id' => $productoData['producto_id'],
+                        'cantidad' => $productoData['cantidad'],
+                        'precio_unitario' => $productoData['precio_unitario'],
+                        'subtotal' => $subtotal
+                    ]);
+
+                    $total += $subtotal;
+                }
+
+                // Actualizar total de la venta
+                $venta->update(['total' => $total]);
+
+                return $venta;
+            });
+
+            return response()->json([
+                'message' => 'Venta creada exitosamente',
+                'venta' => $venta->load(['cliente', 'empleado', 'metodoPago', 'detalleVentas.producto']),
+            ], 201);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al crear venta: ' . $e->getMessage(),
+                'error' => true
+            ], 500);
+        }
     }
 
     /**
@@ -54,8 +126,8 @@ class VentaController extends Controller
      */
     public function show(Venta $venta)
     {
-        // Mostrar los detalles de una venta específica con sus relaciones
-        $venta->load(['reserva', 'cliente', 'empleado', 'metodoPago', 'detalleVenta']);
+        // ✅ CORREGIDO: detalleVentas y sin reserva
+        $venta->load(['cliente', 'empleado', 'metodoPago', 'detalleVentas.producto.categoria']);
         return response()->json($venta);
     }
 
@@ -64,7 +136,31 @@ class VentaController extends Controller
      */
     public function edit(Venta $venta)
     {
-        //
+        // Solo permitir editar ventas pendientes
+        if ($venta->estado !== 'pendiente') {
+            return response()->json([
+                'error' => 'Solo se pueden editar ventas pendientes'
+            ], 422);
+        }
+
+        $venta->load(['cliente', 'empleado', 'metodoPago', 'detalleVentas.producto']);
+        
+        $clientes = Cliente::select('id', 'nombre')->orderBy('nombre')->get();
+        $empleados = Empleado::select('id', 'nombre')->orderBy('nombre')->get();
+        $metodosPago = MetodoPago::select('id', 'nombre')->orderBy('nombre')->get();
+        $productos = Producto::with('categoria')
+            ->where('stock_actual', '>', 0)
+            ->select('id', 'nombre', 'precio', 'stock_actual', 'categoria_id')
+            ->orderBy('nombre')
+            ->get();
+
+        return response()->json([
+            'venta' => $venta,
+            'clientes' => $clientes,
+            'empleados' => $empleados,
+            'metodos_pago' => $metodosPago,
+            'productos' => $productos
+        ]);
     }
 
     /**
@@ -72,23 +168,112 @@ class VentaController extends Controller
      */
     public function update(Request $request, Venta $venta)
     {
-        // Validar los datos del formulario
+        // Solo permitir actualizar ventas pendientes
+        if ($venta->estado !== 'pendiente') {
+            return response()->json([
+                'error' => 'Solo se pueden actualizar ventas pendientes'
+            ], 422);
+        }
+
         $validated = $request->validate([
             'fecha' => 'required|date',
-            'total' => 'required|numeric|min:0',
-            'reserva_id' => 'required|exists:reservas,id',
             'cliente_id' => 'required|exists:clientes,id',
             'empleado_id' => 'required|exists:empleados,id',
             'metodo_pago_id' => 'required|exists:metodos_pagos,id',
+            'productos' => 'required|array|min:1',
+            'productos.*.producto_id' => 'required|exists:productos,id',
+            'productos.*.cantidad' => 'required|integer|min:1',
+            'productos.*.precio_unitario' => 'required|numeric|min:0',
         ]);
 
-        // Actualizar la venta
-        $venta->update($validated);
+        try {
+            DB::transaction(function () use ($validated, $venta) {
+                // Actualizar datos de la venta
+                $venta->update([
+                    'fecha' => $validated['fecha'],
+                    'cliente_id' => $validated['cliente_id'],
+                    'empleado_id' => $validated['empleado_id'],
+                    'metodo_pago_id' => $validated['metodo_pago_id'],
+                ]);
 
-        return response()->json([
-            'message' => 'Venta actualizada exitosamente',
-            'venta' => $venta,
-        ]);
+                // Eliminar detalles existentes
+                $venta->detalleVentas()->delete();
+
+                $total = 0;
+
+                // Crear nuevos detalles
+                foreach ($validated['productos'] as $productoData) {
+                    $subtotal = $productoData['cantidad'] * $productoData['precio_unitario'];
+                    
+                    $venta->detalleVentas()->create([
+                        'producto_id' => $productoData['producto_id'],
+                        'cantidad' => $productoData['cantidad'],
+                        'precio_unitario' => $productoData['precio_unitario'],
+                        'subtotal' => $subtotal
+                    ]);
+
+                    $total += $subtotal;
+                }
+
+                // Actualizar total
+                $venta->update(['total' => $total]);
+            });
+
+            return response()->json([
+                'message' => 'Venta actualizada exitosamente',
+                'venta' => $venta->fresh()->load(['cliente', 'empleado', 'metodoPago', 'detalleVentas.producto']),
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar venta: ' . $e->getMessage(),
+                'error' => true
+            ], 500);
+        }
+    }
+
+    /**
+     * ✅ NUEVO: Procesar venta (reduce stock automáticamente)
+     */
+    public function procesar(Venta $venta)
+    {
+        try {
+            $this->inventarioService->procesarVenta($venta);
+
+            return response()->json([
+                'message' => 'Venta procesada exitosamente',
+                'venta' => $venta->fresh()->load(['cliente', 'empleado', 'metodoPago', 'detalleVentas.producto']),
+                'success' => true
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al procesar venta: ' . $e->getMessage(),
+                'error' => true
+            ], 500);
+        }
+    }
+
+    /**
+     * ✅ NUEVO: Cancelar venta (restaura stock si estaba procesada)
+     */
+    public function cancelar(Venta $venta)
+    {
+        try {
+            $this->inventarioService->cancelarVenta($venta);
+
+            return response()->json([
+                'message' => 'Venta cancelada exitosamente',
+                'venta' => $venta->fresh()->load(['cliente', 'empleado', 'metodoPago', 'detalleVentas.producto']),
+                'success' => true
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al cancelar venta: ' . $e->getMessage(),
+                'error' => true
+            ], 500);
+        }
     }
 
     /**
@@ -96,11 +281,47 @@ class VentaController extends Controller
      */
     public function destroy(Venta $venta)
     {
-        // Eliminar la venta
-        $venta->delete();
+        try {
+            // Solo permitir eliminar ventas pendientes o canceladas
+            if ($venta->estado === 'completada') {
+                return response()->json([
+                    'error' => 'No se pueden eliminar ventas completadas. Debe cancelarla primero.'
+                ], 422);
+            }
 
-        return response()->json([
-            'message' => 'Venta eliminada exitosamente',
-        ]);
+            // Si está cancelada pero tenía stock procesado, verificar integridad
+            if ($venta->estado === 'cancelada') {
+                // Eliminar directamente ya que el stock ya fue restaurado
+                $venta->detalleVentas()->delete();
+                $venta->delete();
+            } else {
+                // Es pendiente, eliminar sin afectar stock
+                $venta->detalleVentas()->delete();
+                $venta->delete();
+            }
+
+            return response()->json([
+                'message' => 'Venta eliminada exitosamente',
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Error al eliminar venta: ' . $e->getMessage(),
+                'error' => true
+            ], 500);
+        }
+    }
+
+    /**
+     * ✅ NUEVO: Obtener ventas por estado
+     */
+    public function porEstado($estado)
+    {
+        $ventas = Venta::with(['cliente', 'empleado', 'metodoPago', 'detalleVentas.producto'])
+            ->where('estado', $estado)
+            ->orderBy('fecha', 'desc')
+            ->get();
+
+        return response()->json($ventas);
     }
 }

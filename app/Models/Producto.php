@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Producto extends Model
@@ -37,6 +38,12 @@ class Producto extends Model
         return $this->belongsTo(CategoriaProducto::class, 'categoria_id');
     }
 
+    // ✅ AGREGAR ESTA RELACIÓN POLIMÓRFICA:
+    public function imagenes(): MorphMany
+    {
+        return $this->morphMany(Imagen::class, 'imageable');
+    }
+
     // ===== MÉTODOS BÁSICOS DE ESTADO =====
     
     public function estaDisponible(int $cantidadRequerida = 1): bool
@@ -65,5 +72,16 @@ class Producto extends Model
         } else {
             return 'Disponible';
         }
+    }
+    
+    public function getPrimeraImagenAttribute(): ?string
+    {
+        $imagen = $this->imagenes()->first();
+        return $imagen ? asset('images/productos/' . $imagen->nombre) : null;
+    }
+
+    public function tieneImagenes(): bool
+    {
+        return $this->imagenes()->exists();
     }
 }

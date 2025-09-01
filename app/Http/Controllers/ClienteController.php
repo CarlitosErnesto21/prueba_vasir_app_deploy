@@ -7,11 +7,6 @@ use Illuminate\Http\Request;
 
 class ClienteController extends Controller
 {
-    // Listar todos los clientes (vista Inertia)
-    public function index()
-    {
-        return inertia('Configuracion/Clientes');
-    }
     // API para obtener clientes (JSON)
     public function getClientes()
     {
