@@ -2,95 +2,121 @@
 import Catalogo from '../Catalogo.vue'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
-import { ref, computed } from 'vue'
+import Toast from 'primevue/toast'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
+import { useToast } from 'primevue/usetoast'
 
-// Datos estáticos de productos recomendables
-const products = ref([
-  {
-    id: 1,
-    nombre: 'Maleta de Viaje Premium',
-    descripcion: 'Maleta de alta calidad con ruedas giratorias 360°, ideal para viajes largos.',
-    precio: 150.00,
-    imagen: '/images/productos/producto1.jpg',
-    categoria: 'Equipaje'
-  },
-  {
-    id: 2,
-    nombre: 'Kit de Aseo Personal',
-    descripcion: 'Set completo de productos de higiene personal para viajeros.',
-    precio: 25.99,
-    imagen: '/images/productos/producto2.jpg',
-    categoria: 'Cuidado Personal'
-  },
-  {
-    id: 3,
-    nombre: 'Cámara Instantánea',
-    descripcion: 'Captura tus mejores momentos de viaje al instante.',
-    precio: 89.50,
-    imagen: '/images/productos/producto3.jpg',
-    categoria: 'Fotografía'
-  },
-  {
-    id: 4,
-    nombre: 'Mochila Aventurera',
-    descripcion: 'Mochila resistente de 40L perfecta para excursiones.',
-    precio: 75.00,
-    imagen: '/images/productos/producto4.jpg',
-    categoria: 'Equipaje'
-  },
-  {
-    id: 5,
-    nombre: 'Guía de Viajes Mundial',
-    descripcion: 'Libro completo con los mejores destinos del mundo.',
-    precio: 35.99,
-    imagen: '/images/productos/producto5.jpg',
-    categoria: 'Libros'
-  },
-  {
-    id: 6,
-    nombre: 'Adaptador Universal',
-    descripcion: 'Adaptador de corriente compatible con más de 150 países.',
-    precio: 22.50,
-    imagen: '/images/productos/producto6.jpg',
-    categoria: 'Electrónicos'
-  },
-  {
-    id: 7,
-    nombre: 'Botella Térmica',
-    descripcion: 'Mantiene bebidas frías o calientes por 24 horas.',
-    precio: 28.99,
-    imagen: '/images/productos/producto1.jpg',
-    categoria: 'Cuidado Personal'
-  },
-  {
-    id: 8,
-    nombre: 'Almohada de Viaje',
-    descripcion: 'Almohada ergonómica para viajes largos en avión.',
-    precio: 19.99,
-    imagen: '/images/productos/producto2.jpg',
-    categoria: 'Equipaje'
-  }
-])
+const toast = useToast()
 
-// Filtros
+// 📊 Estados reactivos
+const products = ref([])
+const categories = ref([])
+const loading = ref(true)
+const loadingCategories = ref(true)
+
+// 🔍 Filtros
 const selectedCategories = ref([])
 const minPrice = ref('')
 const maxPrice = ref('')
+const searchTerm = ref('')
 
-// Categorías disponibles
-const categories = [
-  'Equipaje',
-  'Cuidado Personal', 
-  'Fotografía',
-  'Libros',
-  'Electrónicos'
-]
+// 📊 Cargar datos al montar el componente
+onMounted(async () => {
+  await Promise.all([
+    cargarProductos(),
+    cargarCategorias()
+  ])
+})
 
-// Productos filtrados
+// 🚀 Función para cargar productos desde la API
+const cargarProductos = async () => {
+  try {
+    loading.value = true
+    const response = await axios.get('/api/productos')
+    
+    // Mapear los datos para que coincidan con la estructura esperada
+    products.value = (response.data.data || response.data || []).map(producto => ({
+      id: producto.id,
+      nombre: producto.nombre,
+      descripcion: producto.descripcion,
+      precio: parseFloat(producto.precio),
+      stock_actual: producto.stock_actual,
+      categoria: producto.categoria?.nombre || 'Sin categoría',
+      categoria_id: producto.categoria_id,
+      // Manejar imágenes
+      imagen: producto.imagenes && producto.imagenes.length > 0 
+        ? `/images/productos/${producto.imagenes[0].nombre}`
+        : '/images/productos/default.jpg',
+      imagenes: producto.imagenes || []
+    })).filter(producto => producto.stock_actual > 0) // Solo productos en stock
+    
+    console.log('Productos cargados:', products.value.length)
+  } catch (error) {
+    console.error('Error al cargar productos:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudieron cargar los productos',
+      life: 3000
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+// 🏷️ Función para cargar categorías desde la API
+const cargarCategorias = async () => {
+  try {
+    loadingCategories.value = true
+    const response = await axios.get('/api/categorias-productos')
+    
+    categories.value = (response.data.data || response.data || []).map(categoria => ({
+      id: categoria.id,
+      nombre: categoria.nombre,
+      // Contar productos por categoría
+      cantidad: 0 // Se calculará en el computed
+    }))
+    
+    console.log('Categorías cargadas:', categories.value.length)
+  } catch (error) {
+    console.error('Error al cargar categorías:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudieron cargar las categorías',
+      life: 3000
+    })
+  } finally {
+    loadingCategories.value = false
+  }
+}
+
+// 🔍 Categorías con conteo de productos
+const categoriasConConteo = computed(() => {
+  return categories.value.map(categoria => ({
+    ...categoria,
+    cantidad: products.value.filter(producto => 
+      producto.categoria === categoria.nombre
+    ).length
+  })).filter(categoria => categoria.cantidad > 0) // Solo mostrar categorías con productos
+})
+
+// 🔍 Productos filtrados
 const filteredProducts = computed(() => {
   let filtered = [...products.value]
   
-  // Filtrar por categorías
+  // Filtrar por término de búsqueda
+  if (searchTerm.value) {
+    const search = searchTerm.value.toLowerCase()
+    filtered = filtered.filter(product => 
+      product.nombre.toLowerCase().includes(search) ||
+      product.descripcion.toLowerCase().includes(search) ||
+      product.categoria.toLowerCase().includes(search)
+    )
+  }
+  
+  // Filtrar por categorías seleccionadas
   if (selectedCategories.value.length > 0) {
     filtered = filtered.filter(product => 
       selectedCategories.value.includes(product.categoria)
@@ -114,13 +140,25 @@ const filteredProducts = computed(() => {
   return filtered
 })
 
-// Funciones para filtros
-const toggleCategory = (category) => {
-  const index = selectedCategories.value.indexOf(category)
+// 📊 Estadísticas de precios para ayudar al usuario
+const preciosStats = computed(() => {
+  if (products.value.length === 0) return { min: 0, max: 0, promedio: 0 }
+  
+  const precios = products.value.map(p => p.precio)
+  return {
+    min: Math.min(...precios),
+    max: Math.max(...precios),
+    promedio: precios.reduce((a, b) => a + b, 0) / precios.length
+  }
+})
+
+// 🔧 Funciones para filtros
+const toggleCategory = (categoryName) => {
+  const index = selectedCategories.value.indexOf(categoryName)
   if (index > -1) {
     selectedCategories.value.splice(index, 1)
   } else {
-    selectedCategories.value.push(category)
+    selectedCategories.value.push(categoryName)
   }
 }
 
@@ -128,28 +166,106 @@ const clearFilters = () => {
   selectedCategories.value = []
   minPrice.value = ''
   maxPrice.value = ''
+  searchTerm.value = ''
+  
+  toast.add({
+    severity: 'info',
+    summary: 'Filtros limpiados',
+    detail: 'Se han removido todos los filtros',
+    life: 2000
+  })
 }
 
 const applyPriceFilter = () => {
-  // Trigger reactivity
-  console.log('Filtros aplicados')
+  // Los filtros se aplican automáticamente por la reactividad
+  toast.add({
+    severity: 'success',
+    summary: 'Filtros aplicados',
+    detail: `Mostrando ${filteredProducts.value.length} productos`,
+    life: 2000
+  })
 }
 
-// Funciones para los botones
+// 🛒 Funciones para los botones
 const comprarProducto = (producto) => {
-  alert(`¡Producto "${producto.nombre}" agregado al carrito!`)
+  if (producto.stock_actual <= 0) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Sin stock',
+      detail: `El producto "${producto.nombre}" no está disponible`,
+      life: 3000
+    })
+    return
+  }
+
+  // Aquí podrías integrar con un carrito de compras real
+  toast.add({
+    severity: 'success',
+    summary: '¡Agregado al carrito!',
+    detail: `"${producto.nombre}" se agregó al carrito`,
+    life: 3000
+  })
+  
+  console.log('Producto agregado al carrito:', producto)
 }
 
 const verDetalles = (producto) => {
-  alert(`Detalles del producto: ${producto.nombre}\nPrecio: $${producto.precio}\nCategoría: ${producto.categoria}`)
+  // Aquí podrías navegar a una página de detalles del producto
+  toast.add({
+    severity: 'info',
+    summary: 'Detalles del producto',
+    detail: `${producto.nombre} - $${producto.precio.toFixed(2)} - ${producto.categoria} - Stock: ${producto.stock_actual}`,
+    life: 5000
+  })
+}
+
+// 🖼️ Función para manejar errores de imagen
+const handleImageError = (event, producto) => {
+  // Fallback a imagen por defecto con placeholder personalizado
+  event.target.src = `https://via.placeholder.com/300x200/ef4444/ffffff?text=${encodeURIComponent(producto.nombre.substring(0, 15))}`
+}
+
+// 🔄 Función para recargar datos (solo para el botón de estado vacío)
+const recargarDatos = async () => {
+  await Promise.all([
+    cargarProductos(),
+    cargarCategorias()
+  ])
+  
+  toast.add({
+    severity: 'success',
+    summary: 'Datos actualizados',
+    detail: 'La información se ha actualizado correctamente',
+    life: 2000
+  })
 }
 </script>
+
 <template>
   <Catalogo>
+    <!-- Toast para notificaciones -->
+    <Toast class="z-[9999]" />
+    
     <div class="p-4 bg-gray-50 min-h-screen">
-      <h1 class="text-2xl font-bold mb-2 text-red-700">🛍️ Productos</h1>
-      <p class="mb-4 text-gray-600">Encuentra los mejores productos para tu viaje</p>
+      <!-- Encabezado simplificado -->
+      <div class="mb-4">
+        <h1 class="text-2xl font-bold mb-2 text-red-700">🛍️ Productos</h1>
+        <p class="text-gray-600">Encuentra los mejores productos para tu viaje</p>
+      </div>
       
+      <!-- Barra de búsqueda -->
+      <div class="mb-6">
+        <div class="relative">
+          <input 
+            v-model="searchTerm"
+            type="text"
+            placeholder="🔍 Buscar productos por nombre, descripción o categoría..."
+            class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg focus:border-red-500 focus:outline-none bg-white shadow-sm"
+          />
+          <i class="pi pi-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+
       <div class="flex gap-6">
         <!-- Panel de Filtros -->
         <div class="w-80 bg-white rounded-lg shadow-lg p-6 h-fit border border-gray-200">
@@ -163,19 +279,30 @@ const verDetalles = (producto) => {
             </button>
           </div>
           
+          <!-- Estadísticas de precios -->
+          <div class="mb-4 p-3 bg-gray-50 rounded-lg border">
+            <h5 class="text-sm font-medium text-gray-700 mb-2">Rango de precios</h5>
+            <div class="text-xs text-gray-600 space-y-1">
+              <div>Mínimo: ${{ preciosStats.min.toFixed(2) }}</div>
+              <div>Máximo: ${{ preciosStats.max.toFixed(2) }}</div>
+              <div>Promedio: ${{ preciosStats.promedio.toFixed(2) }}</div>
+            </div>
+          </div>
+          
           <!-- Filtro de Precio -->
           <div class="mb-6">
-            <h4 class="font-semibold text-gray-700 mb-3">Precio</h4>
+            <h4 class="font-semibold text-gray-700 mb-3">Filtrar por precio</h4>
             <div class="flex gap-2 items-center mb-3">
               <div class="flex-1">
                 <label class="text-sm text-gray-600">Min</label>
                 <input 
                   v-model="minPrice"
                   type="number" 
-                  placeholder="$0.00"
-                  class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:border-red-500 focus:outline-none bg-gray-50 focus:bg-white"
+                  :placeholder="`$${preciosStats.min.toFixed(2)}`"
+                  class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:border-red-500 focus:outline-none bg-gray-50 focus:bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   min="0"
                   step="0.01"
+                  :max="preciosStats.max"
                 />
               </div>
               <div class="flex-1">
@@ -183,50 +310,98 @@ const verDetalles = (producto) => {
                 <input 
                   v-model="maxPrice"
                   type="number" 
-                  placeholder="$0.00"
-                  class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:border-red-500 focus:outline-none bg-gray-50 focus:bg-white"
+                  :placeholder="`$${preciosStats.max.toFixed(2)}`"
+                  class="w-full border border-gray-300 rounded px-2 py-1 text-sm focus:border-red-500 focus:outline-none bg-gray-50 focus:bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   min="0"
                   step="0.01"
+                  :max="preciosStats.max"
                 />
               </div>
               <button 
                 @click="applyPriceFilter"
                 class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition mt-5 shadow-sm"
               >
-                Ir
+                Aplicar
               </button>
             </div>
           </div>
           
           <!-- Filtro de Categorías -->
           <div>
-            <h4 class="font-semibold text-gray-700 mb-3">Categorías</h4>
-            <div class="space-y-2">
+            <h4 class="font-semibold text-gray-700 mb-3">
+              Categorías 
+              <span v-if="loadingCategories" class="text-xs text-gray-500">(cargando...)</span>
+            </h4>
+            
+            <div v-if="loadingCategories" class="space-y-2">
+              <div v-for="i in 3" :key="i" class="animate-pulse">
+                <div class="h-8 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+            
+            <div v-else class="space-y-2">
               <label 
-                v-for="category in categories" 
-                :key="category"
+                v-for="category in categoriasConConteo" 
+                :key="category.id"
                 class="flex items-center cursor-pointer hover:bg-gray-100 p-2 rounded transition"
               >
                 <input 
                   type="checkbox"
-                  :checked="selectedCategories.includes(category)"
-                  @change="toggleCategory(category)"
+                  :checked="selectedCategories.includes(category.nombre)"
+                  @change="toggleCategory(category.nombre)"
                   class="mr-3 accent-red-600"
                 />
-                <span class="text-sm text-gray-700 flex-1">{{ category }}</span>
-                <span class="text-xs text-gray-500">›</span>
+                <span class="text-sm text-gray-700 flex-1">{{ category.nombre }}</span>
+                <span class="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded-full">
+                  {{ category.cantidad }}
+                </span>
               </label>
+              
+              <div v-if="categoriasConConteo.length === 0" class="text-center py-4 text-gray-500 text-sm">
+                No hay categorías disponibles
+              </div>
             </div>
           </div>
         </div>
         
         <!-- Grid de Productos -->
         <div class="flex-1">
-          <div class="mb-4 text-sm text-gray-600 bg-white rounded-lg px-4 py-2 shadow-sm border border-gray-200">
-            Mostrando {{ filteredProducts.length }} de {{ products.length }} productos
+          <!-- Información de resultados -->
+          <div class="mb-4 flex justify-between items-center">
+            <div class="text-sm text-gray-600 bg-white rounded-lg px-4 py-2 shadow-sm border border-gray-200">
+              Mostrando {{ filteredProducts.length }} de {{ products.length }} productos
+            </div>
+            
+            <div v-if="selectedCategories.length > 0 || minPrice || maxPrice || searchTerm" 
+                 class="text-xs text-gray-500">
+              <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                Filtros activos: {{ 
+                  [
+                    selectedCategories.length > 0 ? `${selectedCategories.length} categorías` : '',
+                    minPrice ? 'precio mín.' : '',
+                    maxPrice ? 'precio máx.' : '',
+                    searchTerm ? 'búsqueda' : ''
+                  ].filter(Boolean).join(', ') 
+                }}
+              </span>
+            </div>
           </div>
           
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <!-- Loading state -->
+          <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div v-for="i in 8" :key="i" class="animate-pulse">
+              <div class="bg-white rounded-lg border border-gray-300 p-4">
+                <div class="h-32 bg-gray-200 rounded mb-4"></div>
+                <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                <div class="h-3 bg-gray-200 rounded mb-2"></div>
+                <div class="h-6 bg-gray-200 rounded mb-4"></div>
+                <div class="h-8 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Grid de productos -->
+          <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <Card
               v-for="producto in filteredProducts"
               :key="producto.id"
@@ -238,16 +413,21 @@ const verDetalles = (producto) => {
                     :src="producto.imagen"
                     :alt="producto.nombre"
                     class="object-cover h-full w-full group-hover:scale-110 transition-transform duration-500"
-                    @error="$event.target.src = 'https://via.placeholder.com/200x200/ef4444/ffffff?text=' + encodeURIComponent(producto.nombre.substring(0, 10))"
+                    @error="handleImageError($event, producto)"
                   />
                   <div class="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-medium shadow-sm">
                     {{ producto.categoria }}
+                  </div>
+                  <div class="absolute top-2 left-2 bg-green-600 text-white px-2 py-1 rounded text-xs font-medium shadow-sm">
+                    Stock: {{ producto.stock_actual }}
                   </div>
                 </div>
               </template>
               
               <template #title>
-                <span class="text-base font-semibold text-gray-800 leading-tight line-clamp-2">{{ producto.nombre }}</span>
+                <span class="text-base font-semibold text-gray-800 leading-tight line-clamp-2">
+                  {{ producto.nombre }}
+                </span>
               </template>
               
               <template #content>
@@ -266,14 +446,16 @@ const verDetalles = (producto) => {
                   <Button
                     label="Agregar"
                     @click="comprarProducto(producto)"
-                    class="!bg-red-600 !border-none !px-3 !py-1 !text-white !text-xs font-medium rounded hover:!bg-red-700 transition-all flex-1 shadow-sm"
+                    :disabled="producto.stock_actual <= 0"
+                    class="!bg-red-600 !border-none !px-3 !py-1 !text-white !text-xs font-medium rounded hover:!bg-red-700 transition-all flex-1 shadow-sm disabled:!bg-gray-400"
                     size="small"
                   />
                   <Button
-                    icon="pi pi-plus"
-                    @click="comprarProducto(producto)"
-                    class="!bg-red-600 !border-none !text-white hover:!bg-red-700 transition-all !w-8 !h-8 !p-0 shadow-sm"
+                    icon="pi pi-eye"
+                    @click="verDetalles(producto)"
+                    class="!bg-blue-600 !border-none !text-white hover:!bg-blue-700 transition-all !w-8 !h-8 !p-0 shadow-sm"
                     size="small"
+                    v-tooltip.top="'Ver detalles'"
                   />
                 </div>
               </template>
@@ -281,15 +463,30 @@ const verDetalles = (producto) => {
           </div>
           
           <!-- Mensaje cuando no hay productos -->
-          <div v-if="filteredProducts.length === 0" class="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
+          <div v-if="!loading && filteredProducts.length === 0" class="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="text-gray-400 text-6xl mb-4">🔍</div>
             <h3 class="text-xl font-semibold text-gray-700 mb-2">No se encontraron productos</h3>
-            <p class="text-gray-500 mb-4">Intenta ajustar los filtros para ver más resultados</p>
+            <p class="text-gray-500 mb-4">
+              <span v-if="products.length === 0">
+                No hay productos disponibles en este momento
+              </span>
+              <span v-else>
+                Intenta ajustar los filtros para ver más resultados
+              </span>
+            </p>
             <button 
+              v-if="selectedCategories.length > 0 || minPrice || maxPrice || searchTerm"
               @click="clearFilters"
               class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition shadow-sm"
             >
               Limpiar filtros
+            </button>
+            <button 
+              v-else
+              @click="recargarDatos"
+              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition shadow-sm"
+            >
+              Recargar productos
             </button>
           </div>
         </div>
@@ -299,70 +496,5 @@ const verDetalles = (producto) => {
 </template>
 
 <style scoped>
-/* Clase para limitar líneas de texto */
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Estilos para el panel de filtros */
-.filter-panel {
-  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-}
-
-/* Estilos para checkboxes */
-input[type="checkbox"]:checked {
-  background-color: #dc2626;
-  border-color: #dc2626;
-}
-
-/* Animaciones para los cards */
-.product-card {
-  transition: all 0.3s ease;
-}
-
-.product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-}
-
-/* Efectos de hover para las imágenes */
-.product-image {
-  transition: transform 0.5s ease;
-}
-
-.product-image:hover {
-  transform: scale(1.1);
-}
-
-/* Estilos para los inputs de precio */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type="number"] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
-/* Responsive para el grid */
-@media (max-width: 768px) {
-  .filter-panel {
-    width: 100%;
-    margin-bottom: 1rem;
-  }
-}
+/* Sin CSS personalizado - Solo clases Tailwind */
 </style>
