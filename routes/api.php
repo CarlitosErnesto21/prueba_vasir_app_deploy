@@ -26,19 +26,20 @@ Route::get('/user', function (Request $request) {
 
 // Rutas de API
 Route::apiResource('productos', ProductoController::class);
+Route::apiResource('clientes', ClienteController::class);
+Route::apiResource('categorias-productos', CategoriaProductoController::class);
+Route::apiResource('ventas', VentaController::class);
+
 Route::apiResource('aerolineas', AerolineaController::class);
 Route::apiResource('empleados', EmpleadoController::class);
 Route::apiResource('hoteles', HotelController::class);
 Route::apiResource('metodos-pago', MetodoPagoController::class);
 Route::apiResource('reservas', ReservaController::class);
 Route::apiResource('tours', TourController::class);
-Route::apiResource('ventas', VentaController::class);
 Route::apiResource('categorias-hoteles', CategoriaHotelController::class);
-Route::apiResource('categorias-productos', CategoriaProductoController::class);
 Route::apiResource('paises', PaisController::class);
 Route::apiResource('provincias', ProvinciaController::class);
 Route::apiResource('transportes', TransporteController::class);
-Route::apiResource('clientes', ClienteController::class);
 Route::apiResource('tipo-documentos', TipoDocumentoController::class);
 
 Route::prefix('backups')->group(function () {
@@ -69,7 +70,7 @@ Route::prefix('categorias-productos')->name('categorias-productos.')->group(func
 });
 
 // Rutas de Productos
-Route::prefix('productos')->name('productos.')->group(function () {
+/*Route::prefix('productos')->name('productos.')->group(function () {
     Route::get('/', [ProductoController::class, 'index'])->name('index');
     Route::get('/create', [ProductoController::class, 'create'])->name('create');
     Route::post('/', [ProductoController::class, 'store'])->name('store');
@@ -79,10 +80,10 @@ Route::prefix('productos')->name('productos.')->group(function () {
     Route::get('/{producto}/edit', [ProductoController::class, 'edit'])->name('edit');
     Route::put('/{producto}', [ProductoController::class, 'update'])->name('update');
     Route::delete('/{producto}', [ProductoController::class, 'destroy'])->name('destroy');
-});
+});*/
 
 // Rutas de Ventas
-Route::prefix('ventas')->name('ventas.')->group(function () {
+/*Route::prefix('ventas')->name('ventas.')->group(function () {
     Route::get('/', [VentaController::class, 'index'])->name('index');
     Route::get('/create', [VentaController::class, 'create'])->name('create');
     Route::post('/', [VentaController::class, 'store'])->name('store');
@@ -93,6 +94,19 @@ Route::prefix('ventas')->name('ventas.')->group(function () {
     Route::post('/{venta}/procesar', [VentaController::class, 'procesar'])->name('procesar');
     Route::post('/{venta}/cancelar', [VentaController::class, 'cancelar'])->name('cancelar');
     Route::delete('/{venta}', [VentaController::class, 'destroy'])->name('destroy');
+});*/
+
+// 🔧 Rutas adicionales específicas para productos (sin conflicto)
+Route::prefix('productos')->group(function () {
+    Route::get('/stock-bajo', [ProductoController::class, 'stockBajo']);
+    Route::get('/agotados', [ProductoController::class, 'agotados']);
+});
+
+// 🔧 Rutas adicionales específicas para ventas (sin conflicto)
+Route::prefix('ventas')->group(function () {
+    Route::get('/estado/{estado}', [VentaController::class, 'porEstado']);
+    Route::post('/{venta}/procesar', [VentaController::class, 'procesar']);
+    Route::post('/{venta}/cancelar', [VentaController::class, 'cancelar']);
 });
 
 // Rutas de Inventario

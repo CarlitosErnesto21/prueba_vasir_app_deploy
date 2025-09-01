@@ -23,7 +23,7 @@ class InventarioController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Inventario::with(['producto.categoriaProducto', 'user', 'referenciable']);
+        $query = Inventario::with(['producto.categoria', 'user', 'referenciable']);
 
         // Filtros opcionales
         if ($request->has('producto_id')) {
@@ -46,12 +46,12 @@ class InventarioController extends Controller
         
         // Productos para los filtros
         $productos = Producto::select('id', 'nombre', 'stock_actual', 'stock_minimo')
-            ->with('categoriaProducto:id,nombre')
+            ->with('categoria:id,nombre')
             ->orderBy('nombre')
             ->get();
 
         // Si es petición AJAX, retornar JSON
-        if ($request->expectsJson()) {
+        if ($request->is('api/*') || $request->expectsJson()) {
             return response()->json($movimientos);
         }
 
@@ -85,7 +85,7 @@ class InventarioController extends Controller
 
             return response()->json([
                 'message' => 'Stock agregado exitosamente',
-                'movimiento' => $movimiento->load('producto.categoriaProducto'),
+                'movimiento' => $movimiento->load('producto.categoria'),
                 'success' => true
             ]);
 
@@ -121,7 +121,7 @@ class InventarioController extends Controller
                 $validated['observacion'] ?? 'Ajuste de inventario'
             );
 
-            $producto = Producto::with('categoriaProducto')->find($validated['producto_id']);
+            $producto = Producto::with('categoria')->find($validated['producto_id']);
 
             return response()->json([
                 'message' => 'Stock ajustado exitosamente',
@@ -174,7 +174,7 @@ class InventarioController extends Controller
      */
     public function stockBajo()
     {
-        $productos = Producto::with('categoriaProducto')
+        $productos = Producto::with('categoria')
             ->whereColumn('stock_actual', '<=', 'stock_minimo')
             ->where('stock_actual', '>', 0)
             ->orderBy('stock_actual', 'asc')
@@ -188,7 +188,7 @@ class InventarioController extends Controller
      */
     public function agotados()
     {
-        $productos = Producto::with('categoriaProducto')
+        $productos = Producto::with('categoria')
             ->where('stock_actual', '<=', 0)
             ->orderBy('nombre')
             ->get();
@@ -207,7 +207,7 @@ class InventarioController extends Controller
             ->paginate(15);
             
         return response()->json([
-            'producto' => $producto->load('categoriaProducto'),
+            'producto' => $producto->load('categoria'),
             'movimientos' => $movimientos,
         ]);
     }
@@ -217,7 +217,7 @@ class InventarioController extends Controller
      */
     public function show(Inventario $inventario)
     {
-        $inventario->load(['producto.categoriaProducto', 'user', 'referenciable']);
+        $inventario->load(['producto.categoria', 'user', 'referenciable']);
         return response()->json($inventario);
     }
 }

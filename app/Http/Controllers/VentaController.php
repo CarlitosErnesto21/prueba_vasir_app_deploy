@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Venta;
-use App\Models\DetalleVenta;
 use App\Models\Producto;
 use App\Models\Cliente;
 use App\Models\Empleado;
@@ -28,7 +27,7 @@ class VentaController extends Controller
     public function index()
     {
         // ✅ CORREGIDO: detalleVentas (plural) y sin reserva (según tu migración)
-        $ventas = Venta::with(['cliente', 'empleado', 'metodoPago', 'detalleVentas.producto.categoriaProducto'])
+        $ventas = Venta::with(['cliente', 'empleado', 'metodoPago', 'detalleVentas.producto.categoria'])
             ->orderBy('fecha', 'desc')
             ->get();
         return response()->json($ventas);
@@ -43,7 +42,7 @@ class VentaController extends Controller
         $clientes = Cliente::select('id', 'nombre', 'telefono')->orderBy('nombre')->get();
         $empleados = Empleado::select('id', 'nombre')->orderBy('nombre')->get();
         $metodosPago = MetodoPago::select('id', 'nombre')->orderBy('nombre')->get();
-        $productos = Producto::with('categoriaProducto')
+        $productos = Producto::with('categoria')
             ->where('stock_actual', '>', 0)
             ->select('id', 'nombre', 'precio', 'stock_actual', 'categoria_id')
             ->orderBy('nombre')
@@ -128,7 +127,7 @@ class VentaController extends Controller
     public function show(Venta $venta)
     {
         // ✅ CORREGIDO: detalleVentas y sin reserva
-        $venta->load(['cliente', 'empleado', 'metodoPago', 'detalleVentas.producto.categoriaProducto']);
+        $venta->load(['cliente', 'empleado', 'metodoPago', 'detalleVentas.producto.categoria']);
         return response()->json($venta);
     }
 
@@ -149,7 +148,7 @@ class VentaController extends Controller
         $clientes = Cliente::select('id', 'nombre')->orderBy('nombre')->get();
         $empleados = Empleado::select('id', 'nombre')->orderBy('nombre')->get();
         $metodosPago = MetodoPago::select('id', 'nombre')->orderBy('nombre')->get();
-        $productos = Producto::with('categoriaProducto')
+        $productos = Producto::with('categoria')
             ->where('stock_actual', '>', 0)
             ->select('id', 'nombre', 'precio', 'stock_actual', 'categoria_id')
             ->orderBy('nombre')
