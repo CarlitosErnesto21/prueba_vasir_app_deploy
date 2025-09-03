@@ -1,13 +1,12 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import { usePage, Link } from '@inertiajs/vue3';
+import { usePage, Link, router } from '@inertiajs/vue3';
 import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
-import  { faRoute, faDoorOpen, faCircleXmark, faUserCircle, 
+import  { faRoute, faDoorOpen, faUserCircle, 
     faChevronCircleDown, faUser, faHotel, faPlaneDeparture, faGear, faBoxesStacked, 
     faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,faListCheck,
     faFileInvoice, 
     faUserPen} from "@fortawesome/free-solid-svg-icons";   
-
 import axios from "axios";
 import { route } from "ziggy-js";
 
@@ -45,16 +44,20 @@ function handleResize() {
 
 function handleGlobalClick(e) {
     const aside = document.querySelector("aside");
-    const hamburger = document.querySelector("button.block.md\\:hidden");
+    
+    // Cerrar sidebar en móvil o escritorio cuando se hace click fuera
     if (
         (isSidebarOpen.value || !isSidebarCollapsed.value) &&
         aside &&
-        !aside.contains(e.target) &&
-        (!hamburger || !hamburger.contains(e.target))
+        !aside.contains(e.target)
     ) {
         isSidebarOpen.value = false;
-        isSidebarCollapsed.value = true;
+        if (window.innerWidth >= 768) {
+            isSidebarCollapsed.value = true;
+        }
     }
+    
+    // Cerrar dropdown de catálogos
     if (isOpen.value) {
         const catalogBtn = document.querySelector('button[title="Catálogos"]');
         if (
@@ -64,41 +67,16 @@ function handleGlobalClick(e) {
             isOpen.value = false;
         }
     }
-}
-
-const showProfileMenu = ref(false);
-
-const openProfileMenu = (e) => {
-    e.stopPropagation();
-    showProfileMenu.value = true;
-};
-const closeProfileMenu = () => {
-    showProfileMenu.value = false;
-};
-
-function handleProfileMenuClick(e) {
-    const menu = document.getElementById("profile-menu");
-    if (showProfileMenu.value && menu && !menu.contains(e.target)) {
-        showProfileMenu.value = false;
+    
+    // Cerrar menú de perfil
+    if (showProfileMenu.value) {
+        const menu = document.getElementById("profile-menu");
+        if (menu && !menu.contains(e.target)) {
+            showProfileMenu.value = false;
+        }
     }
-}
-
-const isConfigDropdownOpen = ref(false);
-const configDropdownTrigger = ref(null);
-const configDropdownMenu = ref(null);
-
-function toggleConfigDropdown() {
-    isConfigDropdownOpen.value = !isConfigDropdownOpen.value;
-}
-function closeConfigDropdown() {
-    isConfigDropdownOpen.value = false;
-}
-
-watch(isSidebarCollapsed, (newVal) => {
-    if (newVal) isConfigDropdownOpen.value = false;
-});
-
-function handleConfigDropdownClickOutside(e) {
+    
+    // Cerrar dropdown de configuración
     if (
         isConfigDropdownOpen.value &&
         configDropdownTrigger.value &&
@@ -110,51 +88,53 @@ function handleConfigDropdownClickOutside(e) {
     }
 }
 
+const showProfileMenu = ref(false);
+
+const openProfileMenu = (e) => {
+    e.stopPropagation();
+    showProfileMenu.value = true;
+};
+
+const isConfigDropdownOpen = ref(false);
+const configDropdownTrigger = ref(null);
+const configDropdownMenu = ref(null);
+
+function toggleConfigDropdown() {
+    isConfigDropdownOpen.value = !isConfigDropdownOpen.value;
+}
+
+watch(isSidebarCollapsed, (newVal) => {
+    if (newVal) {
+        isConfigDropdownOpen.value = false;
+    }
+});
+
+// Función simplificada para navegación
+function navigateAndCloseSidebar(routeName) {
+    isConfigDropdownOpen.value = false;
+    isSidebarCollapsed.value = true;
+    isSidebarOpen.value = false;
+    router.visit(route(routeName));
+}
+
 onMounted(() => {
     window.addEventListener("resize", handleResize);
     handleResize();
     document.addEventListener("click", handleGlobalClick, true);
-    document.addEventListener("click", handleProfileMenuClick, true);
-    document.addEventListener("click", handleConfigDropdownClickOutside, true);
 });
 onBeforeUnmount(() => {
     window.removeEventListener("resize", handleResize);
     document.removeEventListener("click", handleGlobalClick, true);
-    document.removeEventListener("click", handleProfileMenuClick, true);
-    document.removeEventListener(
-        "click",
-        handleConfigDropdownClickOutside,
-        true
-    );
 });
 
-const assignRolesRef = ref(null);
-const systemSettingsRef = ref(null);
-const manageClientesRef = ref(null);
-
 function assignRoles() {
-    isConfigDropdownOpen.value = false;
-    isSidebarCollapsed.value = true;
-    isSidebarOpen.value = false;
-    if (assignRolesRef.value) {
-        assignRolesRef.value.click();
-    }
+    navigateAndCloseSidebar('roles');
 }
 function systemSettings() {
-    isConfigDropdownOpen.value = false;
-    isSidebarCollapsed.value = true;
-    isSidebarOpen.value = false;
-    if (systemSettingsRef.value) {
-        systemSettingsRef.value.click();
-    }
+    navigateAndCloseSidebar('settings');
 }
 function manageClientes() {
-    isConfigDropdownOpen.value = false;
-    isSidebarCollapsed.value = true;
-    isSidebarOpen.value = false;
-    if (manageClientesRef.value) {
-        manageClientesRef.value.click();
-    }
+    navigateAndCloseSidebar('clientes');
 }
 </script>
 
@@ -208,58 +188,76 @@ function manageClientes() {
                             <div
                                 v-if="showProfileMenu"
                                 id="profile-menu"
-                                class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
+                                class="absolute right-0 mt-3 w-72 bg-white rounded-xl shadow-2xl border border-red-100 z-50 overflow-hidden backdrop-blur-sm"
+                                style="box-shadow: 0 25px 50px -12px rgba(220, 38, 38, 0.25);"
                             >
                                 <!-- Header del perfil -->
-                                <div class="px-4 py-3 border-b border-gray-100 bg-gray-50">
-                                    <div class="flex items-center space-x-3">
-                                        <img
-                                            :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                                user.name
-                                            )}&background=1f2937&color=fff&size=64`"
-                                            class="w-10 h-10 rounded-full border-2 border-gray-300"
-                                            alt="avatar"
-                                        />
+                                <div class="px-6 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="relative">
+                                            <img
+                                                :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                                    user.name
+                                                )}&background=dc2626&color=fff&size=80&bold=true`"
+                                                class="w-12 h-12 rounded-full border-3 border-white shadow-lg"
+                                                alt="avatar"
+                                            />
+                                            <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
+                                        </div>
                                         <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-gray-900 truncate">
+                                            <h3 class="text-sm font-bold text-white truncate">
                                                 {{ user.name }}
-                                            </p>
-                                            <p class="text-xs text-gray-500 truncate">
+                                            </h3>
+                                            <p class="text-xs text-red-100 truncate opacity-90">
                                                 {{ user.email }}
                                             </p>
                                         </div>
                                     </div>
-                                    <div class="mt-2">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                    <div class="mt-3 flex justify-between items-center">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white bg-opacity-20 text-white backdrop-blur-sm">
+                                            <div class="w-2 h-2 bg-white rounded-full mr-2 opacity-75"></div>
                                             {{ user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Invitado" }}
                                         </span>
+                                        <div class="text-xs text-red-100 opacity-75">
+                                            En línea
+                                        </div>
                                     </div>
                                 </div>
 
                                 <!-- Opciones del menú -->
-                                <div class="py-1">
+                                <div class="py-2 bg-white">
                                     <Link
                                         :href="route('profile.edit')"
-                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors duration-150"
+                                        class="flex items-center px-6 py-3 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-700 transition-all duration-200 group"
                                     >
-                                        <FontAwesomeIcon
-                                            :icon="faUserPen"
-                                            class="mr-3 h-4 w-4 text-gray-400"
-                                        />
-                                        Editar Perfil
+                                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-600 mr-3 group-hover:bg-red-200 transition-colors duration-200">
+                                            <FontAwesomeIcon
+                                                :icon="faUserPen"
+                                                class="w-4 h-4"
+                                            />
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span>Editar Perfil</span>
+                                            <span class="text-xs text-gray-500">Actualizar información personal</span>
+                                        </div>
                                     </Link>
                                     
-                                    <div class="border-t border-gray-100 my-1"></div>
+                                    <div class="border-t border-red-100 my-2 mx-4"></div>
                                     
                                     <button
-                                        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-150"
+                                        class="flex items-center w-full px-6 py-3 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-700 transition-all duration-200 group"
                                         @click="logout"
                                     >
-                                        <FontAwesomeIcon
-                                            :icon="faDoorOpen"
-                                            class="mr-3 h-4 w-4 text-gray-400"
-                                        />
-                                        Cerrar Sesión
+                                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-600 mr-3 group-hover:bg-red-200 group-hover:text-red-600 transition-colors duration-200">
+                                            <FontAwesomeIcon
+                                                :icon="faDoorOpen"
+                                                class="w-4 h-4"
+                                            />
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span>Cerrar Sesión</span>
+                                            <span class="text-xs text-gray-500">Salir de forma segura</span>
+                                        </div>
                                     </button>
                                 </div>
                             </div>
@@ -630,20 +628,23 @@ function manageClientes() {
                         </transition>
                     </li>
                 </ul>
-                
-                <!-- Enlaces invisibles para el menú de configuración -->
-                <Link ref="assignRolesRef" :href="route('roles')" class="hidden"></Link>
-                <Link ref="systemSettingsRef" :href="route('settings')" class="hidden"></Link>
-                <Link ref="manageClientesRef" :href="route('clientes')" class="hidden"></Link>
             </aside>
             <div
                 v-if="isSidebarOpen"
                 class="fixed inset-0 bg-black bg-opacity-40 z-30 md:hidden"
                 @click="isSidebarOpen = false"
             ></div>
-            <div class="md:ml-16 flex-1 flex flex-col">
+            <div 
+                :class="[
+                    'flex-1 flex flex-col transition-all duration-300',
+                    isSidebarCollapsed ? 'md:ml-16' : 'md:ml-56'
+                ]"
+            >
                 <header
-                    class="bg-gradient-to-r from-red-700 via-red-600 to-red-400 shadow px-4 py-2 flex items-center z-30 relative md:fixed top-16 md:top-16 lg:16 md:right-0 md:px-8 md:left-16"
+                    :class="[
+                        'bg-gradient-to-r from-red-700 via-red-600 to-red-400 shadow px-4 py-2 flex items-center z-30 relative md:fixed top-16 md:right-0 md:px-8 transition-all duration-300',
+                        isSidebarCollapsed ? 'md:left-16' : 'md:left-56'
+                    ]"
                 >
                     <h2 class="text-lg font-semibold text-white">Dashboard</h2>
                 </header>
