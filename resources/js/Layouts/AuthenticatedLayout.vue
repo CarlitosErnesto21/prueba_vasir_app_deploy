@@ -1,11 +1,12 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import { usePage, Link, router } from '@inertiajs/vue3';
+import { usePage, Link } from '@inertiajs/vue3';
 import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
 import  { faRoute, faDoorOpen, faCircleXmark, faUserCircle, 
     faChevronCircleDown, faUser, faHotel, faPlaneDeparture, faGear, faBoxesStacked, 
     faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,faListCheck,
-    faFileInvoice } from "@fortawesome/free-solid-svg-icons";   
+    faFileInvoice, 
+    faUserPen} from "@fortawesome/free-solid-svg-icons";   
 
 import axios from "axios";
 import { route } from "ziggy-js";
@@ -127,23 +128,33 @@ onBeforeUnmount(() => {
     );
 });
 
+const assignRolesRef = ref(null);
+const systemSettingsRef = ref(null);
+const manageClientesRef = ref(null);
+
 function assignRoles() {
     isConfigDropdownOpen.value = false;
     isSidebarCollapsed.value = true;
     isSidebarOpen.value = false;
-    router.visit(route("roles"));
+    if (assignRolesRef.value) {
+        assignRolesRef.value.click();
+    }
 }
 function systemSettings() {
     isConfigDropdownOpen.value = false;
     isSidebarCollapsed.value = true;
     isSidebarOpen.value = false;
-    router.visit(route("settings"));
+    if (systemSettingsRef.value) {
+        systemSettingsRef.value.click();
+    }
 }
 function manageClientes() {
     isConfigDropdownOpen.value = false;
     isSidebarCollapsed.value = true;
     isSidebarOpen.value = false;
-    router.visit(route("clientes"));
+    if (manageClientesRef.value) {
+        manageClientesRef.value.click();
+    }
 }
 </script>
 
@@ -197,64 +208,60 @@ function manageClientes() {
                             <div
                                 v-if="showProfileMenu"
                                 id="profile-menu"
-                                class="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 overflow-hidden animate-fade-in"
+                                class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
                             >
-                                <div
-                                    class="flex flex-col items-center py-6 px-6 bg-gradient-to-br from-red-100 via-white to-red-50"
-                                >
-                                    <img
-                                        :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                            user.name
-                                        )}&background=ed1c24&color=fff&size=128`"
-                                        class="w-20 h-20 rounded-full border-4 border-white shadow-lg mb-3"
-                                        alt="avatar"
-                                    />
-                                    <div
-                                        class="font-bold text-lg text-gray-800 text-center"
-                                    >
-                                        {{ user.name }}
+                                <!-- Header del perfil -->
+                                <div class="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                                    <div class="flex items-center space-x-3">
+                                        <img
+                                            :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                                user.name
+                                            )}&background=1f2937&color=fff&size=64`"
+                                            class="w-10 h-10 rounded-full border-2 border-gray-300"
+                                            alt="avatar"
+                                        />
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-gray-900 truncate">
+                                                {{ user.name }}
+                                            </p>
+                                            <p class="text-xs text-gray-500 truncate">
+                                                {{ user.email }}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div
-                                        class="text-xs text-gray-500 text-center mb-1"
-                                    >
-                                        {{ user.email }}
+                                    <div class="mt-2">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Invitado" }}
+                                        </span>
                                     </div>
-                                    <span
-                                        class="inline-block bg-red-200 text-red-700 text-xs px-3 py-1 rounded-full mt-1"
-                                    >
-                                        {{
-                                            user.role
-                                                ? user.role
-                                                      .charAt(0)
-                                                      .toUpperCase() +
-                                                  user.role.slice(1)
-                                                : "Invitado"
-                                        }}
-                                    </span>
                                 </div>
-                                <hr class="border-t border-gray-200 my-1" />
-                                <div class="py-3 px-4">
+
+                                <!-- Opciones del menú -->
+                                <div class="py-1">
+                                    <Link
+                                        :href="route('profile.edit')"
+                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors duration-150"
+                                    >
+                                        <FontAwesomeIcon
+                                            :icon="faUserPen"
+                                            class="mr-3 h-4 w-4 text-gray-400"
+                                        />
+                                        Editar Perfil
+                                    </Link>
+                                    
+                                    <div class="border-t border-gray-100 my-1"></div>
+                                    
                                     <button
-                                        class="flex items-center gap-3 text-left w-full hover:bg-red-100 rounded px-3 py-2 text-red-600 font-semibold transition"
+                                        class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-150"
                                         @click="logout"
                                     >
                                         <FontAwesomeIcon
                                             :icon="faDoorOpen"
-                                            class="text-red-600"
+                                            class="mr-3 h-4 w-4 text-gray-400"
                                         />
-                                        Cerrar sesión
+                                        Cerrar Sesión
                                     </button>
                                 </div>
-                                <button
-                                    class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition"
-                                    @click="closeProfileMenu"
-                                    aria-label="Cerrar menú"
-                                >
-                                    <FontAwesomeIcon
-                                        :icon="faCircleXmark"
-                                        class="h-5 w-5"
-                                    />
-                                </button>
                             </div>
                         </transition>
                     </div>
@@ -294,16 +301,14 @@ function manageClientes() {
                 </div>
                 <nav class="mt-4 text-white flex-1">
                     <ul>
-                        <li
-                            class="px-4 py-3 hover:bg-red-600 flex items-center cursor-pointer"
+                        <Link
+                            :href="route('dashboard')"
+                            class="px-4 py-3 hover:bg-red-600 flex items-center cursor-pointer w-full"
                             :class="
                                 isSidebarCollapsed
                                     ? 'justify-center'
                                     : 'justify-start'
                             "
-                            @click="router.visit(route('dashboard'))"
-                            tabindex="0"
-                            @keydown.enter="router.visit(route('dashboard'))"
                             title="Inicio"
                         >
                             <FontAwesomeIcon
@@ -315,7 +320,7 @@ function manageClientes() {
                                 class="h-6"
                             />
                             <span v-if="!isSidebarCollapsed">Inicio</span>
-                        </li>
+                        </Link>
                         <li class="px-0 py-3 flex flex-col relative">
                             <button
                                 @click="toggleDropdown"
@@ -431,87 +436,73 @@ function manageClientes() {
                                         >
                                     </Link>
                                 </div>
-                                <ul
-                                    v-else-if="isOpen"
-                                    class="w-full rounded-md shadow-lg overflow-hidden bg-white text-red-700"
-                                >
-                                    <li
-                                        class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer"
-                                        @click="
-                                            router.visit(route('productos'))
-                                        "
-                                        tabindex="0"
-                                        @keydown.enter="
-                                            router.visit(route('productos'))
-                                        "
-                                        title="Categorías"
+                                    <ul
+                                        v-else-if="isOpen"
+                                        class="w-full rounded-md shadow-lg overflow-hidden bg-white text-red-700"
                                     >
-                                        <FontAwesomeIcon
-                                            :icon="faBox"
-                                            class="drop-shadow-md"
-                                        />
-                                        <span class="ml-3">Productos</span>
-                                    </li>
-                                    <li
-                                        class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer"
-                                        @click="router.visit(route('tours'))"
-                                        tabindex="0"
-                                        @keydown.enter="
-                                            router.visit(route('tours'))
-                                        "
-                                        title="Tours"
-                                    >
-                                        <FontAwesomeIcon
-                                            :icon="faRoute"
-                                            class="drop-shadow-md"
-                                        />
-                                        <span class="ml-3">Tours</span>
-                                    </li>
-                                    <li
-                                        class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer"
-                                        @click="router.visit(route('hoteles'))"
-                                        tabindex="0"
-                                        @keydown.enter="
-                                            router.visit(route('hoteles'))
-                                        "
-                                        title="Otros"
-                                    >
-                                        <FontAwesomeIcon
-                                            :icon="faHotel"
-                                            class="drop-shadow-md"
-                                        />
-                                        <span class="ml-3">Hoteles</span>
-                                    </li>
-                                    <li
-                                        class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer"
-                                        @click="
-                                            router.visit(route('aerolineas'))
-                                        "
-                                        tabindex="0"
-                                        @keydown.enter="
-                                            router.visit(route('aerolineas'))
-                                        "
-                                        title="Aerolineas"
-                                    >
-                                        <FontAwesomeIcon
-                                            :icon="faPlaneDeparture"
-                                            class="drop-shadow-md"
-                                        />
-                                        <span class="ml-3">Aerolineas</span>
-                                    </li>
-                                </ul>
+                                        <li>
+                                            <Link
+                                                :href="route('productos')"
+                                                class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer w-full"
+                                                title="Productos"
+                                            >
+                                                <FontAwesomeIcon
+                                                    :icon="faBox"
+                                                    class="drop-shadow-md"
+                                                />
+                                                <span class="ml-3">Productos</span>
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                :href="route('tours')"
+                                                class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer w-full"
+                                                title="Tours"
+                                            >
+                                                <FontAwesomeIcon
+                                                    :icon="faRoute"
+                                                    class="drop-shadow-md"
+                                                />
+                                                <span class="ml-3">Tours</span>
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                :href="route('hoteles')"
+                                                class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer w-full"
+                                                title="Hoteles"
+                                            >
+                                                <FontAwesomeIcon
+                                                    :icon="faHotel"
+                                                    class="drop-shadow-md"
+                                                />
+                                                <span class="ml-3">Hoteles</span>
+                                            </Link>
+                                        </li>
+                                        <li>
+                                            <Link
+                                                :href="route('aerolineas')"
+                                                class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer w-full"
+                                                title="Aerolineas"
+                                            >
+                                                <FontAwesomeIcon
+                                                    :icon="faPlaneDeparture"
+                                                    class="drop-shadow-md"
+                                                />
+                                                <span class="ml-3">Aerolineas</span>
+                                            </Link>
+                                        </li>
+                                    </ul>
                             </transition>
                         </li>
-                        <li
-                            class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
+                        <Link
+                            :href="route('reservatours')"
+                            class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer w-full"
                             :class="
                                 isSidebarCollapsed
                                     ? 'justify-center'
                                     : 'justify-start'
                             "
-                            @click="router.visit(route('reservatours'))"
-                            tabindex="0"
-                            @keydown.enter="router.visit(route('reservatours'))"
                             title="Gestionar reservas"
                         >
                             <FontAwesomeIcon
@@ -525,17 +516,15 @@ function manageClientes() {
                             <span v-if="!isSidebarCollapsed"
                                 >Reservaciones</span
                             >
-                        </li>
-                        <li
-                            class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
+                        </Link>
+                        <Link
+                            :href="route('informes')"
+                            class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer w-full"
                             :class="
                                 isSidebarCollapsed
                                     ? 'justify-center'
                                     : 'justify-start'
                             "
-                            @click="router.visit(route('informes'))"
-                            tabindex="0"
-                            @keydown.enter="router.visit(route('informes'))"
                             title="Generar informes"
                         >
                             <FontAwesomeIcon
@@ -547,21 +536,19 @@ function manageClientes() {
                                 class="h-6"
                             />
                             <span v-if="!isSidebarCollapsed">Informes</span>
-                        </li>
-                        <li
-                            class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer"
+                        </Link>
+                        <Link
+                            :href="route('catPTH')"
+                            class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer w-full"
                             :class="
                                 isSidebarCollapsed
                                     ? 'justify-center'
                                     : 'justify-start'
                             "
-                            @click="router.visit(route('catPTH'))"
-                            tabindex="0"
-                            @keydown.enter="router.visit(route('catPTH'))"
                             title="Control de categorias">
                             <FontAwesomeIcon :icon="faListCheck" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
                             <span v-if="!isSidebarCollapsed">Gestión categorías</span>
-                        </li>
+                        </Link>
                     </ul>
                 </nav>
                 <ul
@@ -643,6 +630,11 @@ function manageClientes() {
                         </transition>
                     </li>
                 </ul>
+                
+                <!-- Enlaces invisibles para el menú de configuración -->
+                <Link ref="assignRolesRef" :href="route('roles')" class="hidden"></Link>
+                <Link ref="systemSettingsRef" :href="route('settings')" class="hidden"></Link>
+                <Link ref="manageClientesRef" :href="route('clientes')" class="hidden"></Link>
             </aside>
             <div
                 v-if="isSidebarOpen"
@@ -665,3 +657,4 @@ function manageClientes() {
         </div>
     </div>
 </template>
+

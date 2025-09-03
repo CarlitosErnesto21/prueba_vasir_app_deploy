@@ -21,152 +21,150 @@ defineProps({
 
     <AuthenticatedLayout>
         <template #header>
-            <!-- Header con gradiente y diseño moderno -->
-            <div class="bg-gradient-to-r from-red-600 to-red-800 rounded-lg shadow-lg p-4 sm:p-6 mb-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3 sm:space-x-4">
-                        <!-- Icono de perfil -->
-                        <div class="bg-white/20 rounded-full p-2 sm:p-3">
-                            <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
+            <div class="bg-white shadow-sm border-b border-gray-200">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-blue-600 rounded-lg p-3">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 class="text-2xl font-semibold text-gray-900">Mi Perfil</h1>
+                                <p class="text-sm text-gray-600">Gestiona tu información personal y configuración de cuenta</p>
+                            </div>
                         </div>
-                        <div>
-                            <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
-                                👤 Mi Perfil
-                            </h1>
-                            <p class="text-red-100 text-sm sm:text-base mt-1">
-                                Gestiona tu información personal y configuración de cuenta
-                            </p>
+                        
+                        <div class="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span>Cuenta Activa</span>
                         </div>
-                    </div>
-                    
-                    <!-- Badge de usuario -->
-                    <div class="hidden sm:flex bg-white/20 rounded-full px-3 py-1">
-                        <span class="text-white text-sm font-medium">
-                            👨‍💼 Usuario Activo
-                        </span>
                     </div>
                 </div>
             </div>
         </template>
 
-        <!-- Contenido principal -->
-        <div class="py-6 sm:py-8 lg:py-12">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 
-                <!-- Grid responsivo con espaciado mejorado -->
-                <div class="grid gap-6 sm:gap-8 lg:grid-cols-2 xl:grid-cols-3">
+                <!-- Navegación de secciones -->
+                <div class="mb-8">
+                    <nav class="flex space-x-8 border-b border-gray-200">
+                        <a href="#profile" class="border-b-2 border-blue-600 pb-3 px-1 text-sm font-medium text-blue-600">
+                            Información Personal
+                        </a>
+                        <a href="#security" class="border-b-2 border-transparent pb-3 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            Seguridad
+                        </a>
+                        <a href="#account" class="border-b-2 border-transparent pb-3 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            Configuración
+                        </a>
+                    </nav>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     
-                    <!-- Sección 1: Información Personal -->
-                    <div class="lg:col-span-2 xl:col-span-2">
-                        <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                            <!-- Header de la sección -->
-                            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 sm:p-6 border-b border-gray-100">
-                                <div class="flex items-center space-x-3">
-                                    <div class="bg-blue-500 rounded-lg p-2">
-                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-lg sm:text-xl font-bold text-gray-800">
-                                            📝 Información Personal
-                                        </h3>
-                                        <p class="text-gray-600 text-sm">
-                                            Actualiza tu nombre, email y datos de contacto
-                                        </p>
-                                    </div>
-                                </div>
+                    <!-- Contenido principal -->
+                    <div class="lg:col-span-3 space-y-8">
+                        
+                        <!-- Información Personal -->
+                        <section id="profile" class="bg-white shadow-sm rounded-lg border border-gray-200">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h2 class="text-lg font-medium text-gray-900">Información Personal</h2>
+                                <p class="mt-1 text-sm text-gray-600">
+                                    Actualiza tu información de perfil y dirección de correo electrónico.
+                                </p>
                             </div>
-                            
-                            <!-- Contenido -->
-                            <div class="p-4 sm:p-6 lg:p-8">
+                            <div class="px-6 py-6">
                                 <UpdateProfileInformationForm
                                     :must-verify-email="mustVerifyEmail"
                                     :status="status"
-                                    class="max-w-full"
                                 />
                             </div>
-                        </div>
+                        </section>
+
+                        <!-- Seguridad -->
+                        <section id="security" class="bg-white shadow-sm rounded-lg border border-gray-200">
+                            <div class="px-6 py-4 border-b border-gray-200">
+                                <h2 class="text-lg font-medium text-gray-900">Seguridad</h2>
+                                <p class="mt-1 text-sm text-gray-600">
+                                    Actualiza tu contraseña para mantener tu cuenta segura.
+                                </p>
+                            </div>
+                            <div class="px-6 py-6">
+                                <UpdatePasswordForm />
+                            </div>
+                        </section>
+
+                        <!-- Configuración de cuenta -->
+                        <section id="account" class="bg-white shadow-sm rounded-lg border border-red-200">
+                            <div class="px-6 py-4 border-b border-red-200 bg-red-50">
+                                <h2 class="text-lg font-medium text-red-900">Eliminar Cuenta</h2>
+                                <p class="mt-1 text-sm text-red-700">
+                                    Esta acción es irreversible. Todos tus datos serán eliminados permanentemente.
+                                </p>
+                            </div>
+                            <div class="px-6 py-6">
+                                <DeleteUserForm />
+                            </div>
+                        </section>
                     </div>
 
-                    <!-- Sección 2: Seguridad -->
-                    <div class="xl:col-span-1">
-                        <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                            <!-- Header de la sección -->
-                            <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-4 sm:p-6 border-b border-gray-100">
-                                <div class="flex items-center space-x-3">
-                                    <div class="bg-green-500 rounded-lg p-2">
-                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-lg sm:text-xl font-bold text-gray-800">
-                                            🔐 Seguridad
-                                        </h3>
-                                        <p class="text-gray-600 text-sm">
-                                            Cambia tu contraseña
-                                        </p>
-                                    </div>
+                    <!-- Sidebar -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-6 sticky top-8">
+                            <h3 class="text-sm font-medium text-gray-900 mb-4">Estado de la Cuenta</h3>
+                            
+                            <!-- Estado de verificación -->
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between py-2">
+                                    <span class="text-sm text-gray-600">Email</span>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Verificado
+                                    </span>
+                                </div>
+                                
+                                <div class="flex items-center justify-between py-2">
+                                    <span class="text-sm text-gray-600">Contraseña</span>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Segura
+                                    </span>
+                                </div>
+                                
+                                <div class="flex items-center justify-between py-2">
+                                    <span class="text-sm text-gray-600">Último acceso</span>
+                                    <span class="text-xs text-gray-500">Hoy</span>
                                 </div>
                             </div>
-                            
-                            <!-- Contenido -->
-                            <div class="p-4 sm:p-6">
-                                <UpdatePasswordForm class="max-w-full" />
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Sección 3: Zona Peligrosa (Eliminar Cuenta) -->
-                    <div class="lg:col-span-2 xl:col-span-3">
-                        <div class="bg-white rounded-xl shadow-lg border border-red-200 overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                            <!-- Header de la sección -->
-                            <div class="bg-gradient-to-r from-red-50 to-pink-50 p-4 sm:p-6 border-b border-red-200">
-                                <div class="flex items-center space-x-3">
-                                    <div class="bg-red-500 rounded-lg p-2">
-                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-lg sm:text-xl font-bold text-red-800">
-                                            ⚠️ Zona Peligrosa
-                                        </h3>
-                                        <p class="text-red-600 text-sm">
-                                            Acciones irreversibles - Procede con cuidado
-                                        </p>
-                                    </div>
-                                </div>
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <h4 class="text-sm font-medium text-gray-900 mb-3">Recomendaciones de Seguridad</h4>
+                                <ul class="text-xs text-gray-600 space-y-2">
+                                    <li class="flex items-start">
+                                        <span class="w-1.5 h-1.5 bg-blue-600 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                                        Usa contraseñas únicas y seguras
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="w-1.5 h-1.5 bg-blue-600 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                                        Mantén tu email actualizado
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="w-1.5 h-1.5 bg-blue-600 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                                        Revisa regularmente la actividad
+                                    </li>
+                                </ul>
                             </div>
-                            
-                            <!-- Contenido -->
-                            <div class="p-4 sm:p-6 lg:p-8">
-                                <DeleteUserForm class="max-w-2xl" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Información adicional -->
-                <div class="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-blue-200">
-                    <div class="flex items-start space-x-3">
-                        <div class="bg-blue-500 rounded-full p-1 mt-1">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="text-sm font-semibold text-blue-800 mb-1">
-                                💡 Consejos de Seguridad
-                            </h4>
-                            <div class="text-sm text-blue-700 space-y-1">
-                                <p>• Usa una contraseña fuerte con al menos 8 caracteres</p>
-                                <p>• Incluye mayúsculas, minúsculas, números y símbolos</p>
-                                <p>• No compartas tus credenciales con otras personas</p>
-                                <p>• Verifica que tu email esté siempre actualizado</p>
+                            <!-- Soporte -->
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <h4 class="text-sm font-medium text-gray-900 mb-2">¿Necesitas ayuda?</h4>
+                                <p class="text-xs text-gray-600 mb-3">
+                                    Contacta con nuestro equipo de soporte para cualquier consulta.
+                                </p>
+                                <button class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium py-2 px-3 rounded-md transition-colors">
+                                    Contactar Soporte
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -177,43 +175,13 @@ defineProps({
 </template>
 
 <style scoped>
-/* Animaciones suaves */
-.transition-shadow {
-    transition: box-shadow 0.3s ease-in-out;
+.sticky {
+    position: sticky;
 }
 
-/* Efectos hover mejorados */
-.hover\:shadow-xl:hover {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-/* Mejoras de responsividad */
-@media (max-width: 640px) {
-    .grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (min-width: 1024px) {
-    .lg\:col-span-2 {
-        grid-column: span 2;
-    }
-}
-
-@media (min-width: 1280px) {
-    .xl\:col-span-3 {
-        grid-column: span 3;
-    }
-    .xl\:col-span-2 {
-        grid-column: span 2;
-    }
-    .xl\:col-span-1 {
-        grid-column: span 1;
-    }
-}
-
-/* Efectos de gradiente suaves */
-.bg-gradient-to-r {
-    background-image: linear-gradient(to right, var(--tw-gradient-stops));
+.transition-colors {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
 }
 </style>
