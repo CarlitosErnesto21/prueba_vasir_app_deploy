@@ -37,8 +37,8 @@ Route::apiResource('metodos-pago', MetodoPagoController::class);
 Route::apiResource('reservas', ReservaController::class);
 Route::apiResource('tours', TourController::class);
 Route::apiResource('categorias-hoteles', CategoriaHotelController::class);
-Route::apiResource('paises', PaisController::class);
-Route::apiResource('provincias', ProvinciaController::class);
+Route::apiResource('paises', PaisController::class)->parameter('paises', 'pais');
+Route::apiResource('provincias', ProvinciaController::class)->parameter('provincias', 'provincia');
 Route::apiResource('transportes', TransporteController::class);
 Route::apiResource('tipo-documentos', TipoDocumentoController::class);
 

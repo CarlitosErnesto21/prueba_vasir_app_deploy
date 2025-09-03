@@ -42,6 +42,8 @@ class ProvinciaController extends Controller
         ]);
 
         $provincia->update($validated);
+        $provincia->refresh();
+        $provincia->load('pais');
 
         return response()->json([
             'message' => 'Provincia actualizada exitosamente',
