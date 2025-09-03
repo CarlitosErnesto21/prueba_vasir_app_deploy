@@ -10,8 +10,11 @@ class Transporte extends Model
     use HasFactory;
     protected $table = 'transportes';
     protected $fillable = [
+        'numero_placa',
         'nombre',
         'capacidad',
+        'marca',
+        'estado',
     ];
     public function tours()
     {
