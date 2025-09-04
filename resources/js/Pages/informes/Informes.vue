@@ -118,7 +118,7 @@ async function descargarPDF() {
     meses = mesesFiltrados.value
   }
   meses.forEach(mes => params.append('meses[]', mes))
-  
+    
   try {
     showToast('info', 'Generando informe...', '', 2000)
     

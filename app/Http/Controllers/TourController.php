@@ -182,7 +182,7 @@ class TourController extends Controller
         $tours = $this->getToursByCategory('nacional');
 
         // Siempre devolver vista Inertia para rutas web
-        return inertia('vistasClientes/ToursNacionales', [
+        return inertia('VistasClientes/ToursNacionales', [
             'tours' => $tours
         ]);
     }
@@ -196,7 +196,7 @@ class TourController extends Controller
         $tours = $this->getToursByCategory('internacional');
 
         // Siempre devolver vista Inertia para rutas web
-        return inertia('vistasClientes/ToursInternacionales', [
+        return inertia('VistasClientes/ToursInternacionales', [
             'tours' => $tours
         ]);
     }
@@ -228,7 +228,7 @@ class TourController extends Controller
             ->where('categoria', 'NACIONAL')
             ->firstOrFail();
 
-        return inertia('vistasClientes/DetalleTour', [
+        return inertia('VistasClientes/DetalleTour', [
             'tour' => $tour,
             'tipo' => 'nacional'
         ]);
@@ -244,7 +244,7 @@ class TourController extends Controller
             ->where('categoria', 'INTERNACIONAL')
             ->firstOrFail();
 
-        return inertia('vistasClientes/DetalleTour', [
+        return inertia('VistasClientes/DetalleTour', [
             'tour' => $tour,
             'tipo' => 'internacional'
         ]);

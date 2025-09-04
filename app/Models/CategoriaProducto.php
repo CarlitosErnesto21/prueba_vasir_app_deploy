@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Laravel\Sanctum\HasApiTokens;
 
 class CategoriaProducto extends Model
 {
@@ -14,7 +13,7 @@ class CategoriaProducto extends Model
     protected $fillable = [
         'nombre'
     ];
-    public function producto()
+    public function productos()
     {
         return $this->hasMany(Producto::class, 'categoria_id');
     }

@@ -24,8 +24,8 @@ return new class extends Migration
             $table->decimal('precio', 7, 2);
             // llaves foraneeas a reservas y aerolineas
             $table->unsignedBigInteger('reserva_id');
-            $table->unsignedBigInteger('aerolinea_id');
             $table->foreign('reserva_id')->references('id')->on('reservas')->onDelete('cascade');
+            $table->unsignedBigInteger('aerolinea_id');            
             $table->foreign('aerolinea_id')->references('id')->on('aerolineas')->onDelete('cascade');
             $table->timestamps();
         });
