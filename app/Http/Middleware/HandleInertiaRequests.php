@@ -44,8 +44,13 @@ class HandleInertiaRequests extends Middleware
                         'email' => $user->email,
                     ],
                     [
-                        // Obtiene el primer rol del usuario (puede tener varios)
-                        'role' => $user->roles->pluck('name')->first()
+                        // Obtiene todos los roles del usuario como array de objetos
+                        'roles' => $user->roles->map(function ($role) {
+                            return [
+                                'id' => $role->id,
+                                'name' => $role->name,
+                            ];
+                        })->toArray()
                     ]
                 ) : null, // Si no hay usuario autenticado, retorna null
             ],

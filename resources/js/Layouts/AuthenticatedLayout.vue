@@ -216,7 +216,7 @@ function manageClientes() {
                                     <div class="mt-3 flex justify-between items-center">
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white bg-opacity-20 text-white backdrop-blur-sm">
                                             <div class="w-2 h-2 bg-white rounded-full mr-2 opacity-75"></div>
-                                            {{ user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "Invitado" }}
+                                            {{ user?.roles && user.roles.length > 0 ? user.roles[0].name.charAt(0).toUpperCase() + user.roles[0].name.slice(1) : "Invitado" }}
                                         </span>
                                         <div class="text-xs text-red-100 opacity-75">
                                             En línea
@@ -587,7 +587,7 @@ function manageClientes() {
                             >
                                 <div class="py-2">
                                     <button
-                                        v-if="user?.role === 'admin'"
+                                        v-if="user?.roles && user.roles.some(role => role.name === 'admin')"
                                         @click.stop="assignRoles"
                                         class="w-full flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors duration-200 text-left"
                                     >
