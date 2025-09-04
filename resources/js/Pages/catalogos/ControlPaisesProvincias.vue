@@ -109,7 +109,6 @@ async function guardarItem(){
       toast.add({severity:"warn", summary:"Límite excedido", detail:"El nombre no puede tener más de 50 caracteres", life: 4000});
       return;
     }
-
     // ✅ VALIDACIÓN ESPECÍFICA PARA PROVINCIAS
     if(tipoAgregar.value === "Provincia" && !nuevoItem.value.pais_id) {
       toast.add({severity:"warn", summary:"Campo requerido", detail:"Debe seleccionar un país para la provincia", life: 4000});
@@ -440,7 +439,7 @@ const validateNombre = (item, isEdit = false) => {
               :class="{ 'border-red-300': !nuevoItem.nombre || nuevoItem.nombre.trim() === '' }"
               :disabled="!tipoAgregar"
               maxlength="50"
-              @input="validateNombre(nuevoItem)"
+              @keypress="e => { if (!/[A-Za-zÀ-ÿ\s]/.test(e.key)) e.preventDefault() }"
             />
             <small class="text-red-500 mt-1" v-if="!nuevoItem.nombre || nuevoItem.nombre.trim() === ''">
               ⚠️ El nombre es obligatorio
@@ -519,7 +518,7 @@ const validateNombre = (item, isEdit = false) => {
               class="w-full" 
               :class="{ 'border-red-300': !itemEdit.nombre || itemEdit.nombre.trim() === '' }"
               maxlength="50"
-              @input="validateNombre(itemEdit, true)"
+              @keypress="e => { if (!/[A-Za-zÀ-ÿ\s]/.test(e.key)) e.preventDefault() }"
             />
             <small class="text-red-500 mt-1" v-if="!itemEdit.nombre || itemEdit.nombre.trim() === ''">
               ⚠️ El nombre es obligatorio

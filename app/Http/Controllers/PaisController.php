@@ -25,6 +25,9 @@ class PaisController extends Controller
                 'string',
                 'max:50',
                 function ($attribute, $value, $fail) use ($nombreNormalizado) {
+                     if (!preg_match('/^[\p{L} ]+$/u', $value)) {
+                        $fail('El nombre solo puede contener letras.');
+                    }
                     if (Pais::whereRaw('LOWER(TRIM(REGEXP_REPLACE(nombre, "[[:space:]]+", " "))) = ?', [strtolower($nombreNormalizado)])->exists()) {
                         $fail('Ya existe un país con este nombre.');
                     }
