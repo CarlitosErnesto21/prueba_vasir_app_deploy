@@ -16,8 +16,17 @@ class TransporteController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'numero_placa' => [
+                'required',
+                'string',
+                'max:10',
+                'unique:transportes,numero_placa',
+                'regex:/^(P|M|C|A|R|D|V|G|AB|MB|CD|CC|CR|MI|FA|PE|OF|OI)[ -]?[0-9A-F]{6}$/i'
+            ],
             'nombre' => 'required|string|max:50',
             'capacidad' => 'required|integer|min:1',
+            'marca' => 'required|string|max:30',
+            'estado' => 'required|in:DISPONIBLE,NO_DISPONIBLE',
         ]);
 
         $transporte = Transporte::create($validated);
@@ -36,8 +45,17 @@ class TransporteController extends Controller
     public function update(Request $request, Transporte $transporte)
     {
         $validated = $request->validate([
+            'numero_placa' => [
+                'required',
+                'string',
+                'max:10',
+                'unique:transportes,numero_placa,' . $transporte->id,
+                'regex:/^(P|M|C|A|R|D|V|G|AB|MB|CD|CC|CR|MI|FA|PE|OF|OI)[ -]?[0-9A-F]{6}$/i'
+            ],
             'nombre' => 'required|string|max:50',
             'capacidad' => 'required|integer|min:1',
+            'marca' => 'required|string|max:30',
+            'estado' => 'required|in:DISPONIBLE,NO_DISPONIBLE',
         ]);
 
         $transporte->update($validated);

@@ -27,7 +27,7 @@ class SobreNosotrosController extends Controller
             'description' => $description ? $description->value : '',
         ];
         
-        return Inertia::render('vistasClientes/SobreNosotros', [
+        return Inertia::render('VistasClientes/SobreNosotros', [
             'siteSettings' => $siteSettings
         ]);
     }

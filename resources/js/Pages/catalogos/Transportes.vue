@@ -12,8 +12,11 @@ const toast = useToast();
 const transportes = ref([]);
 const transporte = ref({
     id: null,
+    numero_placa: "",
     nombre: "",
     capacidad: null,
+    marca: "",
+    estado: "DISPONIBLE",
 });
 const selectedTransportes = ref(null);
 const dialog = ref(false);
@@ -77,8 +80,11 @@ watch([transporte], () => {
 function resetForm() {
     transporte.value = {
         id: null,
+        numero_placa: "",
         nombre: "",
         capacidad: null,
+        marca: "",
+        estado: "DISPONIBLE",
     };
     submitted.value = false;
 }
@@ -117,8 +123,17 @@ const editTransporte = (t) => {
     });
 };
 
+const placaRegex = /^(P|M|C|A|R|D|V|G|AB|MB|CD|CC|CR|MI|FA|PE|OF|OI)[ -]?[0-9A-F]{6}$/i;
 const saveOrUpdate = async () => {
     submitted.value = true;
+    if (!transporte.value.numero_placa || transporte.value.numero_placa.length < 5 || transporte.value.numero_placa.length > 10) {
+        toast.add({ severity: "warn", summary: "Campos requeridos", detail: "La placa debe tener entre 5 y 10 caracteres.", life: 4000 });
+        return;
+    }
+    if (!placaRegex.test(transporte.value.numero_placa)) {
+        toast.add({ severity: "warn", summary: "Formato inválido", detail: "La placa debe iniciar con un prefijo válido y tener 6 caracteres alfanuméricos. Ejemplo: P 123456, AB-12A3F", life: 5000 });
+        return;
+    }
     if (!transporte.value.nombre || transporte.value.nombre.length < 3 || transporte.value.nombre.length > 50) {
         toast.add({ severity: "warn", summary: "Campos requeridos", detail: "El nombre debe tener entre 3 y 50 caracteres.", life: 4000 });
         return;
@@ -127,18 +142,28 @@ const saveOrUpdate = async () => {
         toast.add({ severity: "warn", summary: "Campos requeridos", detail: "La capacidad debe ser al menos 1.", life: 4000 });
         return;
     }
+    if (!transporte.value.marca || transporte.value.marca.length < 2 || transporte.value.marca.length > 30) {
+        toast.add({ severity: "warn", summary: "Campos requeridos", detail: "La marca debe tener entre 2 y 30 caracteres.", life: 4000 });
+        return;
+    }
     try {
         let response;
         if (!transporte.value.id) {
             response = await axios.post("/api/transportes", {
+                numero_placa: transporte.value.numero_placa,
                 nombre: transporte.value.nombre,
                 capacidad: transporte.value.capacidad,
+                marca: transporte.value.marca,
+                estado: transporte.value.estado,
             });
             toast.add({ severity: "success", summary: "¡Éxito!", detail: "Transporte creado correctamente.", life: 4000 });
         } else {
             response = await axios.put(`/api/transportes/${transporte.value.id}`, {
+                numero_placa: transporte.value.numero_placa,
                 nombre: transporte.value.nombre,
                 capacidad: transporte.value.capacidad,
+                marca: transporte.value.marca,
+                estado: transporte.value.estado,
             });
             toast.add({ severity: "success", summary: "¡Éxito!", detail: "Transporte actualizado correctamente.", life: 4000 });
         }
@@ -148,7 +173,11 @@ const saveOrUpdate = async () => {
         originalTransporteData.value = null;
         resetForm();
     } catch (err) {
-        toast.add({ severity: "error", summary: "Error", detail: "No se pudo guardar el transporte.", life: 4000 });
+        if (err.response && err.response.data && err.response.data.errors && err.response.data.errors.numero_placa) {
+            toast.add({ severity: "error", summary: "Error", detail: err.response.data.errors.numero_placa[0], life: 4000 });
+        } else {
+            toast.add({ severity: "error", summary: "Error", detail: "No se pudo guardar el transporte.", life: 4000 });
+        }
     }
 };
 
@@ -186,12 +215,6 @@ const closeDialogWithoutSaving = () => {
 
 const continueEditing = () => {
     unsavedChangesDialog.value = false;
-};
-
-const clearFilters = () => {
-    filters.value.global.value = null;
-    filters.value.nombre.value = null;
-    filters.value.capacidad.value = null;
 };
 </script>
 <template>
@@ -249,9 +272,6 @@ const clearFilters = () => {
                                     {{ filteredTransportes.length }} resultado{{ filteredTransportes.length !== 1 ? 's' : '' }}
                                 </div>
                             </div>
-                            <button class="bg-red-500 hover:bg-red-600 border border-red-500 px-3 py-1 text-sm text-white shadow-md rounded-md" @click="clearFilters">
-                                <FontAwesomeIcon :icon="faFilter" class="h-4 w-4 text-white" /><span>&nbsp;Limpiar filtros</span>
-                            </button>
                         </div>
                         <div class="space-y-3">
                             <div>
@@ -260,6 +280,13 @@ const clearFilters = () => {
                         </div>
                     </div>
                 </template>
+                <Column field="numero_placa" header="Placa" sortable class="w-32 min-w-24">
+                    <template #body="slotProps">
+                        <div class="text-sm font-mono leading-relaxed">
+                            {{ slotProps.data.numero_placa }}
+                        </div>
+                    </template>
+                </Column>
                 <Column field="nombre" header="Nombre" sortable class="w-40 min-w-34">
                     <template #body="slotProps">
                         <div class="text-sm font-medium leading-relaxed">
@@ -267,16 +294,25 @@ const clearFilters = () => {
                         </div>
                     </template>
                 </Column>
-                <Column field="capacidad" class="w-40 min-w-20">
-                    <template #header>
-                        <div class="text-center w-full font-bold">
-                            Capacidad
-                        </div>
-                    </template>
+                <Column field="capacidad" header="Capacidad" class="w-32 min-w-20">
                     <template #body="slotProps">
                         <div class="text-sm leading-relaxed text-center">
                             {{ slotProps.data.capacidad }}
                         </div>
+                    </template>
+                </Column>
+                <Column field="marca" header="Marca" sortable class="w-32 min-w-24">
+                    <template #body="slotProps">
+                        <div class="text-sm leading-relaxed">
+                            {{ slotProps.data.marca }}
+                        </div>
+                    </template>
+                </Column>
+                <Column field="estado" header="Estado" sortable class="w-32 min-w-24">
+                    <template #body="slotProps">
+                        <span :class="slotProps.data.estado === 'DISPONIBLE' ? 'bg-green-100 text-green-800 px-2 py-1 rounded-full' : 'bg-red-100 text-red-800 px-2 py-1 rounded-full'">
+                            {{ slotProps.data.estado === 'NO_DISPONIBLE' ? 'NO DISPONIBLE' : slotProps.data.estado }}
+                        </span>
                     </template>
                 </Column>
                 <Column :exportable="false" class="w-40 min-w-52">
@@ -307,6 +343,23 @@ const clearFilters = () => {
                 <div class="space-y-4">
                     <div class="w-full flex flex-col">
                         <div class="flex items-center gap-4">
+                            <label for="numero_placa" class="w-24 flex items-center gap-1">
+                                Placa: <span class="text-red-500 font-bold">*</span>
+                            </label>
+                            <InputText v-model.trim="transporte.numero_placa" id="numero_placa" name="numero_placa" :maxlength="10" :class="{'p-invalid': submitted && (!transporte.numero_placa || transporte.numero_placa.length < 5 || transporte.numero_placa.length > 10),}" class="flex-1" placeholder="Ej. ABC123, 12A345"/>
+                        </div>
+                        <small class="text-red-500 ml-28" v-if="transporte.numero_placa && transporte.numero_placa.length < 5">
+                            La placa debe tener al menos 5 caracteres. Actual: {{ transporte.numero_placa.length }}/5
+                        </small>
+                        <small class="text-orange-500 ml-28" v-if="transporte.numero_placa && transporte.numero_placa.length > 10">
+                            Caracteres restantes: {{ 10 - transporte.numero_placa.length }}
+                        </small>
+                        <small class="text-red-500 ml-28" v-if="submitted && !transporte.numero_placa">
+                            La placa es obligatoria.
+                        </small>
+                    </div>
+                    <div class="w-full flex flex-col">
+                        <div class="flex items-center gap-4">
                             <label for="nombre" class="w-24 flex items-center gap-1">
                                 Nombre: <span class="text-red-500 font-bold">*</span>
                             </label>
@@ -332,6 +385,34 @@ const clearFilters = () => {
                         <small class="text-red-500 ml-28" v-if="submitted && (!transporte.capacidad || transporte.capacidad < 1)">
                             La capacidad es obligatoria y debe ser mayor o igual a 1.
                         </small>
+                    </div>
+                    <div class="w-full flex flex-col">
+                        <div class="flex items-center gap-4">
+                            <label for="marca" class="w-24 flex items-center gap-1">
+                                Marca: <span class="text-red-500 font-bold">*</span>
+                            </label>
+                            <InputText v-model.trim="transporte.marca" id="marca" name="marca" :maxlength="30" :class="{'p-invalid': submitted && (!transporte.marca || transporte.marca.length < 2 || transporte.marca.length > 30),}" class="flex-1" placeholder="Ej. Toyota, Mercedes"/>
+                        </div>
+                        <small class="text-red-500 ml-28" v-if="transporte.marca && transporte.marca.length < 2">
+                            La marca debe tener al menos 2 caracteres. Actual: {{ transporte.marca.length }}/2
+                        </small>
+                        <small class="text-orange-500 ml-28" v-if="transporte.marca && transporte.marca.length > 30">
+                            Caracteres restantes: {{ 30 - transporte.marca.length }}
+                        </small>
+                        <small class="text-red-500 ml-28" v-if="submitted && !transporte.marca">
+                            La marca es obligatoria.
+                        </small>
+                    </div>
+                    <div class="w-full flex flex-col">
+                        <div class="flex items-center gap-4">
+                            <label for="estado" class="w-24 flex items-center gap-1">
+                                Estado: <span class="text-red-500 font-bold">*</span>
+                            </label>
+                            <select v-model="transporte.estado" id="estado" name="estado" class="flex-1 border rounded px-2 py-1">
+                                <option value="DISPONIBLE">DISPONIBLE</option>
+                                <option value="NO_DISPONIBLE">NO DISPONIBLE</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <template #footer>

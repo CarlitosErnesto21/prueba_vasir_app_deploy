@@ -18,14 +18,14 @@ Route::get('/', fn() => Inertia::render('Inicio'))->name('inicio');
 Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
 
     Route::get('dashboard', fn() => Inertia::render('Dashboard'))->name('dashboard');
-    Route::get('transportes', fn() => Inertia::render('catalogos/Transportes'))->name('transportes');
-    Route::get('productos', fn() => Inertia::render('catalogos/Productos'))->name('productos');
-    Route::get('hoteles', fn() => Inertia::render('catalogos/Hoteles'))->name('hoteles');
-    Route::get('gestion-reserva-tours', fn() => Inertia::render('catalogos/ReservaTours'))->name('reservatours');
-    Route::get('tours', fn() => Inertia::render('catalogos/Tours'))->name('tours');
-    Route::get('aerolineas', fn() => Inertia::render('catalogos/Aerolineas'))->name('aerolineas');
-    Route::get('categorias', fn() => Inertia::render('catalogos/ControlCategorias'))->name('catPTH');
-    Route::get('control-paises-provincias', fn() => Inertia::render('catalogos/ControlPaisesProvincias'))->name('controlPaisesProvincias');
+    Route::get('transportes', fn() => Inertia::render('Catalogos/Transportes'))->name('transportes');
+    Route::get('productos', fn() => Inertia::render('Catalogos/Productos'))->name('productos');
+    Route::get('hoteles', fn() => Inertia::render('Catalogos/Hoteles'))->name('hoteles');
+    Route::get('gestion-reserva-tours', fn() => Inertia::render('Catalogos/ReservaTours'))->name('reservatours');
+    Route::get('tours', fn() => Inertia::render('Catalogos/Tours'))->name('tours');
+    Route::get('aerolineas', fn() => Inertia::render('Catalogos/Aerolineas'))->name('aerolineas');
+    Route::get('categorias', fn() => Inertia::render('Catalogos/ControlCategorias'))->name('catPTH');
+    Route::get('control-paises-provincias', fn() => Inertia::render('Catalogos/ControlPaisesProvincias'))->name('controlPaisesProvincias');
     Route::get('tipo-documentos', fn() => Inertia::render('Configuracion/TiposDocumento'))->name('tipodocumentos');
     Route::get('generar-informes', fn() => Inertia::render('Informes/Informes'))->name('informes');
     Route::get('clientes', fn() => Inertia::render('Configuracion/Clientes'))->name('clientes');
@@ -60,13 +60,13 @@ Route::middleware('auth')->group(function () {
 });
 
 //Rutas de clientes
-Route::get('paquetes', fn() => Inertia::render('vistasClientes/Paquetes'))->name('paquetes');
-Route::get('reservaciones', fn() => Inertia::render('vistasClientes/Reservaciones'))->name('reservaciones');
-Route::get('tours-nacionales', fn() => Inertia::render('vistasClientes/ToursNacionales'))->name('tours-nacionales');
-Route::get('tours-internacionales', fn() => Inertia::render('vistasClientes/ToursInternacionales'))->name('tours-internacionales');
-Route::get('tienda', fn() => Inertia::render('vistasClientes/Tienda'))->name('tienda');
+Route::get('paquetes', fn() => Inertia::render('VistasClientes/Paquetes'))->name('paquetes');
+Route::get('reservaciones', fn() => Inertia::render('VistasClientes/Reservaciones'))->name('reservaciones');
+Route::get('tours-nacionales', fn() => Inertia::render('VistasClientes/ToursNacionales'))->name('tours-nacionales');
+Route::get('tours-internacionales', fn() => Inertia::render('VistasClientes/ToursInternacionales'))->name('tours-internacionales');
+Route::get('tienda', fn() => Inertia::render('VistasClientes/Tienda'))->name('tienda');
 Route::get('sobre-nosotros', [SobreNosotrosController::class, 'index'])->name('sobre-nosotros');
-Route::get('contactos', fn() => Inertia::render('vistasClientes/Contactos'))->name('contactos');
+Route::get('contactos', fn() => Inertia::render('VistasClientes/Contactos'))->name('contactos');
 
 //Estas rutas muestran un tour ya sea nacional o internacional
 Route::get('/tours-nacionales/{id}', [TourController::class, 'mostrarTourNacional'])->name('tour-nacional.show');

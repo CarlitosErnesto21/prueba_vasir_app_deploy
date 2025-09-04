@@ -9,6 +9,11 @@ import { ref } from 'vue';
 const passwordInput = ref(null);
 const currentPasswordInput = ref(null);
 
+// Estados para mostrar/ocultar contraseñas
+const showCurrentPassword = ref(false);
+const showNewPassword = ref(false);
+const showConfirmPassword = ref(false);
+
 const form = useForm({
     current_password: '',
     password: '',
@@ -34,87 +39,158 @@ const updatePassword = () => {
 </script>
 
 <template>
-    <section>
-        <header>
-            <h2 class="text-lg font-medium text-gray-900">
-                Update Password
-            </h2>
-
-            <p class="mt-1 text-sm text-gray-600">
-                Ensure your account is using a long, random password to stay
-                secure.
-            </p>
-        </header>
-
-        <form @submit.prevent="updatePassword" class="mt-6 space-y-6">
-            <div>
-                <InputLabel for="current_password" value="Current Password" />
-
-                <TextInput
-                    id="current_password"
-                    ref="currentPasswordInput"
-                    v-model="form.current_password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    autocomplete="current-password"
-                />
-
-                <InputError
-                    :message="form.errors.current_password"
-                    class="mt-2"
-                />
+    <section class="bg-white">
+        <form @submit.prevent="updatePassword" class="space-y-6">
+            <!-- Contraseña Actual -->
+            <div class="space-y-2">
+                <InputLabel for="current_password" value="Contraseña Actual" class="text-gray-700 font-medium text-sm" />
+                <div class="relative">
+                    <TextInput
+                        id="current_password"
+                        ref="currentPasswordInput"
+                        v-model="form.current_password"
+                        :type="showCurrentPassword ? 'text' : 'password'"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 pr-10 text-gray-900 text-sm
+                               focus:border-red-500 focus:ring-2 focus:ring-red-100 
+                               hover:border-gray-400 transition-colors
+                               bg-white placeholder-gray-500"
+                        autocomplete="current-password"
+                        placeholder="Tu contraseña actual"
+                    />
+                    <button
+                        type="button"
+                        @click="showCurrentPassword = !showCurrentPassword"
+                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                        <svg v-if="!showCurrentPassword" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/>
+                        </svg>
+                    </button>
+                </div>
+                <InputError :message="form.errors.current_password" class="text-red-600 text-sm" />
             </div>
 
-            <div>
-                <InputLabel for="password" value="New Password" />
+            <!-- Grid para nuevas contraseñas -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Nueva Contraseña -->
+                <div class="space-y-2">
+                    <InputLabel for="password" value="Nueva Contraseña" class="text-gray-700 font-medium text-sm" />
+                    <div class="relative">
+                        <TextInput
+                            id="password"
+                            ref="passwordInput"
+                            v-model="form.password"
+                            :type="showNewPassword ? 'text' : 'password'"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 pr-10 text-gray-900 text-sm
+                                   focus:border-red-500 focus:ring-2 focus:ring-red-100 
+                                   hover:border-gray-400 transition-colors
+                                   bg-white placeholder-gray-500"
+                            autocomplete="new-password"
+                            placeholder="Nueva contraseña"
+                        />
+                        <button
+                            type="button"
+                            @click="showNewPassword = !showNewPassword"
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                            <svg v-if="!showNewPassword" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <InputError :message="form.errors.password" class="text-red-600 text-sm" />
+                </div>
 
-                <TextInput
-                    id="password"
-                    ref="passwordInput"
-                    v-model="form.password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    autocomplete="new-password"
-                />
-
-                <InputError :message="form.errors.password" class="mt-2" />
+                <!-- Confirmar Contraseña -->
+                <div class="space-y-2">
+                    <InputLabel for="password_confirmation" value="Confirmar Contraseña" class="text-gray-700 font-medium text-sm" />
+                    <div class="relative">
+                        <TextInput
+                            id="password_confirmation"
+                            v-model="form.password_confirmation"
+                            :type="showConfirmPassword ? 'text' : 'password'"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2.5 pr-10 text-gray-900 text-sm
+                                   focus:border-red-500 focus:ring-2 focus:ring-red-100 
+                                   hover:border-gray-400 transition-colors
+                                   bg-white placeholder-gray-500"
+                            autocomplete="new-password"
+                            placeholder="Confirmar contraseña"
+                        />
+                        <button
+                            type="button"
+                            @click="showConfirmPassword = !showConfirmPassword"
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                            <svg v-if="!showConfirmPassword" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <InputError :message="form.errors.password_confirmation" class="text-red-600 text-sm" />
+                </div>
+            </div>
+                
+            <!-- Requisitos de contraseña compactos -->
+            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                <h4 class="text-xs font-semibold text-gray-700 mb-2">Requisitos:</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-gray-600">
+                    <div class="flex items-center">
+                        <span class="w-1 h-1 bg-red-500 rounded-full mr-2"></span>
+                        Mínimo 8 caracteres
+                    </div>
+                    <div class="flex items-center">
+                        <span class="w-1 h-1 bg-red-500 rounded-full mr-2"></span>
+                        Una mayúscula
+                    </div>
+                    <div class="flex items-center">
+                        <span class="w-1 h-1 bg-red-500 rounded-full mr-2"></span>
+                        Un número
+                    </div>
+                </div>
             </div>
 
-            <div>
-                <InputLabel
-                    for="password_confirmation"
-                    value="Confirm Password"
-                />
-
-                <TextInput
-                    id="password_confirmation"
-                    v-model="form.password_confirmation"
-                    type="password"
-                    class="mt-1 block w-full"
-                    autocomplete="new-password"
-                />
-
-                <InputError
-                    :message="form.errors.password_confirmation"
-                    class="mt-2"
-                />
-            </div>
-
-            <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
+            <!-- Botones de acción -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-6 border-t border-gray-200">
+                <PrimaryButton 
+                    :disabled="form.processing"
+                    class="inline-flex items-center px-6 py-2.5 bg-red-600 text-white text-sm font-medium 
+                           rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 
+                           disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                    {{ form.processing ? 'Actualizando...' : 'Actualizar Contraseña' }}
+                </PrimaryButton>
 
                 <Transition
-                    enter-active-class="transition ease-in-out"
-                    enter-from-class="opacity-0"
-                    leave-active-class="transition ease-in-out"
-                    leave-to-class="opacity-0"
+                    enter-active-class="transition ease-in-out duration-300"
+                    enter-from-class="opacity-0 translate-y-1"
+                    leave-active-class="transition ease-in-out duration-200"
+                    leave-to-class="opacity-0 translate-y-1"
                 >
-                    <p
+                    <div
                         v-if="form.recentlySuccessful"
-                        class="text-sm text-gray-600"
+                        class="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-800 
+                               rounded-md border border-green-200 text-sm"
                     >
-                        Saved.
-                    </p>
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Contraseña actualizada correctamente
+                    </div>
                 </Transition>
             </div>
         </form>

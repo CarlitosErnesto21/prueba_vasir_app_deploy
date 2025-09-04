@@ -212,7 +212,7 @@ const redes = [
                 <template v-if="!isAuthenticated">
                     <Link
                         :href="route('login')"
-                        class="px-3 py-1 sm:px-4 sm:py-2 md:px-5 md:py-2 rounded-lg bg-gradient-to-r from-red-600 to-red-500 text-white font-semibold shadow-md border border-red-700 hover:bg-white hover:text-white hover:border-red-700 hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 animate-fade-in text-sm md:text-base"
+                        class="px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-lg bg-gradient-to-r from-red-600 to-red-500 text-white font-medium shadow-md border border-red-700 hover:from-red-700 hover:to-red-600 hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 text-sm md:text-base"
                     >
                         <FontAwesomeIcon :icon="faUser" class="mr-1 md:mr-2" />
                         <span class="hidden sm:inline">Iniciar Sesión</span>
@@ -220,7 +220,7 @@ const redes = [
                     </Link>
                     <Link
                         :href="route('register')"
-                        class="px-3 py-1 sm:px-4 sm:py-2 md:px-5 md:py-2 rounded-lg text-red-700 font-semibold shadow-md border border-red-700 hover:bg-gradient-to-r from-red-600 to-red-500 hover:text-white hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 animate-fade-in text-sm md:text-base"
+                        class="px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-lg text-red-700 font-medium shadow-md border border-red-700 bg-white hover:bg-gradient-to-r hover:from-red-600 hover:to-red-500 hover:text-white hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 text-sm md:text-base"
                     >
                         <svg class="inline-block mr-1 md:mr-2 w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
@@ -232,42 +232,60 @@ const redes = [
                 <template v-else>
                     <div class="relative user-menu-dropdown">
                         <button @click="toggleUserMenu"
-                            class="flex items-center space-x-2 px-3 py-1 rounded-full bg-gray-100 hover:bg-red-50 border border-gray-200 transition focus:outline-none focus:ring-2 focus:ring-red-200"
+                            class="flex items-center space-x-2 px-3 py-2 rounded-full bg-white/90 hover:bg-red-50 border border-gray-300 hover:border-red-200 shadow-sm hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200"
                             :title="user?.email"
                         >
-                            <span class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-lg">
+                            <span class="w-8 h-8 rounded-full bg-gradient-to-r from-red-600 to-red-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
                                 {{ (user?.name || user?.email)?.charAt(0).toUpperCase() }}
                             </span>
-                            <span class="text-md text-black font-medium max-w-[120px] truncate">
+                            <span class="text-sm text-gray-800 font-medium max-w-[100px] md:max-w-[120px] truncate hidden sm:block">
                                 {{ user?.name || user?.email }}
                             </span>
-                            <svg class="ml-1 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" :class="{ 'rotate-180': userMenuOpen }" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
                             </svg>
                         </button>
+                        
                         <div v-show="userMenuOpen"
-                            class="absolute right-0 mt-2 w-48 bg-white border border-red-100 rounded shadow-lg z-50 transition-all"
+                            class="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 transition-all duration-200 transform origin-top-right"
+                            :class="userMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'"
                         >
-                            <div class="px-4 py-3 border-b border-gray-100">
-                                <div class="flex items-center space-x-2">
-                                    <span class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-lg">
+                            <!-- Header del usuario -->
+                            <div class="px-4 py-3 border-b border-gray-100 bg-gray-50 rounded-t-lg">
+                                <div class="flex items-center space-x-3">
+                                    <span class="w-10 h-10 rounded-full bg-gradient-to-r from-red-600 to-red-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
                                         {{ (user?.name || user?.email)?.charAt(0).toUpperCase() }}
                                     </span>
-                                    <div>
-                                        <div class="font-semibold text-black truncate">{{ user?.name || 'Usuario' }}</div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-semibold text-gray-900 truncate">{{ user?.name || 'Usuario' }}</div>
                                         <div class="text-xs text-gray-500 truncate">{{ user?.email }}</div>
                                     </div>
                                 </div>
                             </div>
-                            <button
-                                @click="logout"
-                                class="w-full flex items-center gap-2 px-4 py-2 rounded-b-lg bg-gradient-to-r from-red-600 to-red-500 text-white font-semibold shadow-md hover:scale-105 hover:from-red-700 hover:to-red-600 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200"
-                            >
-                                <span class="animate-pulse">
-                                    <FontAwesomeIcon :icon="faDoorOpen" class="h-5" />
-                                </span>
-                                <span>Cerrar sesión</span>
-                            </button>
+
+                            <!-- Opciones del menú -->
+                            <div class="py-2">
+                                <Link 
+                                    :href="route('profile.edit')"
+                                    class="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
+                                    @click="userMenuOpen = false"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                    </svg>
+                                    <span class="font-medium">Mi Perfil</span>
+                                </Link>
+
+                                <div class="border-t border-gray-100 mt-2 pt-2">
+                                    <button
+                                        @click="logout"
+                                        class="w-full flex items-center gap-3 px-4 py-2.5 text-red-700 hover:bg-red-50 transition-colors duration-200 font-medium"
+                                    >
+                                        <FontAwesomeIcon :icon="faDoorOpen" class="w-5 h-5" />
+                                        <span>Cerrar Sesión</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -424,7 +442,7 @@ const redes = [
           </template>
           <template v-else>
             <div class="flex items-center space-x-3 py-2 px-2 rounded bg-gray-50 mb-2 border border-gray-100">
-              <span class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-xl">
+              <span class="w-10 h-10 rounded-full bg-gradient-to-r from-red-600 to-red-500 flex items-center justify-center text-white font-bold text-xl shadow-md">
                 {{ (user?.name || user?.email)?.charAt(0).toUpperCase() }}
               </span>
               <div class="flex flex-col min-w-0">
@@ -432,6 +450,19 @@ const redes = [
                 <span class="text-xs text-gray-500 truncate">{{ user?.email }}</span>
               </div>
             </div>
+            
+            <!-- Opciones de usuario en móvil -->
+            <Link
+              :href="route('profile.edit')"
+              class="w-full flex items-center gap-2 py-2 px-2 mb-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
+              @click="isSidebarOpen = false"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+              <span class="font-medium">Mi Perfil</span>
+            </Link>
+            
             <button
               @click="logout(); isSidebarOpen = false"
               class="w-full flex items-center gap-2 py-2 px-2 rounded-lg bg-gradient-to-r from-red-600 to-red-500 text-white font-semibold shadow-md hover:scale-105 hover:from-red-700 hover:to-red-600 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200"
