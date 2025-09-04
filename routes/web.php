@@ -45,14 +45,18 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
     Route::get('Aerolineas', function () {
         return Inertia::render('catalogos/Aerolineas');
     })->name('aerolineas');
-
-    Route::get('Categorias', function () {
-        return Inertia::render('catalogos/ControlCategorias');
-    })->name('catPTH');
-
+    
     Route::get('Control_Paises_Provincias', function () {
         return Inertia::render('catalogos/ControlPaisesProvincias');
     })->name('controlPaisesProvincias');
+
+    Route::get('Control_Categoria_Productos', function () {
+        return Inertia::render('catalogos/CategoriaProductos');
+    })->name('controlCategoriaProductos');
+
+    Route::get('Control_Categorias_Hoteles', function () {
+        return Inertia::render('catalogos/CategoriaHoteles');
+    })->name('controlCategoriasHoteles');
 
     /////////////////////////////////////////////////////////////////
     // Respaldo de Base de Datos (Solo Manual)
