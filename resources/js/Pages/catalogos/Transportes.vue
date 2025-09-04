@@ -216,12 +216,6 @@ const closeDialogWithoutSaving = () => {
 const continueEditing = () => {
     unsavedChangesDialog.value = false;
 };
-
-const clearFilters = () => {
-    filters.value.global.value = null;
-    filters.value.nombre.value = null;
-    filters.value.capacidad.value = null;
-};
 </script>
 <template>
     <Head title="Catálogo de Transportes" />
@@ -278,9 +272,6 @@ const clearFilters = () => {
                                     {{ filteredTransportes.length }} resultado{{ filteredTransportes.length !== 1 ? 's' : '' }}
                                 </div>
                             </div>
-                            <button class="bg-red-500 hover:bg-red-600 border border-red-500 px-3 py-1 text-sm text-white shadow-md rounded-md" @click="clearFilters">
-                                <FontAwesomeIcon :icon="faFilter" class="h-4 w-4 text-white" /><span>&nbsp;Limpiar filtros</span>
-                            </button>
                         </div>
                         <div class="space-y-3">
                             <div>
