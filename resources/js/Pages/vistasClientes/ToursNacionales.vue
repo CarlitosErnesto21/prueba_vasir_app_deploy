@@ -3,8 +3,11 @@ import Catalogo from '../Catalogo.vue'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
+import Toast from 'primevue/toast'
+import DatePicker from 'primevue/datepicker'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { useToast } from 'primevue/usetoast'
+import { router, usePage } from '@inertiajs/vue3'
 
 // Recibir los props del controlador (opcional, como fallback)
 const props = defineProps({
@@ -14,6 +17,65 @@ const props = defineProps({
   }
 })
 
+const page = usePage()
+const user = computed(() => page.props.auth.user)
+
+const toast = useToast()
+
+// Variables para el modal de reserva de tour
+const showReservaDialog = ref(false)
+const tourSeleccionado = ref(null)
+
+// Datos del formulario de reserva
+const reservaForm = ref({
+  correo: '',
+  nombres: '',
+  tipo_documento: 'DUI',
+  numero_identificacion: '',
+  fecha_nacimiento: '',
+  genero: 'Masculino',
+  direccion: '',
+  telefono: '',
+  cupos_adultos: 1,
+  cupos_menores: 0,
+})
+
+const cupos_total = computed(() => {
+    const adultos = Number(reservaForm.value.cupos_adultos) || 0;
+    const menores = Number(reservaForm.value.cupos_menores) || 0;
+    return adultos + menores;
+});
+
+const resetFormularioReserva = () => {
+    const loggedInUser = user.value;
+    let nombreCompleto = '';
+    let correo = '';
+
+    if (loggedInUser) {
+        correo = loggedInUser.email || '';
+        nombreCompleto = loggedInUser.name || '';
+    }
+
+    reservaForm.value = {
+        correo: correo,
+        nombres: nombreCompleto,
+        tipo_documento: 'DUI',
+        numero_identificacion: '',
+        fecha_nacimiento: '',
+        genero: 'Masculino',
+        direccion: '',
+        telefono: '',
+        cupos_adultos: 1,
+        cupos_menores: 0,
+    }
+}
+
+const reservarTour = (tour) => {
+  tourSeleccionado.value = tour
+  resetFormularioReserva()
+  showReservaDialog.value = true
+}
+
 // Estados reactivos
 const tours = ref([])
 const loading = ref(true)
@@ -21,7 +83,7 @@ const error = ref(null)
 
 // URLs de la API
 const API_BASE_URL = '/api'
-// URL de la API
+// URL de la API para tours nacionales
 const url = "/api/tours?categoria=nacional"
 
 // Computed properties para estadísticas dinámicas
@@ -63,7 +125,7 @@ const obtenerTours = async () => {
     })
     
     if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`)
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
     
     const data = await response.json()
@@ -104,7 +166,7 @@ const calcularDuracion = (fechaSalida, fechaRegreso) => {
   const diffTime = regreso.getTime() - salida.getTime()
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1 // +1 porque incluimos el día de salida
   
-  return diffDays === 1 ? '1 día' : `${diffDays} días`
+  return diffDays === 1 ? '1 día' : `${diffDays} días`;
 }
 
 // Variables para el carrusel de imágenes
@@ -118,25 +180,15 @@ const isGalleryAutoPlaying = ref(true)
 const cardImageIndices = ref({})
 const intervalIds = ref({})
 
-// Función para obtener la primera imagen
-const obtenerPrimeraImagen = (imagenes) => {
-  if (!imagenes || imagenes.length === 0) {
-    return 'https://via.placeholder.com/400x300/ef4444/ffffff?text=Sin+Imagen'
-  }
-  
-  // Si es un string, asumir que es el nombre del archivo
-  const primeraImagen = imagenes[0]
-  const nombreImagen = typeof primeraImagen === 'string' ? primeraImagen : primeraImagen.nombre
-  
-  return `/images/tours/${nombreImagen}`
-}
-
 // Función para obtener la imagen actual del carrusel automático
 const obtenerImagenActual = (tour) => {
   if (!tour.imagenes || tour.imagenes.length === 0) {
     return 'https://via.placeholder.com/400x300/ef4444/ffffff?text=Sin+Imagen'
   }
   
+  // Asegurarse de que el tour tenga un ID para el índice
+  if (!tour.id) return `/images/tours/${typeof tour.imagenes[0] === 'string' ? tour.imagenes[0] : tour.imagenes[0].nombre}`;
+
   // Si solo tiene una imagen, mostrar esa
   if (tour.imagenes.length === 1) {
     const nombreImagen = typeof tour.imagenes[0] === 'string' ? tour.imagenes[0] : tour.imagenes[0].nombre
@@ -148,7 +200,7 @@ const obtenerImagenActual = (tour) => {
   const imagen = tour.imagenes[currentIndex]
   const nombreImagen = typeof imagen === 'string' ? imagen : imagen.nombre
   
-  return `/images/tours/${nombreImagen}`
+  return `/images/tours/${nombreImagen}`;
 }
 
 // Función para inicializar carrusel automático
@@ -210,7 +262,7 @@ const obtenerTodasLasImagenes = (imagenes) => {
   
   return imagenes.map(imagen => {
     const nombreImagen = typeof imagen === 'string' ? imagen : imagen.nombre
-    return `/images/tours/${nombreImagen}`
+    return `/images/tours/${nombreImagen}`;
   })
 }
 
@@ -282,18 +334,37 @@ const irAImagen = (index) => {
 }
 
 // Funciones para los botones
-const reservarTour = (tour) => {
-  alert(`¡Tour "${tour.nombre}" seleccionado para reserva!\nPrecio: $${tour.precio}\nDuración: ${calcularDuracion(tour.fecha_salida, tour.fecha_regreso)}`)
-}
-
 const verMasInfo = (tour) => {
   // Navegar a la vista detallada del tour nacional
   router.visit(`/tours-nacionales/${tour.id}`)
+}
+
+// Confirmar reserva
+const confirmarReserva = async () => {
+  if (!tourSeleccionado.value) return
+
+  const reserva = {
+    tour: tourSeleccionado.value,
+    cliente: reservaForm.value,
+    cupos: {
+        adultos: reservaForm.value.cupos_adultos,
+        menores: reservaForm.value.cupos_menores,
+        total: cupos_total.value
+    }
+  }
+
+  console.log("Reserva confirmada:", reserva)
+  
+  toast.add({ severity: 'success', summary: 'Reserva Confirmada', detail: 'Tu reserva ha sido registrada. Te contactaremos pronto.', life: 5000 });
+
+  // Cerrar modal
+  showReservaDialog.value = false
 }
 </script>
 
 <template>
   <Catalogo>
+    <Toast />
     <div class="p-4 bg-gray-50 min-h-screen">
       <div class="max-w-7xl mx-auto">
         <!-- Header -->
@@ -337,7 +408,7 @@ const verMasInfo = (tour) => {
           </div>
           <div class="bg-white rounded-lg p-3 sm:p-4 md:p-6 shadow-md text-center border border-gray-200">
             <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-green-600">
-              {{ estadisticas.precioMinimo > 0 ? `Desde $${estadisticas.precioMinimo}` : 'Consultar' }}
+              {{ estadisticas.precioMinimo > 0 ? `Desde $${estadisticas.precioMinimo.toFixed(2)}` : 'Consultar' }}
             </h3>
             <p class="text-xs sm:text-sm md:text-base text-gray-600">Precios Accesibles</p>
           </div>
@@ -547,6 +618,123 @@ const verMasInfo = (tour) => {
         </div>
       </div>
     </Dialog>
+
+    <!-- TAMBIEN AGREGE ESTE MODAL PARA LA RESERVA COMO ME DIJO NETO, SEGUN EL EXCEL-->
+
+    <!-- Modal de reserva de tour -->
+    <Dialog v-model:visible="showReservaDialog" modal :closable="true" class="max-w-3xl w-full mx-4" :draggable="false">
+      <template #header>
+        <h3 class="text-lg font-bold text-red-700">🧾 Reservando Tour</h3>
+      </template>
+
+      <div v-if="tourSeleccionado" class="space-y-6 text-sm text-gray-700">
+        <!-- Resumen del tour -->
+        <div>
+          <h4 class="font-semibold text-gray-800 mb-2">Resumen del tour</h4>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border border-gray-200 text-xs sm:text-sm">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="p-2 border text-center">Nombre</th>
+                  <th class="p-2 border text-center">Incluye</th>
+                  <th class="p-2 border text-center">No incluye</th>
+                  <th class="p-2 border text-center">Punto de salida</th>
+                  <th class="p-2 border text-center">Fecha de salida</th>
+                  <th class="p-2 border text-center">Fecha regreso</th>
+                  <th class="p-2 border text-center">Precio</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="p-2 border">{{ tourSeleccionado.nombre }}</td>
+                  <td class="p-2 border">{{ tourSeleccionado.incluye || '---' }}</td>
+                  <td class="p-2 border">{{ tourSeleccionado.no_incluye || '---' }}</td>
+                  <td class="p-2 border">{{ tourSeleccionado.punto_salida }}</td>
+                  <td class="p-2 border">{{ formatearFecha(tourSeleccionado.fecha_salida) }}</td>
+                  <td class="p-2 border">{{ formatearFecha(tourSeleccionado.fecha_regreso) }}</td>
+                  <td class="p-2 border font-bold text-green-600">${{ tourSeleccionado.precio }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Datos personales -->
+        <div>
+          <h4 class="font-semibold text-gray-800 mb-2">Datos personales</h4>
+          <form class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold mb-1">Correo electrónico</label>
+              <input v-model="reservaForm.correo" type="email" class="w-full border rounded-lg px-2 py-1" :class="{ 'bg-gray-100 cursor-not-allowed': !!user }" placeholder="ejemplo@email.com" :readonly="!!user" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1">Nombre Completo</label>
+              <input v-model="reservaForm.nombres" type="text" class="w-full border rounded-lg px-2 py-1" :class="{ 'bg-gray-100 cursor-not-allowed': !!user }" placeholder="Nombres" :readonly="!!user" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1">Tipo documento</label>
+              <select v-model="reservaForm.tipo_documento" class="w-full border rounded-lg px-2 py-1">
+                <option>DUI</option>
+                <option>CÉDULA</option>
+                <option>PASAPORTE</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1">Número de identificación</label>
+              <input v-model="reservaForm.numero_identificacion" type="text" class="w-full border rounded-lg px-2 py-1" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1">Fecha de nacimiento</label>
+              <DatePicker v-model="reservaForm.fecha_nacimiento" dateFormat="dd/mm/yy" class="w-full" inputClass="w-full border rounded-lg px-2 py-1" placeholder="dd/mm/aaaa" :maxDate="new Date()" showIcon />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1">Género</label>
+              <select v-model="reservaForm.genero" class="w-full border rounded-lg px-2 py-1">
+                <option>Masculino</option>
+                <option>Femenino</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs font-semibold mb-1">Dirección de residencia</label>
+              <textarea v-model="reservaForm.direccion" class="w-full border rounded-lg px-2 py-1"></textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold mb-1">Teléfono</label>
+                <input v-model="reservaForm.telefono" type="text" class="w-full border rounded-lg px-2 py-1" />
+              </div>
+          </form>
+        </div>
+
+        <!-- Cupos -->
+        <div>
+          <h4 class="font-semibold text-gray-800 mb-2">Cupos a reservar (Total: {{ cupos_total }})</h4>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-semibold mb-1">Mayores de edad</label>
+              <input v-model.number="reservaForm.cupos_adultos" type="number" min="1" class="w-full border rounded-lg px-2 py-1" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1">Menores de edad</label>
+              <input v-model.number="reservaForm.cupos_menores" type="number" min="0" class="w-full border rounded-lg px-2 py-1" />
+              <p class="text-xs text-red-600 mt-1">* Presentar permiso firmado de padre/madre</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button label="Cancelar" @click="showReservaDialog=false" class="p-button-text" />
+          <Button 
+            label="Confirmar Reserva" 
+            icon="pi pi-check" 
+            class="!bg-red-600 !border-none" 
+            @click="confirmarReserva" 
+          />
+        </div>
+      </template>
+    </Dialog>
+    <!-- Y TERMINA HASTA AQUI -->
   </Catalogo>
 </template>
 
@@ -564,4 +752,4 @@ const verMasInfo = (tour) => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-</style>
+</style> 
