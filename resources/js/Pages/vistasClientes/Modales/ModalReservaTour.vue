@@ -49,17 +49,6 @@ const reservaForm = ref({
 // Estado para controlar si hay datos precargados del cliente
 const tieneClienteExistente = ref(false)
 
-// Estado para controlar el loading de confirmación de reserva
-const confirmandoReserva = ref(false)
-
-// Computed para calcular el precio total
-const precioTotal = computed(() => {
-  if (!props.tourSeleccionado?.precio) return 0
-  
-  const cuposTotales = (reservaForm.value.cupos_adultos || 0) + (reservaForm.value.cupos_menores || 0)
-  return cuposTotales * parseFloat(props.tourSeleccionado.precio)
-})
-
 // Función para cargar datos del cliente existente
 const cargarDatosCliente = async () => {
   if (!props.user) return null
@@ -171,15 +160,13 @@ const confirmarReserva = async () => {
     return
   }
 
-  confirmandoReserva.value = true
-
   try {
-    const requestData = {
+    const response = await axios.post('/reservas', {
       tour_id: props.tourSeleccionado.id,
       cliente_data: {
         correo: reservaForm.value.correo,
         nombres: reservaForm.value.nombres,
-        tipo_documento_id: reservaForm.value.tipo_documento_id || reservaForm.value.tipo_documento,
+        tipo_documento: reservaForm.value.tipo_documento,
         numero_identificacion: reservaForm.value.numero_identificacion,
         fecha_nacimiento: reservaForm.value.fecha_nacimiento,
         genero: reservaForm.value.genero,
@@ -188,50 +175,19 @@ const confirmarReserva = async () => {
       },
       cupos_adultos: reservaForm.value.cupos_adultos,
       cupos_menores: reservaForm.value.cupos_menores,
-      precio_total: precioTotal.value
-    }
+      precio_total: precios.value.total
+    })
     
-    console.log('Datos que se envían:', requestData)
-    
-    const response = await axios.post('/reservas/tour', requestData)
-    
-    // Emitir información de la reserva incluyendo los cupos reservados
-    const reservaData = {
-      ...response.data,
-      tour_id: props.tourSeleccionado.id,
-      cupos_reservados: requestData.cupos_adultos + requestData.cupos_menores
-    }
-    
-    emit('confirmar-reserva', reservaData)
+    emit('reserva-confirmada', response.data)
     cerrarModal()
   } catch (error) {
     console.error('Error al confirmar reserva:', error)
-    console.error('Error response:', error.response?.data)
-    
     if (error.response?.status === 419) {
       alert('Su sesión ha expirado. Por favor, recargue la página.')
       window.location.reload()
-    } else if (error.response?.status === 422) {
-      // Error de validación
-      const errors = error.response.data.errors || {}
-      const message = error.response.data.message || 'Error de validación'
-      
-      console.error('Errores de validación:', errors)
-      console.error('Mensaje del servidor:', message)
-      
-      // Mostrar errores específicos
-      let errorMessage = message + '\n\nDetalles:\n'
-      for (const [field, fieldErrors] of Object.entries(errors)) {
-        errorMessage += `• ${field}: ${fieldErrors.join(', ')}\n`
-      }
-      
-      alert(errorMessage)
     } else {
-      const message = error.response?.data?.message || 'Error al procesar la reserva. Inténtelo de nuevo.'
-      alert(message)
+      alert('Error al procesar la reserva. Inténtelo de nuevo.')
     }
-  } finally {
-    confirmandoReserva.value = false
   }
 }
 
@@ -276,7 +232,6 @@ watch(() => props.visible, async (newValue) => {
       <SelectorCupos 
         v-model:cupos-adultos="reservaForm.cupos_adultos"
         v-model:cupos-menores="reservaForm.cupos_menores"
-        :cupos-disponibles="tourSeleccionado?.cupos_disponibles || 20"
       />
     </div>
 
@@ -294,18 +249,11 @@ watch(() => props.visible, async (newValue) => {
         <button 
           @click="confirmarReserva" 
           type="button"
-          :disabled="confirmandoReserva"
-          :class="[
-            'border border-red-600 flex-1 sm:flex-none sm:px-6 px-3 py-3 sm:py-2 text-sm sm:text-base font-semibold rounded-lg transition-all duration-200 ease-in-out flex items-center justify-center gap-2 shadow-lg hover:shadow-xl',
-            confirmandoReserva 
-              ? 'bg-gray-400 text-gray-600 border-gray-400 cursor-not-allowed' 
-              : 'bg-red-600 hover:bg-red-700 text-white'
-          ]"
+          class="bg-red-600 hover:bg-red-700 text-white border border-red-600 flex-1 sm:flex-none sm:px-6 px-3 py-3 sm:py-2 text-sm sm:text-base font-semibold rounded-lg transition-all duration-200 ease-in-out flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
         >
-          <div v-if="confirmandoReserva" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-          <FontAwesomeIcon v-else :icon="faCheck" class="h-4 w-4 text-white" />
-          <span class="hidden sm:inline">{{ confirmandoReserva ? 'Procesando...' : 'Confirmar Reserva' }}</span>
-          <span class="sm:hidden">{{ confirmandoReserva ? 'Procesando...' : 'Confirmar' }}</span>
+          <FontAwesomeIcon :icon="faCheck" class="h-4 w-4 text-white" />
+          <span class="hidden sm:inline">Confirmar Reserva</span>
+          <span class="sm:hidden">Confirmar</span>
         </button>
       </div>
     </template>

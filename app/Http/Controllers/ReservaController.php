@@ -152,31 +152,11 @@ class ReservaController extends Controller
             // 3. Obtener información del tour
             $tour = Tour::findOrFail($validated['tour_id']);
 
-            // 4. Validar disponibilidad de cupos
+            // 4. Calcular totales
             $cupos_totales = $validated['cupos_adultos'] + ($validated['cupos_menores'] ?? 0);
-            
-            // Verificar que no supere el cupo máximo del tour
-            if ($cupos_totales > $tour->cupo_max) {
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => "No puede reservar más de {$tour->cupo_max} cupos para este tour."
-                ], 422);
-            }
-
-            // Verificar disponibilidad actual de cupos
-            if (!$tour->tieneDisponibilidad($cupos_totales)) {
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => "Solo hay {$tour->cupos_disponibles} cupos disponibles para este tour. No se pueden reservar {$cupos_totales} cupos."
-                ], 422);
-            }
-
-            // 5. Calcular totales
             $precio_total = $cupos_totales * $tour->precio;
 
-            // 6. Crear la reserva (sin empleado asignado inicialmente)
+            // 5. Crear la reserva (sin empleado asignado inicialmente)
             $reserva = Reserva::create([
                 'fecha' => Carbon::now()->toDateString(),
                 'estado' => 'PENDIENTE',
@@ -187,7 +167,7 @@ class ReservaController extends Controller
                 'empleado_id' => null // El empleado será asignado posteriormente
             ]);
 
-            // 7. Crear el detalle de reserva de tour
+            // 6. Crear el detalle de reserva de tour
             $detalleReserva = DetalleReservaTour::create([
                 'fecha' => Carbon::now()->toDateString(),
                 'cupos_reservados' => $cupos_totales,

@@ -10,10 +10,6 @@ const props = defineProps({
   cuposMenores: {
     type: Number,
     default: 0
-  },
-  cuposDisponibles: {
-    type: Number,
-    default: 20
   }
 })
 
@@ -27,14 +23,9 @@ const cupos_total = computed(() => {
   return adultos + menores
 })
 
-// Computed para verificar si se puede agregar más cupos
-const puedeAgregarCupos = computed(() => {
-  return cupos_total.value < props.cuposDisponibles
-})
-
 // Funciones para incrementar/decrementar cupos
 const incrementAdultos = () => {
-  if (puedeAgregarCupos.value) {
+  if (props.cuposAdultos < 20) {
     emit('update:cuposAdultos', props.cuposAdultos + 1)
   }
 }
@@ -46,7 +37,7 @@ const decrementAdultos = () => {
 }
 
 const incrementMenores = () => {
-  if (puedeAgregarCupos.value) {
+  if (props.cuposMenores < 20) {
     emit('update:cuposMenores', props.cuposMenores + 1)
   }
 }
@@ -70,16 +61,6 @@ const decrementMenores = () => {
         Total: {{ cupos_total }}
       </span>
     </h4>
-    
-    <!-- Información de cupos disponibles -->
-    <div class="mb-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-      <p class="text-xs sm:text-sm text-blue-800">
-        <span class="font-semibold">Cupos disponibles:</span> {{ cuposDisponibles }}
-        <span v-if="cupos_total >= cuposDisponibles" class="ml-2 text-red-600 font-medium">
-          (Máximo alcanzado)
-        </span>
-      </p>
-    </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 bg-gray-50 p-3 sm:p-4 rounded-lg">
       <div>
         <label class="flex items-center text-xs sm:text-sm font-semibold mb-1 sm:mb-2 text-gray-700">
@@ -103,7 +84,7 @@ const decrementMenores = () => {
           <button 
             type="button"
             @click="incrementAdultos"
-            :disabled="!puedeAgregarCupos"
+            :disabled="cuposAdultos >= 20"
             class="bg-red-600 hover:bg-red-700 disabled:bg-gray-300 text-white w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors font-bold text-sm sm:text-base"
           >
             +
@@ -132,7 +113,7 @@ const decrementMenores = () => {
           <button 
             type="button"
             @click="incrementMenores"
-            :disabled="!puedeAgregarCupos"
+            :disabled="cuposMenores >= 20"
             class="bg-red-600 hover:bg-red-700 disabled:bg-gray-300 text-white w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors font-bold text-sm sm:text-base"
           >
             +
