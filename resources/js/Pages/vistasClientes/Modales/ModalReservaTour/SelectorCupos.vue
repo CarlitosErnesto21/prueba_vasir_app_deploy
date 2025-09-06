@@ -10,6 +10,10 @@ const props = defineProps({
   cuposMenores: {
     type: Number,
     default: 0
+  },
+  tourSeleccionado: {
+    type: Object,
+    default: null
   }
 })
 
@@ -124,6 +128,45 @@ const decrementMenores = () => {
           <span class="hidden sm:inline">Presentar permiso firmado de padre/madre</span>
           <span class="sm:hidden">Requiere permiso de los padres</span>
         </p>
+      </div>
+    </div>
+
+    <!-- Resumen de precios -->
+    <div v-if="tourSeleccionado" class="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 p-4 sm:p-5 rounded-xl mt-4 sm:mt-5 shadow-sm">
+      <h5 class="font-bold text-red-800 mb-3 sm:mb-4 flex items-center text-sm sm:text-base">
+        <span class="mr-2 text-lg">💰</span>
+        <span>Resumen de reserva</span>
+      </h5>
+      
+      <div class="bg-white rounded-lg p-3 sm:p-4 shadow-sm">
+        <div class="space-y-3">
+          <!-- Información del tour -->
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <p class="font-semibold text-gray-800 text-sm sm:text-base">{{ tourSeleccionado.nombre }}</p>
+              <p class="text-gray-600 text-xs sm:text-sm">Precio por persona: ${{ (tourSeleccionado.precio || tourSeleccionado.precio_adulto || 0).toLocaleString() }}</p>
+            </div>
+          </div>
+          
+          <hr class="border-gray-200">
+          
+          <!-- Total de cupos -->
+          <div class="flex justify-between items-center">
+            <span class="text-gray-700 font-medium text-sm sm:text-base">Total de cupos:</span>
+            <span class="font-bold text-gray-800 text-sm sm:text-base">{{ cupos_total }}</span>
+          </div>
+          
+          <!-- Total a pagar -->
+          <div class="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
+            <div class="flex justify-between items-center">
+              <span class="text-red-800 font-bold text-base sm:text-lg">Total a pagar:</span>
+              <span class="text-red-800 font-bold text-xl sm:text-2xl">${{ ((tourSeleccionado.precio || tourSeleccionado.precio_adulto || 0) * cupos_total).toLocaleString() }}</span>
+            </div>
+            <p class="text-red-600 text-xs sm:text-sm mt-1 opacity-80">
+              {{ cupos_total }} {{ cupos_total === 1 ? 'cupo' : 'cupos' }} × ${{ (tourSeleccionado.precio || tourSeleccionado.precio_adulto || 0).toLocaleString() }}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </div>

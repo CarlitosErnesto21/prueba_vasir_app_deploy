@@ -109,7 +109,7 @@ const onValidate = (phoneObject) => {
 // Función de validación del formulario
 const validateForm = () => {
   // Validación del tipo de documento
-  if (!formularioLocal.value.tipo_documento) {
+  if (!formularioLocal.value.tipo_documento && !formularioLocal.value.tipo_documento_id) {
     alert('Por favor, seleccione un tipo de documento.')
     return false
   }
@@ -158,6 +158,18 @@ defineExpose({
   validateForm
 })
 
+// Función para manejar cambio de tipo de documento
+const onTipoDocumentoChange = (nuevoTipo) => {
+  if (nuevoTipo && nuevoTipo.id) {
+    const nuevoFormulario = { 
+      ...formularioLocal.value, 
+      tipo_documento: nuevoTipo,
+      tipo_documento_id: nuevoTipo.id 
+    }
+    emit('update:formulario', nuevoFormulario)
+  }
+}
+
 // Hook onMounted para cargar datos iniciales
 onMounted(() => {
   cargarTiposDocumentos()
@@ -168,12 +180,11 @@ watch([tiposDocumentos, () => props.formulario.tipo_documento_id], ([tipos, tipo
   if (tipos.length > 0 && tipoId && !props.formulario.tipo_documento) {
     const tipoEncontrado = tipos.find(tipo => tipo.id === tipoId)
     if (tipoEncontrado) {
-      // Actualizar el formulario con el tipo de documento encontrado
-      const nuevoFormulario = { ...props.formulario, tipo_documento: tipoEncontrado }
-      emit('update:formulario', nuevoFormulario)
+      // Actualizar el formulario con el tipo de documento encontrado usando la función segura
+      onTipoDocumentoChange(tipoEncontrado)
     }
   }
-}, { immediate: true })
+}, { immediate: true, flush: 'post' })
 
 // Watch para manejar teléfono precargado
 watch(() => props.formulario.telefono, (nuevoTelefono, telefonoAnterior) => {
@@ -249,7 +260,8 @@ watch(() => props.formulario.telefono, (nuevoTelefono, telefonoAnterior) => {
       <div>
         <label class="block text-xs sm:text-sm font-semibold mb-1 sm:mb-2 text-gray-700">Tipo documento</label>
         <Select 
-          v-model="formularioLocal.tipo_documento" 
+          :model-value="formularioLocal.tipo_documento" 
+          @update:model-value="onTipoDocumentoChange"
           :options="tiposDocumentos" 
           optionLabel="nombre"
           :loading="cargandoTipos"

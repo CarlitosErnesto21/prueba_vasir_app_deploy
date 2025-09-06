@@ -161,15 +161,15 @@ const confirmarReserva = async () => {
   }
 
   try {
-    const response = await axios.post('/reservas', {
+    const response = await axios.post('/reservas/tour', {
       tour_id: props.tourSeleccionado.id,
       cliente_data: {
         correo: reservaForm.value.correo,
         nombres: reservaForm.value.nombres,
-        tipo_documento: reservaForm.value.tipo_documento,
+        tipo_documento_id: reservaForm.value.tipo_documento_id || reservaForm.value.tipo_documento,
         numero_identificacion: reservaForm.value.numero_identificacion,
         fecha_nacimiento: reservaForm.value.fecha_nacimiento,
-        genero: reservaForm.value.genero,
+        genero: reservaForm.value.genero?.toUpperCase() || '',
         direccion: reservaForm.value.direccion,
         telefono: reservaForm.value.telefono
       },
@@ -178,18 +178,48 @@ const confirmarReserva = async () => {
       precio_total: precios.value.total
     })
     
-    emit('reserva-confirmada', response.data)
+    emit('confirmar-reserva', response.data)
     cerrarModal()
   } catch (error) {
     console.error('Error al confirmar reserva:', error)
     if (error.response?.status === 419) {
       alert('Su sesión ha expirado. Por favor, recargue la página.')
       window.location.reload()
+    } else if (error.response?.status === 422) {
+      // Error de validación - mostrar detalles específicos
+      const errors = error.response?.data?.errors || {}
+      const errorMessages = Object.values(errors).flat()
+      if (errorMessages.length > 0) {
+        alert('Errores de validación:\n\n' + errorMessages.join('\n'))
+      } else {
+        alert('Error de validación: ' + (error.response?.data?.message || 'Datos inválidos'))
+      }
+    } else if (error.response?.status === 403) {
+      alert('No tiene permisos para realizar esta acción. Debe tener rol de cliente.')
+    } else if (error.response?.status === 401) {
+      alert('Debe iniciar sesión para realizar una reserva.')
     } else {
-      alert('Error al procesar la reserva. Inténtelo de nuevo.')
+      alert('Error al procesar la reserva: ' + (error.response?.data?.message || 'Inténtelo de nuevo.'))
     }
   }
 }
+
+// Computed para calcular precios
+const precios = computed(() => {
+  if (!props.tourSeleccionado) {
+    return {
+      total: 0
+    }
+  }
+
+  const precioTour = props.tourSeleccionado.precio || props.tourSeleccionado.precio_adulto || 0
+  const totalCupos = reservaForm.value.cupos_adultos + reservaForm.value.cupos_menores
+  const total = precioTour * totalCupos
+
+  return {
+    total
+  }
+})
 
 // Watch para resetear el formulario cuando se abre el modal  
 watch(() => props.visible, async (newValue) => {
@@ -232,6 +262,7 @@ watch(() => props.visible, async (newValue) => {
       <SelectorCupos 
         v-model:cupos-adultos="reservaForm.cupos_adultos"
         v-model:cupos-menores="reservaForm.cupos_menores"
+        :tour-seleccionado="tourSeleccionado"
       />
     </div>
 
