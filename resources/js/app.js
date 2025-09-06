@@ -32,6 +32,7 @@ import DatePicker from "primevue/datepicker";
 import ConfirmationService from 'primevue/confirmationservice';
 import Calendar from "primevue/calendar";
 import ConfirmDialog from 'primevue/confirmdialog';
+import Chart from 'primevue/chart';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -74,6 +75,7 @@ createInertiaApp({
             app.component('DatePicker', DatePicker); // Componente de selector de fecha
             app.component('Calendar', Calendar); // Componente de calendario
             app.component('ConfirmDialog', ConfirmDialog); // Componente de diálogo de confirmación
+            app.component('Chart', Chart); // Componente de gráficos
             app.mount(el);
             return app;
     },

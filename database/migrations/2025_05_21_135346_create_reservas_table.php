@@ -16,12 +16,12 @@ return new class extends Migration
             $table->date('fecha');
             $table->enum('estado', ['PENDIENTE', 'CONFIRMADA', 'RECHAZADA', 'REPROGRAMADA', 'FINALIZADA'])->default('PENDIENTE');
             $table->integer('mayores_edad');
-            $table->integer('menores_edad');
+            $table->integer('menores_edad')->nullable();
             $table->decimal('total', 7, 2);
-            // llave foraneea a la tabla clientes y empleadosa
+            // llave foranea a la tabla clientes y empleados
             $table->unsignedBigInteger('cliente_id');
             $table->foreign('cliente_id')->references('id')->on('clientes')->onDelete('cascade');
-            $table->unsignedBigInteger('empleado_id');            
+            $table->unsignedBigInteger('empleado_id')->nullable();            
             $table->foreign('empleado_id')->references('id')->on('empleados')->onDelete('cascade');
             $table->timestamps();
         });

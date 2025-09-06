@@ -4,6 +4,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InformePDFController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\TourController;
 use App\Http\Controllers\SobreNosotrosController;
@@ -71,5 +73,11 @@ Route::get('contactos', fn() => Inertia::render('VistasClientes/Contactos'))->na
 //Estas rutas muestran un tour ya sea nacional o internacional
 Route::get('/tours-nacionales/{id}', [TourController::class, 'mostrarTourNacional'])->name('tour-nacional.show');
 Route::get('/tours-internacionales/{id}', [TourController::class, 'mostrarTourInternacional'])->name('tour-internacional.show');
+
+// Ruta para crear reservas de tours (accesible para usuarios autenticados)
+Route::post('/reservas/tour', [ReservaController::class, 'crearReservaTour'])->middleware('auth')->name('reservas.tour');
+
+// Ruta para obtener datos del cliente autenticado
+Route::get('/api/cliente-datos', [ClienteController::class, 'obtenerDatosAutenticado'])->middleware('auth')->name('cliente.datos');
 
 require __DIR__.'/auth.php';

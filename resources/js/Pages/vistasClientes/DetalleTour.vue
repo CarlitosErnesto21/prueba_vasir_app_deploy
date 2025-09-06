@@ -320,8 +320,8 @@
 
 <script setup>
 import Catalogo from '../Catalogo.vue'
-import ModalReservaTour from '../../Components/ModalReservaTour.vue'
-import ModalAuthRequerido from '../../Components/ModalAuthRequerido.vue'
+import ModalReservaTour from './Modales/ModalReservaTour.vue'
+import ModalAuthRequerido from './Modales/ModalAuthRequerido.vue'
 import { Link } from '@inertiajs/vue3'
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'

@@ -1,7 +1,7 @@
 <script setup>
 import Catalogo from '../Catalogo.vue'
-import ModalReservaTour from '../../Components/ModalReservaTour.vue'
-import ModalAuthRequerido from '../../Components/ModalAuthRequerido.vue'
+import ModalReservaTour from './Modales/ModalReservaTour.vue'
+import ModalAuthRequerido from './Modales/ModalAuthRequerido.vue'
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { router, usePage } from '@inertiajs/vue3'

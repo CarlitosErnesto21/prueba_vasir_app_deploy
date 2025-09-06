@@ -28,13 +28,11 @@ class ClienteController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nombre' => 'required|string|max:80',
-            'apellido' => 'required|string|max:80',
             'numero_identificacion' => 'required|string|max:25',
             'fecha_nacimiento' => 'required|date',
             'genero' => 'required|in:MASCULINO,FEMENINO',
             'direccion' => 'required|string|max:200',
-            'telefono' => 'required|string|max:20',
+            'telefono' => 'required|string|max:30',
             'user_id' => 'required|exists:users,id',
             'tipo_documento_id' => 'required|exists:tipos_documentos,id',
         ]);
@@ -47,13 +45,11 @@ class ClienteController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'nombre' => 'required|string|max:80',
-            'apellido' => 'required|string|max:80',
             'numero_identificacion' => 'required|string|max:25',
             'fecha_nacimiento' => 'required|date',
             'genero' => 'required|in:MASCULINO,FEMENINO',
             'direccion' => 'required|string|max:200',
-            'telefono' => 'required|string|max:20',
+            'telefono' => 'required|string|max:30',
             'user_id' => 'required|exists:users,id',
             'tipo_documento_id' => 'required|exists:tipos_documentos,id',
         ]);
@@ -69,5 +65,35 @@ class ClienteController extends Controller
         $cliente = Cliente::findOrFail($id);
         $cliente->delete();
         return response()->json(['message' => 'Cliente eliminado correctamente']);
+    }
+
+    // Obtener datos del cliente autenticado
+    public function obtenerDatosAutenticado(Request $request)
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuario no autenticado'
+            ], 401);
+        }
+
+        // Buscar el cliente asociado al usuario autenticado
+        $cliente = Cliente::with('tipoDocumento')
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$cliente) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontraron datos de cliente para este usuario'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'cliente' => $cliente
+        ]);
     }
 }

@@ -1,7 +1,7 @@
 <script setup>
-import Catalogo from '../Catalogo.vue'
-import Card from 'primevue/card'
+import ClientLayout from '@/Layouts/ClientLayout.vue'
 import { ref } from 'vue'
+import Catalogo from '../Catalogo.vue';
 
 const props = defineProps({
     siteSettings: {
