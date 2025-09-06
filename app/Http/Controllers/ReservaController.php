@@ -10,6 +10,7 @@ use App\Models\TipoDocumento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class ReservaController extends Controller
@@ -22,14 +23,6 @@ class ReservaController extends Controller
         // Obtener todas las reservas con sus relaciones
         $reservas = Reserva::with(['cliente', 'empleado'])->get();
         return response()->json($reservas);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -189,6 +182,21 @@ class ReservaController extends Controller
 
             DB::commit();
 
+            // Refrescar el tour para obtener los cupos actualizados
+            $tour->refresh();
+            
+            // Recalcular cupos disponibles después de la reserva
+            $cuposReservadosTotal = $tour->detalleReservas()
+                ->whereHas('reserva', function($query) {
+                    $query->where('estado', '!=', 'cancelada');
+                })
+                ->sum('cupos_reservados');
+            
+            $cuposDisponiblesActualizados = max(0, $tour->cupo_max - $cuposReservadosTotal);
+            
+            // Debug log
+            Log::info("Después de reserva - Tour {$tour->id}: cupo_max={$tour->cupo_max}, reservados={$cuposReservadosTotal}, disponibles={$cuposDisponiblesActualizados}");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Reserva creada exitosamente',
@@ -196,7 +204,8 @@ class ReservaController extends Controller
                     'reserva' => $reserva,
                     'cliente' => $cliente,
                     'detalle' => $detalleReserva,
-                    'tour' => $tour
+                    'tour' => $tour,
+                    'cupos_disponibles_actualizados' => $cuposDisponiblesActualizados
                 ]
             ]);
 
@@ -224,14 +233,6 @@ class ReservaController extends Controller
         // Mostrar los detalles de una reserva específica con sus relaciones
         $reserva->load(['cliente', 'empleado']);
         return response()->json($reserva);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Reserva $reserva)
-    {
-        //
     }
 
     /**

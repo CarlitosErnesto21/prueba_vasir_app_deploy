@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Tour;
 use App\Models\Transporte;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class TourController extends Controller
 {
@@ -30,7 +31,18 @@ class TourController extends Controller
         
         // Agregar cupos_disponibles a cada tour
         $tours->each(function ($tour) {
-            $tour->cupos_disponibles = $tour->cupos_disponibles;
+            $cuposReservados = $tour->detalleReservas()
+                ->whereHas('reserva', function($query) {
+                    $query->where('estado', '!=', 'cancelada');
+                })
+                ->sum('cupos_reservados');
+            
+            $cuposDisponibles = max(0, $tour->cupo_max - $cuposReservados);
+            
+            // Debug log
+            Log::info("Tour {$tour->id}: cupo_max={$tour->cupo_max}, reservados={$cuposReservados}, disponibles={$cuposDisponibles}");
+            
+            $tour->cupos_disponibles = $cuposDisponibles;
         });
         
         // Siempre devolver JSON para API
@@ -93,14 +105,24 @@ class TourController extends Controller
             ->findOrFail($id);
         
         // Agregar cupos_disponibles
-        $tour->cupos_disponibles = $tour->cupos_disponibles;
+        $cuposReservados = $tour->detalleReservas()
+            ->whereHas('reserva', function($query) {
+                $query->where('estado', '!=', 'cancelada');
+            })
+            ->sum('cupos_reservados');
+        
+        $cuposDisponibles = max(0, $tour->cupo_max - $cuposReservados);
+        
+        // Debug log
+        Log::info("Tour show {$tour->id}: cupo_max={$tour->cupo_max}, reservados={$cuposReservados}, disponibles={$cuposDisponibles}");
+        
+        $tour->cupos_disponibles = $cuposDisponibles;
         
         return response()->json($tour);
     }
 
-    /**
+        /**
      * Update the specified resource in storage.
-     */
     public function update(Request $request, Tour $tour)
     {
         $validated = $request->validate([
@@ -187,7 +209,11 @@ class TourController extends Controller
     public function toursNacionales(Request $request)
     {
         // Obtener tours nacionales directamente
-        $tours = $this->getToursByCategory('nacional');
+        $tours = Tour::with(['transporte', 'imagenes'])
+            ->where('fecha_salida', '>=', now())
+            ->where('categoria', 'NACIONAL')
+            ->orderBy('fecha_salida', 'asc')
+            ->get();
 
         // Siempre devolver vista Inertia para rutas web
         return inertia('VistasClientes/ToursNacionales', [
@@ -201,29 +227,16 @@ class TourController extends Controller
     public function toursInternacionales(Request $request)
     {
         // Obtener tours internacionales directamente
-        $tours = $this->getToursByCategory('internacional');
+        $tours = Tour::with(['transporte', 'imagenes'])
+            ->where('fecha_salida', '>=', now())
+            ->where('categoria', 'INTERNACIONAL')
+            ->orderBy('fecha_salida', 'asc')
+            ->get();
 
         // Siempre devolver vista Inertia para rutas web
         return inertia('VistasClientes/ToursInternacionales', [
             'tours' => $tours
         ]);
-    }
-
-    /**
-     * Método helper para obtener tours por categoría
-     */
-    private function getToursByCategory($categoria)
-    {
-        $query = Tour::with(['transporte', 'imagenes'])
-            ->where('fecha_salida', '>=', now())
-            ->orderBy('fecha_salida', 'asc');
-        
-        $categoriaEnum = strtoupper($categoria);
-        if (in_array($categoriaEnum, ['NACIONAL', 'INTERNACIONAL'])) {
-            $query->where('categoria', $categoriaEnum);
-        }
-        
-        return $query->get();
     }
 
     /**

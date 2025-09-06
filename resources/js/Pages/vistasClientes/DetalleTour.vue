@@ -60,8 +60,8 @@
           <!-- Galería de imágenes -->
           <div 
             class="relative w-full h-64 sm:h-72 md:h-80 lg:h-96 bg-gray-100 rounded-t-lg overflow-hidden flex items-center justify-center"
-            @mouseenter="pausarCarrusel"
-            @mouseleave="reanudarCarrusel"
+            @mouseenter="detenerCarrusel"
+            @mouseleave="iniciarCarrusel"
           >
             <div v-if="tour.imagenes && tour.imagenes.length > 0" class="relative w-full h-full flex items-center justify-center">
               <img
@@ -144,7 +144,7 @@
                     <i class="pi pi-users mr-2 sm:mr-3 text-blue-600 mt-0.5 text-sm sm:text-base"></i>
                     <span><strong>Cupos disponibles:</strong> 
                       <span :class="obtenerClaseCuposDetalle(tour)">
-                        {{ tour.cupos_disponibles || tour.cupo_max || 0 }} cupos
+                        {{ tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0 }} cupos
                       </span>
                     </span>
                   </div>
@@ -161,17 +161,17 @@
                 <!-- Botón de reserva -->
                 <button
                   @click="reservarTour"
-                  :disabled="(tour.cupos_disponibles || tour.cupo_max || 0) === 0"
+                  :disabled="(tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0) === 0"
                   :class="[
                     'w-full font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-lg transition-colors duration-200 text-sm sm:text-base',
-                    (tour.cupos_disponibles || tour.cupo_max || 0) === 0
+                    (tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0) === 0
                       ? 'bg-gray-400 text-white cursor-not-allowed'
                       : tipo === 'nacional' 
                         ? 'bg-red-600 hover:bg-red-700 text-white' 
                         : 'bg-blue-600 hover:bg-blue-700 text-white'
                   ]"
                 >
-                  {{ (tour.cupos_disponibles || tour.cupo_max || 0) === 0 ? 'Sin Cupos Disponibles' : 'Reservar Tour' }}
+                  {{ (tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0) === 0 ? 'Sin Cupos Disponibles' : 'Reservar Tour' }}
                 </button>
               </div>
 
@@ -315,6 +315,8 @@
       :tour-seleccionado="tour"
       :user="user"
       @confirmar-reserva="manejarConfirmacionReserva"
+      @actualizar-cupos="actualizarCupos"
+      @refrescar-tour="refrescarTour"
     />
 
     <!-- Modal de autenticación requerida -->
@@ -401,7 +403,16 @@ const obtenerTour = async () => {
     }
     
     const data = await response.json()
+    console.log('Tour data from API:', data) // Debug
+    
+    // Asegurar que el tour tenga cupos_disponibles
+    if (data.cupos_disponibles === undefined || data.cupos_disponibles === null) {
+      console.warn(`Tour ${data.id} sin cupos_disponibles, usando cupo_max como fallback`)
+      data.cupos_disponibles = data.cupo_max || 0
+    }
+    
     tourData.value = data
+    console.log('Tour processed:', tourData.value) // Debug
     
   } catch (err) {
     console.error('Error al obtener el tour:', err)
@@ -465,25 +476,26 @@ const imagenAnterior = () => {
     currentImageIndex.value = currentImageIndex.value === 0 
       ? tour.value.imagenes.length - 1 
       : currentImageIndex.value - 1
-    reiniciarCarrusel() // Reiniciar el carrusel después de navegación manual
+    iniciarCarrusel() // Reiniciar el carrusel después de navegación manual
   }
 }
 
 const imagenSiguiente = () => {
   if (tour.value.imagenes && tour.value.imagenes.length > 1) {
     currentImageIndex.value = (currentImageIndex.value + 1) % tour.value.imagenes.length
-    reiniciarCarrusel() // Reiniciar el carrusel después de navegación manual
+    iniciarCarrusel() // Reiniciar el carrusel después de navegación manual
   }
 }
 
 // Función para cambiar a una imagen específica
 const cambiarImagen = (index) => {
   currentImageIndex.value = index
-  reiniciarCarrusel() // Reiniciar el carrusel después de navegación manual
+  iniciarCarrusel() // Reiniciar el carrusel después de navegación manual
 }
 
 // Funciones del carrusel automático
 const iniciarCarrusel = () => {
+  detenerCarrusel() // Detener cualquier carrusel existente antes de iniciar
   if (tour.value.imagenes && tour.value.imagenes.length > 1) {
     carruselInterval.value = setInterval(() => {
       currentImageIndex.value = (currentImageIndex.value + 1) % tour.value.imagenes.length
@@ -496,21 +508,6 @@ const detenerCarrusel = () => {
     clearInterval(carruselInterval.value)
     carruselInterval.value = null
   }
-}
-
-const reiniciarCarrusel = () => {
-  detenerCarrusel()
-  setTimeout(() => {
-    iniciarCarrusel()
-  }, 1000) // Esperar 1 segundo antes de reiniciar
-}
-
-const pausarCarrusel = () => {
-  detenerCarrusel()
-}
-
-const reanudarCarrusel = () => {
-  iniciarCarrusel()
 }
 
 // Función para reservar el tour
@@ -580,6 +577,39 @@ const manejarConfirmacionReserva = (reserva) => {
   showReservaDialog.value = false
 }
 
+// Función para actualizar cupos dinámicamente
+const actualizarCupos = (datosActualizacion) => {
+  const { tourId, cuposDisponibles } = datosActualizacion
+  
+  // Actualizar los cupos disponibles en tourData si es el mismo tour
+  if (tourData.value.id === tourId) {
+    tourData.value.cupos_disponibles = cuposDisponibles
+  }
+}
+
+// Función para refrescar el tour actual desde la API
+const refrescarTour = async () => {
+  if (!props.tour?.id) return
+  
+  try {
+    const tourId = props.tour.id
+    const response = await fetch(`/api/tours/${tourId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }
+    })
+    
+    if (response.ok) {
+      const tourActualizado = await response.json()
+      tourData.value = tourActualizado
+    }
+  } catch (error) {
+    console.error('Error al refrescar tour:', error)
+  }
+}
+
 // Watch para verificar reserva pendiente cuando el usuario cambie
 watch(user, (newUser) => {
   try {
@@ -604,7 +634,7 @@ onUnmounted(() => {
 
 // Función para obtener la clase CSS según disponibilidad de cupos en detalle
 const obtenerClaseCuposDetalle = (tour) => {
-  const cuposDisponibles = tour.cupos_disponibles || tour.cupo_max || 0
+  const cuposDisponibles = tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0
   const cupoMax = tour.cupo_max || 1
   const porcentajeDisponible = (cuposDisponibles / cupoMax) * 100
   

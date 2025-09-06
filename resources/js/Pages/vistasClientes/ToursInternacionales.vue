@@ -29,8 +29,6 @@ const tours = ref([])
 const loading = ref(true)
 const error = ref(null)
 
-// URLs de la API
-const API_BASE_URL = '/api'
 // URL de la API
 const url = "/api/tours?categoria=internacional"
 
@@ -77,7 +75,20 @@ const obtenerTours = async () => {
     }
     
     const data = await response.json()
-    tours.value = data.data || data || []
+    console.log('Tours data from API:', data) // Debug
+    
+    // Asegurar que cada tour tenga cupos_disponibles
+    const toursConCupos = (data.data || data || []).map(tour => {
+      // Si no tiene cupos_disponibles, usar cupo_max como fallback temporal
+      if (tour.cupos_disponibles === undefined || tour.cupos_disponibles === null) {
+        console.warn(`Tour ${tour.id} sin cupos_disponibles, usando cupo_max como fallback`)
+        tour.cupos_disponibles = tour.cupo_max || 0
+      }
+      return tour
+    })
+    
+    tours.value = toursConCupos
+    console.log('Tours processed:', tours.value) // Debug
     
   } catch (err) {
     console.error('Error al obtener tours:', err)
@@ -162,14 +173,6 @@ const inicializarCarrusel = (tour) => {
     intervalIds.value[tour.id] = setInterval(() => {
       cardImageIndices.value[tour.id] = (cardImageIndices.value[tour.id] + 1) % tour.imagenes.length
     }, 3000) // Cambiar cada 3 segundos
-  }
-}
-
-// Función para detener carrusel automático
-const detenerCarrusel = (tourId) => {
-  if (intervalIds.value[tourId]) {
-    clearInterval(intervalIds.value[tourId])
-    delete intervalIds.value[tourId]
   }
 }
 
@@ -366,6 +369,46 @@ const manejarConfirmacionReserva = (reserva) => {
   showReservaDialog.value = false
 }
 
+// Función para actualizar cupos dinámicamente
+const actualizarCupos = (datosActualizacion) => {
+  const { tourId, cuposDisponibles } = datosActualizacion
+  
+  // Buscar y actualizar el tour en la lista
+  const tourIndex = tours.value.findIndex(tour => tour.id === tourId)
+  if (tourIndex !== -1) {
+    tours.value[tourIndex].cupos_disponibles = cuposDisponibles
+    
+    // Forzar reactividad
+    tours.value = [...tours.value]
+  }
+}
+
+// Función para refrescar un tour específico desde la API
+const refrescarTour = async (tourId) => {
+  try {
+    const response = await fetch(`/api/tours/${tourId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }
+    })
+    
+    if (response.ok) {
+      const tourActualizado = await response.json()
+      
+      // Actualizar el tour en la lista
+      const tourIndex = tours.value.findIndex(tour => tour.id === tourId)
+      if (tourIndex !== -1) {
+        tours.value[tourIndex] = tourActualizado
+        tours.value = [...tours.value]
+      }
+    }
+  } catch (error) {
+    console.error('Error al refrescar tour:', error)
+  }
+}
+
 // Watch para verificar reserva pendiente cuando el usuario cambie
 watch(user, async (newUser) => {
   try {
@@ -379,7 +422,7 @@ watch(user, async (newUser) => {
 
 // Función para obtener la clase CSS según disponibilidad de cupos
 const obtenerClaseCupos = (tour) => {
-  const cuposDisponibles = tour.cupos_disponibles || tour.cupo_max || 0
+  const cuposDisponibles = tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0
   const cupoMax = tour.cupo_max || 1
   const porcentajeDisponible = (cuposDisponibles / cupoMax) * 100
   
@@ -524,7 +567,7 @@ const verMasInfo = (tour) => {
                   <div class="text-xs">
                     <p class="font-semibold text-gray-700">Disponibles:</p>
                     <p class="text-xs font-medium" :class="obtenerClaseCupos(tour)">
-                      {{ tour.cupos_disponibles || tour.cupo_max || 0 }} cupos
+                      {{ tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0 }} cupos
                     </p>
                   </div>
                 </div>
@@ -532,12 +575,12 @@ const verMasInfo = (tour) => {
                 <!-- Botones dentro del content para estar dentro del card -->
                 <div class="flex gap-1 sm:gap-2 mt-2 sm:mt-3 pt-1 sm:pt-2">
                   <Button
-                    :label="(tour.cupos_disponibles || tour.cupo_max || 0) === 0 ? 'Sin Cupos' : 'Reservar'"
+                    :label="(tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0) === 0 ? 'Sin Cupos' : 'Reservar'"
                     @click="reservarTour(tour)"
-                    :disabled="(tour.cupos_disponibles || tour.cupo_max || 0) === 0"
+                    :disabled="(tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0) === 0"
                     :class="[
                       '!px-2 sm:!px-3 !py-1 sm:!py-1.5 !text-xs font-semibold rounded-lg transition-all flex-1 shadow-sm',
-                      (tour.cupos_disponibles || tour.cupo_max || 0) === 0 
+                      (tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0) === 0 
                         ? '!bg-gray-400 !border-none !text-white cursor-not-allowed' 
                         : '!bg-blue-600 !border-none !text-white hover:!bg-blue-700'
                     ]"
@@ -693,6 +736,8 @@ const verMasInfo = (tour) => {
       :tour-seleccionado="tourSeleccionado"
       :user="user"
       @confirmar-reserva="manejarConfirmacionReserva"
+      @actualizar-cupos="actualizarCupos"
+      @refrescar-tour="refrescarTour"
     />
 
     <!-- Modal de autenticación requerida -->

@@ -20,7 +20,7 @@ const props = defineProps({
 })
 
 // Emits para comunicación con el componente padre
-const emit = defineEmits(['update:formulario', 'validate-telefono', 'mostrar-toast'])
+const emit = defineEmits(['update:formulario', 'mostrar-toast'])
 
 // Estado para tipos de documentos
 const tiposDocumentos = ref([])
@@ -101,9 +101,6 @@ const onValidate = (phoneObject) => {
     console.warn('Error en validación de teléfono:', error)
     telefonoValidation.value.mensaje = 'Error en validación'
   }
-  
-  // Emitir la validación al componente padre
-  emit('validate-telefono', telefonoValidation.value)
 }
 
 // Función de validación del formulario
@@ -189,7 +186,6 @@ const validateForm = () => {
 // Exponer los tipos de documentos y funciones al componente padre
 defineExpose({
   tiposDocumentos,
-  telefonoValidation,
   validateForm
 })
 
@@ -232,7 +228,6 @@ watch(() => props.formulario.telefono, (nuevoTelefono, telefonoAnterior) => {
       formattedNumber: nuevoTelefono,
       mensaje: 'Número válido (guardado previamente)'
     }
-    emit('validate-telefono', telefonoValidation.value)
   }
 }, { immediate: true })
 </script>

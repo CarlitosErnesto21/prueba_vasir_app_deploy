@@ -29,7 +29,9 @@ const cupos_total = computed(() => {
 
 // Computed para cupos disponibles del tour
 const cuposDisponibles = computed(() => {
-  return props.tourSeleccionado?.cupos_disponibles || props.tourSeleccionado?.cupo_max || 0
+  return props.tourSeleccionado?.cupos_disponibles !== null && props.tourSeleccionado?.cupos_disponibles !== undefined 
+    ? props.tourSeleccionado.cupos_disponibles 
+    : 0
 })
 
 // Funciones para incrementar/decrementar cupos

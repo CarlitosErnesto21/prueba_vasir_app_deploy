@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, watchEffect, reactive, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faXmark, faCheck } from '@fortawesome/free-solid-svg-icons'
 import { useToast } from 'primevue/usetoast'
@@ -30,7 +30,7 @@ const props = defineProps({
 })
 
 // Emits para comunicación con el componente padre
-const emit = defineEmits(['update:visible', 'confirmar-reserva'])
+const emit = defineEmits(['update:visible', 'confirmar-reserva', 'actualizar-cupos', 'refrescar-tour'])
 
 // Referencias a componentes hijos
 const formularioDatosRef = ref(null)
@@ -191,6 +191,17 @@ const confirmarReserva = async () => {
       cupos_menores: reservaForm.value.cupos_menores,
       precio_total: precios.value.total
     })
+    
+    // Emitir cupos actualizados si están disponibles en la respuesta
+    if (response.data?.data?.cupos_disponibles_actualizados !== undefined) {
+      emit('actualizar-cupos', {
+        tourId: props.tourSeleccionado.id,
+        cuposDisponibles: response.data.data.cupos_disponibles_actualizados
+      })
+    }
+    
+    // También emitir para refrescar el tour completo como respaldo
+    emit('refrescar-tour', props.tourSeleccionado.id)
     
     emit('confirmar-reserva', response.data)
     cerrarModal()
