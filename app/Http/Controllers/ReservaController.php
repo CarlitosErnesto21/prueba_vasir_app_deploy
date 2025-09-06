@@ -6,7 +6,6 @@ use App\Models\Reserva;
 use App\Models\Cliente;
 use App\Models\DetalleReservaTour;
 use App\Models\Tour;
-use App\Models\TipoDocumento;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;

@@ -1,8 +1,19 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { ref, onMounted } from "vue";
+import Chart from 'primevue/chart';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faTimes, faCheck } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
+
+// Importar componentes separados
+import LoadingState from '@/Components/DashboardViews/LoadingState.vue';
+import MetricasCard from '@/Components/DashboardViews/MetricasCard.vue';
+import WidgetsSecundarios from '@/Components/DashboardViews/WidgetsSecundarios.vue';
+import GraficosSection from '@/Components/DashboardViews/GraficosSection.vue';
+import ActividadReciente from '@/Components/DashboardViews/ActividadReciente.vue';
+import ModalesInteractivos from '@/Components/DashboardViews/ModalesInteractivos.vue';
 
 const chartDataPie = ref();
 const chartDataBar = ref();
@@ -15,49 +26,97 @@ const chartOptionsDoughnut = ref();
 const loading = ref(true);
 const dashboardData = ref({});
 
-// 📊 Métricas DINÁMICAS con datos reales
+// 📊 Métricas DINÁMICAS con datos reales - Layout más compacto
 const metrics = ref([
-    { 
-        label: 'Valor Inventario', 
-        value: '$0', 
-        icon: 'pi pi-wallet', 
-        color: 'from-green-500 to-green-300', 
-        text: 'text-green-900',
-        key: 'valor_total_inventario' 
-    },
-    { 
-        label: 'Total Productos', 
-        value: '0', 
-        icon: 'pi pi-box', 
-        color: 'from-blue-600 to-blue-300', 
-        text: 'text-blue-900',
-        key: 'total_productos' 
-    },
-    { 
-        label: 'Stock Bajo', 
-        value: '0', 
-        icon: 'pi pi-exclamation-triangle', 
-        color: 'from-yellow-500 to-yellow-400', 
-        text: 'text-yellow-900',
-        key: 'productos_stock_bajo' 
-    },
-    { 
-        label: 'Agotados', 
-        value: '0', 
-        icon: 'pi pi-times-circle', 
-        color: 'from-red-600 to-red-400', 
-        text: 'text-red-900',
-        key: 'productos_agotados' 
-    },
     { 
         label: 'Ventas Hoy', 
         value: '0', 
         icon: 'pi pi-shopping-cart', 
-        color: 'from-purple-600 to-purple-400', 
+        color: 'from-emerald-500 to-emerald-400', 
+        text: 'text-emerald-900',
+        key: 'ventas_hoy',
+        category: 'ventas',
+        description: 'Ventas del día'
+    },
+    { 
+        label: 'Ingresos Hoy', 
+        value: '$0', 
+        icon: 'pi pi-dollar', 
+        color: 'from-blue-500 to-blue-400', 
+        text: 'text-blue-900',
+        key: 'ingresos_hoy',
+        category: 'ventas',
+        description: 'Ingresos del día'
+    },
+    { 
+        label: 'Reservas del Mes', 
+        value: '0', 
+        icon: 'pi pi-calendar-plus', 
+        color: 'from-purple-500 to-purple-400', 
         text: 'text-purple-900',
-        key: 'ventas_hoy' 
+        key: 'reservas_mes',
+        category: 'reservas',
+        description: 'Reservas este mes'
+    },
+    { 
+        label: 'Tours Activos', 
+        value: '0', 
+        icon: 'pi pi-map-marker', 
+        color: 'from-orange-500 to-orange-400', 
+        text: 'text-orange-900',
+        key: 'tours_activos',
+        category: 'reservas',
+        description: 'Tours disponibles'
     }
 ]);
+
+// 📈 Widgets adicionales para el dashboard
+const widgets = ref([
+    {
+        title: 'Reservas Pendientes',
+        value: '0',
+        icon: 'pi pi-clock',
+        color: 'bg-amber-50 border-amber-200',
+        iconColor: 'text-amber-600',
+        key: 'reservas_pendientes'
+    },
+    {
+        title: 'Productos Stock Bajo',
+        value: '0',
+        icon: 'pi pi-exclamation-triangle',
+        color: 'bg-red-50 border-red-200',
+        iconColor: 'text-red-600',
+        key: 'productos_stock_bajo'
+    },
+    {
+        title: 'Valor Inventario',
+        value: '$0',
+        icon: 'pi pi-wallet',
+        color: 'bg-green-50 border-green-200',
+        iconColor: 'text-green-600',
+        key: 'valor_total_inventario'
+    },
+    {
+        title: 'Clientes Activos',
+        value: '0',
+        icon: 'pi pi-users',
+        color: 'bg-indigo-50 border-indigo-200',
+        iconColor: 'text-indigo-600',
+        key: 'clientes_activos'
+    }
+]);
+
+// 🎯 Estados para interactividad
+const showReservasPendientesModal = ref(false);
+const showProductosStockBajoModal = ref(false);
+
+const toggleReservasPendientesModal = () => {
+    showReservasPendientesModal.value = !showReservasPendientesModal.value;
+};
+
+const toggleProductosStockBajoModal = () => {
+    showProductosStockBajoModal.value = !showProductosStockBajoModal.value;
+};
 
 // ✅ FUNCIÓN para formatear valores en mobile
 const formatValueForMobile = (value, originalData = null) => {
@@ -108,33 +167,57 @@ const fetchDashboardData = async () => {
             headers: { 'Accept': 'application/json' }
         });
         
+        // 🗓️ Obtener reservas con relaciones incluidas
+        const reservasResponse = await axios.get('/api/reservas?per_page=50', {
+            headers: { 'Accept': 'application/json' }
+        });
+        
+        // 📈 Obtener resumen de reservas
+        const resumenReservasResponse = await axios.get('/api/reservas/resumen', {
+            headers: { 'Accept': 'application/json' }
+        });
+        
+        // 🗺️ Obtener tours disponibles
+        const toursResponse = await axios.get('/api/tours', {
+            headers: { 'Accept': 'application/json' }
+        });
+        
         // ✅ Extracción de datos
         const inventarioData = inventarioResponse.data.data || inventarioResponse.data;
         const ventasData = ventasResponse.data.data || ventasResponse.data || [];
         const stockBajoData = stockBajoResponse.data.data || stockBajoResponse.data || [];
+        const reservasData = reservasResponse.data.data || reservasResponse.data || [];
+        const resumenReservasData = resumenReservasResponse.data.data || resumenReservasResponse.data || [];
+        const toursData = toursResponse.data.data || toursResponse.data || [];
         
         // 🔄 Actualizar métricas y gráficos
-        updateMetrics(inventarioData, ventasData);
-        updateCharts(inventarioData, ventasData, stockBajoData);
+        updateMetrics(inventarioData, ventasData, reservasData, resumenReservasData, toursData);
+        updateCharts(inventarioData, ventasData, stockBajoData, reservasData, resumenReservasData);
         
         dashboardData.value = {
             inventario: inventarioData,
             ventas: ventasData,
-            stockBajo: stockBajoData
+            stockBajo: stockBajoData,
+            reservas: reservasData,
+            resumenReservas: resumenReservasData,
+            tours: toursData
         };
         
     } catch (error) {
+        console.error('Error al cargar datos del dashboard:', error);
         // En caso de error, usar valores por defecto
-        updateMetrics({}, []);
-        updateCharts({}, [], []);
+        updateMetrics({}, [], [], [], []);
+        updateCharts({}, [], [], [], []);
     } finally {
         loading.value = false;
     }
 };
 
 // 🔄 FUNCIÓN para actualizar métricas
-const updateMetrics = (inventarioData, ventasData) => {
+const updateMetrics = (inventarioData, ventasData, reservasData, resumenReservasData, toursData) => {
     const ventas = Array.isArray(ventasData) ? ventasData : [];
+    const reservas = Array.isArray(reservasData) ? reservasData : [];
+    const tours = Array.isArray(toursData) ? toursData : [];
     
     // Calcular ventas de hoy
     const hoy = new Date().toISOString().split('T')[0];
@@ -144,21 +227,55 @@ const updateMetrics = (inventarioData, ventasData) => {
         return fechaVenta === hoy;
     }).length;
     
-    // ✅ Actualizar valores con los datos correctos
-    metrics.value[0].value = `$${Number(inventarioData.valor_total_inventario || 0).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    metrics.value[1].value = (inventarioData.total_productos || 0).toString();
-    metrics.value[2].value = (inventarioData.productos_stock_bajo || 0).toString();
-    metrics.value[3].value = (inventarioData.productos_agotados || 0).toString();
-    metrics.value[4].value = (inventarioData.movimientos_hoy || ventasHoy || 0).toString();
+    // Calcular ingresos de hoy de ventas
+    const ingresosHoyVentas = ventas.filter(venta => {
+        if (!venta.fecha) return false;
+        const fechaVenta = venta.fecha.split('T')[0];
+        return fechaVenta === hoy;
+    }).reduce((total, venta) => total + (parseFloat(venta.total) || 0), 0);
+    
+    // Calcular reservas del mes actual
+    const mesActual = new Date().getMonth();
+    const añoActual = new Date().getFullYear();
+    const reservasDelMes = reservas.filter(reserva => {
+        if (!reserva.fecha_reserva && !reserva.fecha) return false;
+        const fechaReserva = new Date(reserva.fecha_reserva || reserva.fecha);
+        return fechaReserva.getMonth() === mesActual && fechaReserva.getFullYear() === añoActual;
+    }).length;
+    
+    // Tours activos (disponibles)
+    const toursActivos = tours.filter(tour => 
+        !tour.estado || 
+        tour.estado.toLowerCase() === 'activo' || 
+        tour.estado.toLowerCase() === 'disponible'
+    ).length;
+    
+    // ✅ Actualizar valores principales
+    metrics.value[0].value = ventasHoy.toString();
+    metrics.value[1].value = `$${ingresosHoyVentas.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    metrics.value[2].value = reservasDelMes.toString();
+    metrics.value[3].value = toursActivos.toString();
+    
+    // ✅ Actualizar widgets adicionales
+    const reservasPendientes = reservas.filter(reserva => 
+        reserva.estado && reserva.estado.toLowerCase() === 'pendiente'
+    ).length;
+    const clientesActivos = new Set(reservas.map(r => r.cliente?.id).filter(id => id)).size;
+    
+    widgets.value[0].value = reservasPendientes.toString();
+    widgets.value[1].value = (inventarioData.productos_stock_bajo || 0).toString();
+    widgets.value[2].value = `$${Number(inventarioData.valor_total_inventario || 0).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    widgets.value[3].value = clientesActivos.toString();
 };
 
 // 📈 FUNCIÓN para actualizar gráficos
-const updateCharts = (inventarioData, ventasData, stockBajoData) => {
+const updateCharts = (inventarioData, ventasData, stockBajoData, reservasData, resumenReservasData) => {
     const totalProductos = inventarioData.total_productos || 0;
     const stockBajo = inventarioData.productos_stock_bajo || 0;
     const agotados = inventarioData.productos_agotados || 0;
     const disponibles = inventarioData.productos_disponibles || Math.max(0, totalProductos - stockBajo - agotados);
     const ventas = Array.isArray(ventasData) ? ventasData : [];
+    const reservas = Array.isArray(reservasData) ? reservasData : [];
     
     // 🥧 Gráfico PIE: Estado del inventario
     chartDataPie.value = {
@@ -171,51 +288,70 @@ const updateCharts = (inventarioData, ventasData, stockBajoData) => {
         }]
     };
     
-    // 📊 Gráfico BAR: Ventas por estado
-    const ventasPorEstado = ventas.reduce((acc, venta) => {
-        const estado = venta.estado || 'Sin estado';
+    // 📊 Gráfico BAR: Reservas por estado
+    const reservasPorEstado = reservas.reduce((acc, reserva) => {
+        const estado = reserva.estado || 'Sin estado';
         acc[estado] = (acc[estado] || 0) + 1;
         return acc;
     }, {});
     
-    if (Object.keys(ventasPorEstado).length === 0) {
-        ventasPorEstado['Sin ventas'] = 0;
+    if (Object.keys(reservasPorEstado).length === 0) {
+        reservasPorEstado['Sin reservas'] = 0;
     }
     
     chartDataBar.value = {
-        labels: Object.keys(ventasPorEstado),
+        labels: Object.keys(reservasPorEstado),
         datasets: [{
-            label: 'Ventas por Estado',
-            data: Object.values(ventasPorEstado),
-            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444']
+            label: 'Reservas por Estado',
+            data: Object.values(reservasPorEstado),
+            backgroundColor: ['#f59e0b', '#10b981', '#ef4444', '#3b82f6']
         }]
     };
     
-    // 🍩 Gráfico DOUGHNUT: Top productos más vendidos
-    const productosVendidos = {};
+    // 🍩 Gráfico DOUGHNUT: Tours más reservados
+    const toursReservados = {};
     
-    ventas.forEach(venta => {
-        if (venta.detalle_ventas && Array.isArray(venta.detalle_ventas)) {
-            venta.detalle_ventas.forEach(detalle => {
-                const nombre = detalle.producto?.nombre || 'Producto desconocido';
-                productosVendidos[nombre] = (productosVendidos[nombre] || 0) + (detalle.cantidad || 0);
-            });
-        }
-    });
+    // Usar resumenReservasData como fuente principal para tours
+    if (resumenReservasData && resumenReservasData.length > 0) {
+        resumenReservasData.forEach(resumen => {
+            if (resumen.tipo === 'tours' && resumen.nombre) {
+                const total = (resumen.total_pendientes || 0) + (resumen.total_confirmadas || 0);
+                if (total > 0) {
+                    // Truncar nombres muy largos para mejor visualización
+                    const nombreCorto = resumen.nombre.length > 30 
+                        ? resumen.nombre.substring(0, 27) + '...' 
+                        : resumen.nombre;
+                    toursReservados[nombreCorto] = total;
+                }
+            }
+        });
+    }
     
-    let topProductos = Object.entries(productosVendidos)
+    // Si no hay datos en resumen, usar reservasData como fallback
+    if (Object.keys(toursReservados).length === 0 && reservasData && reservasData.length > 0) {
+        reservasData.forEach(reserva => {
+            if (reserva.entidad_nombre) {
+                const nombreCorto = reserva.entidad_nombre.length > 30 
+                    ? reserva.entidad_nombre.substring(0, 27) + '...' 
+                    : reserva.entidad_nombre;
+                toursReservados[nombreCorto] = (toursReservados[nombreCorto] || 0) + 1;
+            }
+        });
+    }
+    
+    let topTours = Object.entries(toursReservados)
         .sort(([,a], [,b]) => b - a)
         .slice(0, 5);
     
-    if (topProductos.length === 0) {
-        topProductos = [['Sin ventas', 0]];
+    if (topTours.length === 0) {
+        topTours = [['Sin reservas', 0]];
     }
     
     chartDataDoughnut.value = {
-        labels: topProductos.map(([nombre]) => nombre),
+        labels: topTours.map(([nombre]) => nombre),
         datasets: [{
-            label: 'Productos Más Vendidos',
-            data: topProductos.map(([, cantidad]) => cantidad),
+            label: 'Tours Más Reservados',
+            data: topTours.map(([, cantidad]) => cantidad),
             backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
         }]
     };
@@ -253,7 +389,7 @@ const setChartOptionsBar = () => ({
     plugins: {
         title: {
             display: true,
-            text: 'Ventas por Estado',
+            text: 'Reservas por Estado',
             font: { size: 18 }
         },
         legend: {
@@ -262,7 +398,7 @@ const setChartOptionsBar = () => ({
         tooltip: {
             callbacks: {
                 label: function(context) {
-                    return `${context.label}: ${context.parsed.y} ventas`;
+                    return `${context.label}: ${context.parsed.y} reservas`;
                 }
             }
         }
@@ -285,7 +421,7 @@ const setChartOptionsDoughnut = () => ({
     plugins: {
         title: {
             display: true,
-            text: 'Productos Más Vendidos',
+            text: 'Tours Más Reservados',
             font: { size: 18 }
         },
         legend: {
@@ -299,7 +435,7 @@ const setChartOptionsDoughnut = () => ({
         tooltip: {
             callbacks: {
                 label: function(context) {
-                    return `${context.label}: ${context.parsed} unidades`;
+                    return `${context.label}: ${context.parsed} reservas`;
                 }
             }
         }
@@ -317,191 +453,98 @@ onMounted(() => {
 <template>
     <Head title="Dashboard" />
     <AuthenticatedLayout>
-        <!-- ✅ MOSTRAR ESTADO DE CARGA O ERROR -->
-        <div v-if="loading" class="flex justify-center items-center py-12">
-            <div class="text-center">
-                <i class="pi pi-spin pi-spinner text-4xl text-indigo-600 mb-4"></i>
-                <p class="text-gray-600">Cargando datos del dashboard...</p>
-            </div>
-        </div>
+        <!-- Estado de carga -->
+        <LoadingState v-if="loading" />
 
         <!-- Contenido principal -->
-        <div v-else>
-            <!-- ✅ TARJETAS COMPLETAMENTE RESPONSIVAS -->
-            <div class="pt-6">
-                <!-- DESKTOP: Mostrar todos los 5 cards en una fila -->
-                <div class="hidden md:grid md:grid-cols-5 gap-4 xl:gap-6 mt-6">
-                    <div v-for="metric in metrics" :key="metric.label"
-                        class="flex flex-col justify-between rounded-xl shadow-lg bg-gradient-to-br p-4 xl:p-6 min-h-[100px] xl:min-h-[110px]"
-                        :class="metric.color">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="font-bold text-white leading-tight"
-                                  :class="metric.label.length > 12 ? 'text-sm xl:text-base' : 'text-base xl:text-lg'">
-                                {{ metric.label }}
-                            </span>
-                            <i :class="metric.icon + ' text-xl xl:text-2xl text-white flex-shrink-0'"></i>
-                        </div>
-                        <span class="font-extrabold text-white leading-none"
-                              :class="metric.value.length > 8 ? 'text-xl xl:text-2xl' : 'text-2xl xl:text-3xl'">
-                            {{ metric.value }}
-                        </span>
-                    </div>
-                </div>
+        <div v-else class="px-2 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+            <!-- Métricas principales -->
+            <MetricasCard 
+                :metrics="metrics" 
+                :dashboard-data="dashboardData" 
+                :format-value-for-mobile="formatValueForMobile" 
+            />
 
-                <!-- TABLET: Mostrar en 2 filas adaptativas -->
-                <div class="hidden sm:grid md:hidden">
-                    <!-- Primera fila: 3 cards -->
-                    <div class="grid grid-cols-3 gap-3 mb-3">
-                        <div v-for="(metric, index) in metrics.slice(0, 3)" :key="metric.label"
-                            class="flex flex-col justify-between rounded-xl shadow-lg bg-gradient-to-br p-3 min-h-[85px]"
-                            :class="metric.color">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="font-bold text-white text-xs leading-tight">
-                                    {{ metric.label.split(' ').map(word => word.slice(0, 6)).join(' ') }}
-                                </span>
-                                <i :class="metric.icon + ' text-lg text-white flex-shrink-0'"></i>
-                            </div>
-                            <span class="font-extrabold text-white text-lg leading-none">
-                                {{ metric.value.length > 10 ? metric.value.slice(0, 10) + '...' : metric.value }}
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <!-- Segunda fila: 2 cards centrados -->
-                    <div class="grid grid-cols-2 gap-3 max-w-md mx-auto">
-                        <div v-for="(metric, index) in metrics.slice(3, 5)" :key="metric.label"
-                            class="flex flex-col justify-between rounded-xl shadow-lg bg-gradient-to-br p-3 min-h-[85px]"
-                            :class="metric.color">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="font-bold text-white text-xs leading-tight">
-                                    {{ metric.label.split(' ').map(word => word.slice(0, 6)).join(' ') }}
-                                </span>
-                                <i :class="metric.icon + ' text-lg text-white flex-shrink-0'"></i>
-                            </div>
-                            <span class="font-extrabold text-white text-lg leading-none">
-                                {{ metric.value }}
-                            </span>
+            <!-- 📈 LAYOUT PRINCIPAL TIPO GRID - Responsive -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+                
+                <!-- Widgets secundarios -->
+                <WidgetsSecundarios 
+                    :widgets="widgets" 
+                    :dashboard-data="dashboardData" 
+                    :format-value-for-mobile="formatValueForMobile"
+                    @toggle-reservas-modal="toggleReservasPendientesModal"
+                    @toggle-stock-modal="toggleProductosStockBajoModal"
+                />
+
+                <!-- COLUMNA CENTRAL: Gráfico Principal - Responsive -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Inventario por Estado</h3>
+                    <div class="h-48 sm:h-64">
+                        <Chart v-if="chartDataPie" 
+                            type="pie" 
+                            :data="chartDataPie" 
+                            :options="chartOptionsPie" 
+                            class="w-full h-full" />
+                        <div v-else class="flex items-center justify-center h-full">
+                            <p class="text-gray-500 text-xs sm:text-sm">No hay datos de inventario</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- ✅ MOBILE PEQUEÑO: Layout ultra compacto -->
-                <div class="sm:hidden">
-                    <!-- Primera fila: 3 cards muy compactos -->
-                    <div class="grid grid-cols-3 gap-2 mb-2">
-                        <div v-for="(metric, index) in metrics.slice(0, 3)" :key="metric.label"
-                            class="flex flex-col justify-between rounded-lg shadow-lg bg-gradient-to-br p-2 min-h-[70px]"
-                            :class="metric.color">
-                            <div class="flex flex-col items-center text-center">
-                                <i :class="metric.icon + ' text-base text-white mb-1'"></i>
-                                <span class="font-bold text-white text-xs leading-none mb-1">
-                                    {{ metric.label.split(' ')[0] }}
-                                </span>
-                                <span class="font-extrabold text-white text-sm leading-none">
-                                    {{ index === 0 ? formatValueForMobile(metric.value, dashboardData.inventario) : metric.value }}
-                                </span>
-                            </div>
+                <!-- COLUMNA DERECHA: Estadísticas de Reservas - Responsive -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Reservas por Estado</h3>
+                    <div class="h-48 sm:h-64">
+                        <Chart v-if="chartDataBar" 
+                            type="bar" 
+                            :data="chartDataBar" 
+                            :options="chartOptionsBar" 
+                            class="w-full h-full" />
+                        <div v-else class="flex items-center justify-center h-full">
+                            <p class="text-gray-500 text-xs sm:text-sm">No hay datos de reservas</p>
                         </div>
-                    </div>
-                    
-                    <!-- Segunda fila: 2 cards -->
-                    <div class="grid grid-cols-2 gap-2">
-                        <div v-for="(metric, index) in metrics.slice(3, 5)" :key="metric.label"
-                            class="flex flex-col justify-between rounded-lg shadow-lg bg-gradient-to-br p-2 min-h-[70px]"
-                            :class="metric.color">
-                            <div class="flex flex-col items-center text-center">
-                                <i :class="metric.icon + ' text-base text-white mb-1'"></i>
-                                <span class="font-bold text-white text-xs leading-none mb-1">
-                                    {{ metric.label.split(' ')[0] }}
-                                </span>
-                                <span class="font-extrabold text-white text-sm leading-none">
-                                    {{ metric.value }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ✅ GRÁFICAS RESPONSIVAS -->
-                <div class="pt-6 sm:pt-8 md:pt-10">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 lg:mb-0">
-                        <!-- Gráfico PIE -->
-                        <div class="w-full h-64 sm:h-80 md:h-96 rounded-lg shadow-lg bg-white overflow-hidden flex flex-col items-center p-2 sm:p-3 md:p-4">
-                            <Chart v-if="chartDataPie" 
-                                type="pie" 
-                                :data="chartDataPie" 
-                                :options="chartOptionsPie" 
-                                class="w-full h-full" />
-                            <div v-else class="flex items-center justify-center w-full h-full">
-                                <p class="text-gray-500 text-xs sm:text-sm">No hay datos de inventario</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Gráfico BAR -->
-                        <div class="w-full h-64 sm:h-80 md:h-96 rounded-lg shadow-lg bg-white overflow-hidden flex flex-col items-center p-2 sm:p-3 md:p-4">
-                            <Chart v-if="chartDataBar" 
-                                type="bar" 
-                                :data="chartDataBar" 
-                                :options="chartOptionsBar" 
-                                class="w-full h-full" />
-                            <div v-else class="flex items-center justify-center w-full h-full">
-                                <p class="text-gray-500 text-xs sm:text-sm">No hay datos de ventas</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Gráfico DOUGHNUT -->
-                        <div class="w-full h-64 sm:h-80 md:h-96 rounded-lg shadow-lg bg-white overflow-hidden flex flex-col items-center p-2 sm:p-3 md:p-4 sm:col-span-2 lg:col-span-1 sm:mx-auto lg:mx-0 sm:max-w-md lg:max-w-none">
-                            <Chart v-if="chartDataDoughnut" 
-                                type="doughnut" 
-                                :data="chartDataDoughnut" 
-                                :options="chartOptionsDoughnut" 
-                                class="w-full h-full" />
-                            <div v-else class="flex items-center justify-center w-full h-full">
-                                <p class="text-gray-500 text-xs sm:text-sm">No hay productos vendidos</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ✅ TABLA RESPONSIVA -->
-                <div v-if="dashboardData.stockBajo && dashboardData.stockBajo.length > 0" 
-                    class="mt-6 sm:mt-8 md:mt-10 bg-white rounded-lg shadow-lg p-3 sm:p-4 md:p-6">
-                    <h3 class="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
-                        <i class="pi pi-exclamation-triangle text-yellow-500 mr-2"></i>
-                        Productos con Stock Bajo
-                    </h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-2 sm:px-3 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-                                    <th class="px-2 sm:px-3 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Actual</th>
-                                    <th class="px-2 sm:px-3 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Mínimo</th>
-                                    <th class="px-2 sm:px-3 md:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr v-for="producto in dashboardData.stockBajo" :key="producto.id">
-                                    <td class="px-2 sm:px-3 md:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">
-                                        {{ producto.nombre }}
-                                    </td>
-                                    <td class="px-2 sm:px-3 md:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                                        {{ producto.stock_actual }}
-                                    </td>
-                                    <td class="px-2 sm:px-3 md:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                                        {{ producto.stock_minimo }}
-                                    </td>
-                                    <td class="px-2 sm:px-3 md:px-6 py-2 sm:py-4 whitespace-nowrap">
-                                        <span class="inline-flex px-1 sm:px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                            Stock Bajo
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
+
+            <!-- 🏆 SECCIÓN INFERIOR: Top Tours y Ventas - Responsive -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+                
+                <!-- Top 5 Tours Más Reservados -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
+                        <i class="pi pi-star text-yellow-500 mr-2"></i>
+                        <span class="hidden sm:inline">Top 5 Tours Más Reservados</span>
+                        <span class="sm:hidden">Top Tours</span>
+                    </h3>
+                    <div class="h-48 sm:h-64">
+                        <Chart v-if="chartDataDoughnut" 
+                            type="doughnut" 
+                            :data="chartDataDoughnut" 
+                            :options="chartOptionsDoughnut" 
+                            class="w-full h-full" />
+                        <div v-else class="flex items-center justify-center h-full">
+                            <p class="text-gray-500 text-xs sm:text-sm">No hay reservas registradas</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actividad Reciente -->
+                <ActividadReciente 
+                    :dashboard-data="dashboardData" 
+                    :format-value-for-mobile="formatValueForMobile" 
+                />
+            </div>
         </div>
+
+        <!-- Modales interactivos -->
+        <ModalesInteractivos 
+            :show-reservas-pendientes-modal="showReservasPendientesModal"
+            :show-productos-stock-bajo-modal="showProductosStockBajoModal"
+            :dashboard-data="dashboardData"
+            @close-reservas-modal="showReservasPendientesModal = false"
+            @close-stock-modal="showProductosStockBajoModal = false"
+        />
     </AuthenticatedLayout>
 </template>
