@@ -403,7 +403,6 @@ const obtenerTour = async () => {
     }
     
     const data = await response.json()
-    console.log('Tour data from API:', data) // Debug
     
     // Asegurar que el tour tenga cupos_disponibles
     if (data.cupos_disponibles === undefined || data.cupos_disponibles === null) {
@@ -412,7 +411,6 @@ const obtenerTour = async () => {
     }
     
     tourData.value = data
-    console.log('Tour processed:', tourData.value) // Debug
     
   } catch (err) {
     console.error('Error al obtener el tour:', err)

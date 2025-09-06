@@ -4,19 +4,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import axios from 'axios'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import Tabs from 'primevue/tabs'
-import TabList from 'primevue/tablist'
-import Tab from 'primevue/tab'
-import TabPanels from 'primevue/tabpanels'
-import TabPanel from 'primevue/tabpanel'
-import Tag from 'primevue/tag'
-import InputText from 'primevue/inputtext'
-import Select from 'primevue/select'
-import DatePicker from 'primevue/datepicker'
-import Dialog from 'primevue/dialog'
-import Textarea from 'primevue/textarea'
 
 // Configuración de Toast
 const toast = useToast()
@@ -69,7 +56,6 @@ const cargarReservas = async () => {
     }
 
     const response = await axios.get('/api/reservas', { params })
-    console.log('Datos recibidos:', response.data)
     reservas.value = response.data.data || []
     
   } catch (error) {

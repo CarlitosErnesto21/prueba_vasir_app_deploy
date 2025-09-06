@@ -33,6 +33,12 @@ import ConfirmationService from 'primevue/confirmationservice';
 import Calendar from "primevue/calendar";
 import ConfirmDialog from 'primevue/confirmdialog';
 import Chart from 'primevue/chart';
+import Tabs from 'primevue/tabs';
+import TabList from 'primevue/tablist';
+import Tab from 'primevue/tab';
+import TabPanels from 'primevue/tabpanels';
+import TabPanel from 'primevue/tabpanel';
+import Tag from 'primevue/tag';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -76,6 +82,12 @@ createInertiaApp({
             app.component('Calendar', Calendar); // Componente de calendario
             app.component('ConfirmDialog', ConfirmDialog); // Componente de diálogo de confirmación
             app.component('Chart', Chart); // Componente de gráficos
+            app.component('Tabs', Tabs); // Componente de pestañas
+            app.component('TabList', TabList); // Componente de lista de pestañas
+            app.component('Tab', Tab); // Componente de pestaña individual
+            app.component('TabPanels', TabPanels); // Componente de paneles de pestañas
+            app.component('TabPanel', TabPanel); // Componente de panel individual
+            app.component('Tag', Tag); // Componente de etiqueta
             app.mount(el);
             return app;
     },

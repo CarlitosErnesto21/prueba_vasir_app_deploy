@@ -85,13 +85,6 @@ function abrirModalAgregar(){
 
 async function guardarItem(){
   try{
-    // 🐛 DEBUGGING: Ver qué datos se están enviando
-    console.log('Datos a enviar:', {
-      tipoAgregar: tipoAgregar.value,
-      nombre: nuevoItem.value.nombre,
-      pais_id: nuevoItem.value.pais_id
-    });
-
     // ✅ VALIDACIÓN MEJORADA: Verificar si no hay tipo seleccionado
     if (!tipoAgregar.value) {
       toast.add({severity:"warn", summary:"Atención", detail:"Debe seleccionar qué desea agregar (País o Provincia)", life: 4000});
@@ -117,7 +110,6 @@ async function guardarItem(){
 
     if(tipoAgregar.value==="País"){
       const response = await axios.post("/api/paises",{nombre:nuevoItem.value.nombre.trim()});
-      console.log('✅ País guardado exitosamente:', response.data);
       await cargarPaises();
       toast.add({severity:"success", summary:"Guardado", detail:"País agregado correctamente", life: 3000});
     } else if(tipoAgregar.value==="Provincia"){
@@ -125,7 +117,6 @@ async function guardarItem(){
         nombre:nuevoItem.value.nombre.trim(), 
         pais_id:nuevoItem.value.pais_id
       });
-      console.log('✅ Provincia guardada exitosamente:', response.data);
       await cargarProvincias();
       toast.add({severity:"success", summary:"Guardado", detail:"Provincia agregada correctamente", life: 3000});
     }
@@ -134,13 +125,8 @@ async function guardarItem(){
     nuevoItem.value = { id:null, nombre:"", pais_id:null };
     tipoAgregar.value = null;
   } catch(error) { 
-    // 🐛 DEBUGGING: Ver el error completo
-    console.error('❌ Error completo:', error);
-    console.error('📋 Respuesta del error:', error.response?.data);
-    
     if (error.response?.status === 422) {
       const errors = error.response.data.errors;
-      console.log('⚠️ Errores de validación:', errors);
       
       if (errors?.nombre) {
         // Mostrar mensaje específico del backend

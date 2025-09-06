@@ -212,8 +212,6 @@ const saveSettings = async () => {
                     detail: 'Configuración de la empresa actualizada correctamente',
                     life: 3000
                 });
-                
-                console.log('Configuración guardada exitosamente');
             },
             onError: (errors) => {
                 console.error('Error al guardar la configuración:', errors);

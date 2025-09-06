@@ -108,7 +108,6 @@ const fetchCategoriasHoteles = async () => {
     try {
         const response = await axios.get("/api/categorias-hoteles");
         categoriasHoteles.value = response.data;
-        console.log("categoriasHoteles cargadas:", categoriasHoteles.value);
     } catch (err) {
         toast.add({
             severity: "error",
@@ -245,7 +244,6 @@ const saveOrUpdate = async () => {
             life: 4000,
         });
     }
-    console.log("Hotel enviado:", hotel.value);
 };
 
 const confirmDeleteHotel = (h) => {

@@ -206,7 +206,6 @@ const obtenerTours = async () => {
     }
     
     const data = await response.json()
-    console.log('Tours data from API:', data) // Debug
     
     // Asegurar que cada tour tenga cupos_disponibles
     const toursConCupos = (data.data || data || []).map(tour => {
@@ -219,7 +218,6 @@ const obtenerTours = async () => {
     })
     
     tours.value = toursConCupos
-    console.log('Tours processed:', tours.value) // Debug
     
   } catch (err) {
     console.error('Error al obtener tours:', err)

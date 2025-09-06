@@ -48,7 +48,6 @@ const cargarProductos = async () => {
       imagenes: producto.imagenes || []
     })).filter(producto => producto.stock_actual > 0) // Solo productos en stock
     
-    console.log('Productos cargados:', products.value.length)
   } catch (error) {
     console.error('Error al cargar productos:', error)
     toast.add({
@@ -75,7 +74,6 @@ const cargarCategorias = async () => {
       cantidad: 0 // Se calculará en el computed
     }))
     
-    console.log('Categorías cargadas:', categories.value.length)
   } catch (error) {
     console.error('Error al cargar categorías:', error)
     toast.add({
@@ -202,8 +200,6 @@ const comprarProducto = (producto) => {
     detail: `"${producto.nombre}" se agregó al carrito`,
     life: 3000
   })
-  
-  console.log('Producto agregado al carrito:', producto)
 }
 
 const verDetalles = (producto) => {

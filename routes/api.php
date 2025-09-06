@@ -17,7 +17,7 @@ use App\Http\Controllers\ProvinciaController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\TransporteController;
 use App\Http\Controllers\TipoDocumentoController;
-use App\Http\Controllers\Api\ReservaController as ReservaC;
+// Eliminamos el import del controlador de API y usamos solo el principal
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,12 +27,12 @@ Route::get('/user', function (Request $request) {
 
 // Rutas API para gestión de reservas
 Route::prefix('reservas')->group(function () {
-    Route::get('/', [ReservaC::class, 'index']);
-    Route::get('/resumen', [ReservaC::class, 'resumen']);
-    Route::put('/{id}/confirmar', [ReservaC::class, 'confirmar']);
-    Route::put('/{id}/rechazar', [ReservaC::class, 'rechazar']);
-    Route::put('/{id}/reprogramar', [ReservaC::class, 'reprogramar']);
-    Route::get('/{id}/historial', [ReservaC::class, 'historial']);
+    Route::get('/', [ReservaController::class, 'index']);
+    Route::get('/resumen', [ReservaController::class, 'resumen']);
+    Route::put('/{id}/confirmar', [ReservaController::class, 'confirmar']);
+    Route::put('/{id}/rechazar', [ReservaController::class, 'rechazar']);
+    Route::put('/{id}/reprogramar', [ReservaController::class, 'reprogramar']);
+    Route::get('/{id}/historial', [ReservaController::class, 'historial']);
 });
 
 // Rutas de API
