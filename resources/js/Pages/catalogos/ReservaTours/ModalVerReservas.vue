@@ -39,8 +39,10 @@ const reservasFiltradas = computed(() => {
   if (busquedaCliente.value) {
     const search = busquedaCliente.value.toLowerCase()
     lista = lista.filter(r => 
-      r.cliente?.nombres?.toLowerCase().includes(search) ||
-      r.cliente?.correo?.toLowerCase().includes(search)
+      (r.cliente?.user?.name?.toLowerCase().includes(search)) ||
+      (r.cliente?.nombres?.toLowerCase().includes(search)) ||
+      (r.cliente?.user?.email?.toLowerCase().includes(search)) ||
+      (r.cliente?.correo?.toLowerCase().includes(search))
     )
   }
   
@@ -176,8 +178,8 @@ const getEstadoClasses = (estado) => {
           >
             <template #body="slotProps">
               <div class="flex flex-col">
-                <span class="font-medium">{{ slotProps.data.cliente?.nombres || '-' }}</span>
-                <span class="text-xs text-gray-500">{{ slotProps.data.cliente?.correo || '-' }}</span>
+                <span class="font-medium">{{ (slotProps.data.cliente?.user?.name) || (slotProps.data.cliente?.nombres) || '-' }}</span>
+                <span class="text-xs text-gray-500">{{ (slotProps.data.cliente?.user?.email) || (slotProps.data.cliente?.correo) || '-' }}</span>
               </div>
             </template>
           </Column>

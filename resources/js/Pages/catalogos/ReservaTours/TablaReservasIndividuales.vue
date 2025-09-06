@@ -143,7 +143,7 @@ const mostrarAcciones = computed(() => {
         }"
       >
         <template #body="slotProps">
-          {{ slotProps.data.cliente?.nombres || '-' }}
+          {{ (slotProps.data.cliente?.user?.name) || (slotProps.data.cliente?.nombres) || '-' }}
         </template>
       </Column>
       

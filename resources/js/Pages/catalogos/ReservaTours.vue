@@ -411,8 +411,12 @@ onMounted(() => {
             <Column field="cliente.nombres" header="Cliente" sortable class="min-w-[150px]">
               <template #body="slotProps">
                 <div>
-                  <div class="font-medium">{{ slotProps.data.cliente?.nombres || 'N/A' }}</div>
-                  <div class="text-sm text-gray-500">{{ slotProps.data.cliente?.correo || 'N/A' }}</div>
+                  <div class="font-medium">
+                    {{ (slotProps.data.cliente?.user?.name) || (slotProps.data.cliente?.nombres) || 'N/A' }}
+                  </div>
+                  <div class="text-sm text-gray-500">
+                    {{ (slotProps.data.cliente?.user?.email) || (slotProps.data.cliente?.correo) || 'N/A' }}
+                  </div>
                 </div>
               </template>
             </Column>
@@ -526,7 +530,7 @@ onMounted(() => {
         <div class="space-y-4">
           <div v-if="reservaSeleccionada" class="bg-gray-50 p-4 rounded-lg">
             <h4 class="font-medium text-gray-800 mb-2">Detalles de la Reserva</h4>
-            <p><strong>Cliente:</strong> {{ reservaSeleccionada.cliente?.nombres }}</p>
+            <p><strong>Cliente:</strong> {{ (reservaSeleccionada.cliente?.user?.name) || (reservaSeleccionada.cliente?.nombres) || 'N/A' }}</p>
             <p><strong>Servicio:</strong> {{ reservaSeleccionada.entidad_nombre }}</p>
             <p><strong>Fecha:</strong> {{ formatearFecha(reservaSeleccionada.fecha_reserva) }}</p>
           </div>
@@ -573,7 +577,7 @@ onMounted(() => {
         <div class="space-y-4">
           <div v-if="reservaSeleccionada" class="bg-gray-50 p-4 rounded-lg">
             <h4 class="font-medium text-gray-800 mb-2">Detalles de la Reserva</h4>
-            <p><strong>Cliente:</strong> {{ reservaSeleccionada.cliente?.nombres }}</p>
+            <p><strong>Cliente:</strong> {{ (reservaSeleccionada.cliente?.user?.name) || (reservaSeleccionada.cliente?.nombres) || 'N/A' }}</p>
             <p><strong>Servicio:</strong> {{ reservaSeleccionada.entidad_nombre }}</p>
             <p><strong>Fecha actual:</strong> {{ formatearFecha(reservaSeleccionada.fecha_reserva) }}</p>
           </div>

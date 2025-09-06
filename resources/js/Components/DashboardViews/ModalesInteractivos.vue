@@ -27,7 +27,11 @@
                             </div>
                             <div class="min-w-0 flex-1">
                                 <p class="font-medium text-gray-900 text-sm sm:text-base truncate">{{ reserva.entidad_nombre || 'Tour no especificado' }}</p>
-                                <p class="text-xs sm:text-sm text-gray-600 truncate">{{ reserva.cliente?.nombres || 'Cliente no asignado' }}</p>
+                                <p class="text-xs sm:text-sm text-gray-600 truncate">
+                                    {{ (reserva.cliente && reserva.cliente.user && reserva.cliente.user.name) || 
+                                       (reserva.cliente && reserva.cliente.nombres) || 
+                                       'Cliente no asignado' }}
+                                </p>
                                 <p class="text-xs text-gray-500">{{ new Date(reserva.fecha_reserva || reserva.fecha).toLocaleDateString('es-ES') }}</p>
                             </div>
                         </div>

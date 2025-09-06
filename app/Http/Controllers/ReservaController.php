@@ -21,7 +21,7 @@ class ReservaController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Reserva::with(['cliente', 'detallesTours.tour']);
+            $query = Reserva::with(['cliente.user', 'detallesTours.tour']);
 
             // Aplicar filtros por tipo (solo tours por ahora)
             if ($request->filled('tipo')) {
@@ -53,9 +53,9 @@ class ReservaController extends Controller
 
             if ($request->filled('busqueda')) {
                 $busqueda = $request->busqueda;
-                $query->whereHas('cliente', function ($q) use ($busqueda) {
-                    $q->where('nombres', 'like', "%{$busqueda}%")
-                      ->orWhere('correo', 'like', "%{$busqueda}%");
+                $query->whereHas('cliente.user', function ($q) use ($busqueda) {
+                    $q->where('name', 'like', "%{$busqueda}%")
+                      ->orWhere('email', 'like', "%{$busqueda}%");
                 })->orWhereHas('detallesTours.tour', function ($q) use ($busqueda) {
                     $q->where('nombre', 'like', "%{$busqueda}%");
                 });
@@ -63,7 +63,7 @@ class ReservaController extends Controller
 
             // Si no hay filtros, devolver formato simple (compatibilidad hacia atrás)
             if (!$request->hasAny(['tipo', 'estado', 'fecha_inicio', 'fecha_fin', 'busqueda', 'per_page'])) {
-                $reservas = Reserva::with(['cliente', 'empleado'])->get();
+                $reservas = Reserva::with(['cliente.user', 'empleado'])->get();
                 return response()->json($reservas);
             }
 
@@ -80,8 +80,10 @@ class ReservaController extends Controller
                     'fecha_reserva' => $reserva->fecha,
                     'estado' => $reserva->estado,
                     'cliente' => [
-                        'nombres' => $reserva->cliente ? $reserva->cliente->nombres : 'Cliente no asignado',
-                        'correo' => $reserva->cliente ? $reserva->cliente->correo : 'Sin correo'
+                        'nombres' => $reserva->cliente && $reserva->cliente->user ? 
+                                   $reserva->cliente->user->name : 'Cliente no asignado',
+                        'correo' => $reserva->cliente && $reserva->cliente->user ? 
+                                  $reserva->cliente->user->email : 'Sin correo'
                     ],
                     'entidad_nombre' => $tourNombre,
                     'tipo' => 'Tour',
@@ -317,7 +319,7 @@ class ReservaController extends Controller
     public function show(Reserva $reserva)
     {
         // Mostrar los detalles de una reserva específica con sus relaciones
-        $reserva->load(['cliente', 'empleado']);
+        $reserva->load(['cliente.user', 'empleado']);
         return response()->json($reserva);
     }
 
@@ -432,7 +434,7 @@ class ReservaController extends Controller
             ]);
 
             // Recargar la reserva con relaciones
-            $reserva = $reserva->fresh(['cliente', 'detallesTours.tour']);
+            $reserva = $reserva->fresh(['cliente.user', 'detallesTours.tour']);
 
             return response()->json([
                 'success' => true,
@@ -486,7 +488,7 @@ class ReservaController extends Controller
             ]);
 
             // Recargar la reserva con relaciones
-            $reserva = $reserva->fresh(['cliente', 'detallesTours.tour']);
+            $reserva = $reserva->fresh(['cliente.user', 'detallesTours.tour']);
 
             return response()->json([
                 'success' => true,
@@ -548,7 +550,7 @@ class ReservaController extends Controller
             ]);
 
             // Recargar la reserva con relaciones
-            $reserva = $reserva->fresh(['cliente', 'detallesTours.tour']);
+            $reserva = $reserva->fresh(['cliente.user', 'detallesTours.tour']);
 
             return response()->json([
                 'success' => true,
@@ -577,7 +579,7 @@ class ReservaController extends Controller
     public function historial($id): JsonResponse
     {
         try {
-            $reserva = Reserva::with(['cliente', 'detallesTours.tour'])->findOrFail($id);
+            $reserva = Reserva::with(['cliente.user', 'detallesTours.tour'])->findOrFail($id);
             
             // Simulamos el historial básico con la información disponible
             $historial = [

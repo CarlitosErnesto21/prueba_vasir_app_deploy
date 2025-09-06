@@ -128,7 +128,7 @@ const cerrarModal = () => {
             <div class="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span class="font-medium text-gray-600">Cliente:</span>
-                <span class="block text-gray-900">{{ reserva.cliente?.nombres || '-' }}</span>
+                <span class="block text-gray-900">{{ (reserva.cliente?.user?.name) || (reserva.cliente?.nombres) || '-' }}</span>
               </div>
               <div>
                 <span class="font-medium text-gray-600">Estado Actual:</span>

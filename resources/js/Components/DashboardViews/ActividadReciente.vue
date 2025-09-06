@@ -51,7 +51,11 @@
                     </div>
                     <div class="min-w-0 flex-1">
                         <p class="text-xs sm:text-sm font-medium text-gray-900 truncate">{{ reserva.entidad_nombre || 'Reserva' }}</p>
-                        <p class="text-xs text-gray-500 truncate">{{ reserva.cliente?.nombres || 'Cliente' }}</p>
+                        <p class="text-xs text-gray-500 truncate">
+                            {{ (reserva.cliente && reserva.cliente.user && reserva.cliente.user.name) || 
+                               (reserva.cliente && reserva.cliente.nombres) || 
+                               'Cliente no asignado' }}
+                        </p>
                     </div>
                 </div>
                 <span class="inline-flex px-1.5 sm:px-2 py-1 text-xs font-semibold rounded-full flex-shrink-0 ml-2"
