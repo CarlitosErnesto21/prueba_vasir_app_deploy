@@ -2,12 +2,16 @@
 import { ref, computed, watch, watchEffect, reactive, onMounted } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faXmark, faCheck } from '@fortawesome/free-solid-svg-icons'
+import { useToast } from 'primevue/usetoast'
 import axios from 'axios'
 
 // Importar componentes modulares
 import ResumenTour from './ModalReservaTour/ResumenTour.vue'
 import FormularioDatosPersonales from './ModalReservaTour/FormularioDatosPersonales.vue'
 import SelectorCupos from './ModalReservaTour/SelectorCupos.vue'
+
+// Inicializar toast
+const toast = useToast()
 
 // Props del componente
 const props = defineProps({
@@ -146,6 +150,11 @@ const cerrarModal = () => {
   emit('update:visible', false)
 }
 
+// Función para manejar toast desde componentes hijos
+const manejarToast = (toastConfig) => {
+  toast.add(toastConfig)
+}
+
 // Función para confirmar la reserva
 const confirmarReserva = async () => {
   // Validar formulario usando el componente hijo
@@ -156,7 +165,12 @@ const confirmarReserva = async () => {
   }
 
   if (reservaForm.value.cupos_adultos <= 0 && reservaForm.value.cupos_menores <= 0) {
-    alert('Debe seleccionar al menos un cupo')
+    toast.add({
+      severity: 'error',
+      summary: 'Error en la reserva',
+      detail: 'Debe seleccionar al menos un cupo.',
+      life: 4000
+    })
     return
   }
 
@@ -183,23 +197,53 @@ const confirmarReserva = async () => {
   } catch (error) {
     console.error('Error al confirmar reserva:', error)
     if (error.response?.status === 419) {
-      alert('Su sesión ha expirado. Por favor, recargue la página.')
+      toast.add({
+        severity: 'error',
+        summary: 'Sesión expirada',
+        detail: 'Su sesión ha expirado. Por favor, recargue la página.',
+        life: 5000
+      })
       window.location.reload()
     } else if (error.response?.status === 422) {
       // Error de validación - mostrar detalles específicos
       const errors = error.response?.data?.errors || {}
       const errorMessages = Object.values(errors).flat()
       if (errorMessages.length > 0) {
-        alert('Errores de validación:\n\n' + errorMessages.join('\n'))
+        toast.add({
+          severity: 'error',
+          summary: 'Errores de validación',
+          detail: errorMessages.join(', '),
+          life: 5000
+        })
       } else {
-        alert('Error de validación: ' + (error.response?.data?.message || 'Datos inválidos'))
+        toast.add({
+          severity: 'error',
+          summary: 'Error de validación',
+          detail: error.response?.data?.message || 'Datos inválidos',
+          life: 4000
+        })
       }
     } else if (error.response?.status === 403) {
-      alert('No tiene permisos para realizar esta acción. Debe tener rol de cliente.')
+      toast.add({
+        severity: 'error',
+        summary: 'Acceso denegado',
+        detail: 'No tiene permisos para realizar esta acción. Debe tener rol de cliente.',
+        life: 4000
+      })
     } else if (error.response?.status === 401) {
-      alert('Debe iniciar sesión para realizar una reserva.')
+      toast.add({
+        severity: 'error',
+        summary: 'Sesión requerida',
+        detail: 'Debe iniciar sesión para realizar una reserva.',
+        life: 4000
+      })
     } else {
-      alert('Error al procesar la reserva: ' + (error.response?.data?.message || 'Inténtelo de nuevo.'))
+      toast.add({
+        severity: 'error',
+        summary: 'Error al procesar la reserva',
+        detail: error.response?.data?.message || 'Inténtelo de nuevo.',
+        life: 4000
+      })
     }
   }
 }
@@ -230,6 +274,9 @@ watch(() => props.visible, async (newValue) => {
 </script>
 
 <template>
+  <!-- Toast para notificaciones dentro del modal -->
+  <Toast />
+  
   <Dialog 
     :visible="visible" 
     @update:visible="emit('update:visible', $event)"
@@ -256,6 +303,7 @@ watch(() => props.visible, async (newValue) => {
         v-model:formulario="reservaForm"
         :tiene-cliente-existente="tieneClienteExistente"
         :user="user"
+        @mostrar-toast="manejarToast"
       />
 
       <!-- Selector de cupos usando componente modular -->
@@ -263,6 +311,7 @@ watch(() => props.visible, async (newValue) => {
         v-model:cupos-adultos="reservaForm.cupos_adultos"
         v-model:cupos-menores="reservaForm.cupos_menores"
         :tour-seleccionado="tourSeleccionado"
+        @mostrar-toast="manejarToast"
       />
     </div>
 

@@ -1,6 +1,10 @@
 <script setup>
 import Catalogo from '../Catalogo.vue'
 import { ref, computed } from 'vue'
+import { useToast } from 'primevue/usetoast'
+
+// Inicializar toast
+const toast = useToast()
 
 // Datos estáticos de paquetes turísticos
 const paquetes = ref([
@@ -116,15 +120,26 @@ const paquetesFiltrados = computed(() => {
 
 // Funciones para botones
 const verDetalles = (paquete) => {
-  alert(`Detalles del paquete: ${paquete.titulo}\nDuración: ${paquete.duracion}\nDestinos: ${paquete.destinos.join(', ')}\nIncluye: ${paquete.incluye.join(', ')}\nPrecio: $${paquete.precio} por persona`)
+  toast.add({
+    severity: 'info',
+    summary: `Detalles de ${paquete.titulo}`,
+    detail: `Duración: ${paquete.duracion} | Destinos: ${paquete.destinos.join(', ')} | Incluye: ${paquete.incluye.join(', ')} | Precio: $${paquete.precio} por persona`,
+    life: 8000
+  })
 }
 
 const reservarPaquete = (paquete) => {
-  alert(`¡Paquete "${paquete.titulo}" seleccionado para reserva!\nPrecio: $${paquete.precio}\nDuración: ${paquete.duracion}\nPersonas: ${paquete.personas}`)
+  toast.add({
+    severity: 'success',
+    summary: `Paquete "${paquete.titulo}" seleccionado`,
+    detail: `Precio: $${paquete.precio} | Duración: ${paquete.duracion} | Personas: ${paquete.personas}`,
+    life: 5000
+  })
 }
 </script>
 <template>
   <Catalogo>
+    <Toast />
     <div class="p-4 bg-gray-50 min-h-screen">
       <div class="max-w-7xl mx-auto">
         <!-- Header -->

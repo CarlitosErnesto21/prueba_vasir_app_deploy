@@ -140,9 +140,13 @@
                     <i class="pi pi-car mr-2 sm:mr-3 text-blue-600 mt-0.5 text-sm sm:text-base"></i>
                     <span><strong>Transporte:</strong> {{ tour.transporte.nombre }}</span>
                   </div>
-                  <div v-if="tour.cupo_min && tour.cupo_max" class="flex items-start text-gray-600 text-sm sm:text-base">
+                  <div class="flex items-start text-gray-600 text-sm sm:text-base">
                     <i class="pi pi-users mr-2 sm:mr-3 text-blue-600 mt-0.5 text-sm sm:text-base"></i>
-                    <span><strong>Cupo:</strong> {{ tour.cupo_min }} - {{ tour.cupo_max }} personas</span>
+                    <span><strong>Cupos disponibles:</strong> 
+                      <span :class="obtenerClaseCuposDetalle(tour)">
+                        {{ tour.cupos_disponibles || tour.cupo_max || 0 }} cupos
+                      </span>
+                    </span>
                   </div>
                 </div>
 
@@ -157,14 +161,17 @@
                 <!-- Botón de reserva -->
                 <button
                   @click="reservarTour"
+                  :disabled="(tour.cupos_disponibles || tour.cupo_max || 0) === 0"
                   :class="[
-                    'w-full text-white font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-lg transition-colors duration-200 text-sm sm:text-base',
-                    tipo === 'nacional' 
-                      ? 'bg-red-600 hover:bg-red-700' 
-                      : 'bg-blue-600 hover:bg-blue-700'
+                    'w-full font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-lg transition-colors duration-200 text-sm sm:text-base',
+                    (tour.cupos_disponibles || tour.cupo_max || 0) === 0
+                      ? 'bg-gray-400 text-white cursor-not-allowed'
+                      : tipo === 'nacional' 
+                        ? 'bg-red-600 hover:bg-red-700 text-white' 
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
                   ]"
                 >
-                  Reservar Tour
+                  {{ (tour.cupos_disponibles || tour.cupo_max || 0) === 0 ? 'Sin Cupos Disponibles' : 'Reservar Tour' }}
                 </button>
               </div>
 
@@ -594,6 +601,23 @@ onMounted(async () => {
 onUnmounted(() => {
   detenerCarrusel()
 })
+
+// Función para obtener la clase CSS según disponibilidad de cupos en detalle
+const obtenerClaseCuposDetalle = (tour) => {
+  const cuposDisponibles = tour.cupos_disponibles || tour.cupo_max || 0
+  const cupoMax = tour.cupo_max || 1
+  const porcentajeDisponible = (cuposDisponibles / cupoMax) * 100
+  
+  if (cuposDisponibles === 0) {
+    return 'text-red-600 font-bold' // Sin cupos
+  } else if (porcentajeDisponible <= 20) {
+    return 'text-orange-600 font-bold' // Pocos cupos
+  } else if (porcentajeDisponible <= 50) {
+    return 'text-yellow-600 font-semibold' // Moderados cupos
+  } else {
+    return 'text-green-600 font-medium' // Muchos cupos
+  }
+}
 
 // Función para regresar
 const regresar = () => {

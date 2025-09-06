@@ -408,6 +408,23 @@ const irAImagen = (index) => {
   }
 }
 
+// Función para obtener la clase CSS según disponibilidad de cupos
+const obtenerClaseCupos = (tour) => {
+  const cuposDisponibles = tour.cupos_disponibles || tour.cupo_max || 0
+  const cupoMax = tour.cupo_max || 1
+  const porcentajeDisponible = (cuposDisponibles / cupoMax) * 100
+  
+  if (cuposDisponibles === 0) {
+    return 'text-red-600 font-bold' // Sin cupos
+  } else if (porcentajeDisponible <= 20) {
+    return 'text-orange-600 font-bold' // Pocos cupos
+  } else if (porcentajeDisponible <= 50) {
+    return 'text-yellow-600 font-semibold' // Moderados cupos
+  } else {
+    return 'text-green-600' // Muchos cupos
+  }
+}
+
 // Funciones para los botones
 const verMasInfo = (tour) => {
   // Navegar a la vista detallada del tour nacional
@@ -535,18 +552,26 @@ const verMasInfo = (tour) => {
                     <p class="text-xs font-semibold text-gray-700">Salida:</p>
                     <p class="text-xs text-gray-600">{{ formatearFecha(tour.fecha_salida) }}</p>
                   </div>
-                  <div v-if="tour.cupo_min && tour.cupo_max" class="text-xs">
-                    <p class="font-semibold text-gray-700">Cupo:</p>
-                    <p class="text-gray-600">{{ tour.cupo_min }}-{{ tour.cupo_max }} personas</p>
+                  <div class="text-xs">
+                    <p class="font-semibold text-gray-700">Disponibles:</p>
+                    <p class="text-xs font-medium" :class="obtenerClaseCupos(tour)">
+                      {{ tour.cupos_disponibles || tour.cupo_max || 0 }} cupos
+                    </p>
                   </div>
                 </div>
                 
                 <!-- Botones dentro del content para estar dentro del card -->
                 <div class="flex gap-1 sm:gap-2 mt-2 sm:mt-3 pt-1 sm:pt-2">
                   <Button
-                    label="Reservar"
+                    :label="(tour.cupos_disponibles || tour.cupo_max || 0) === 0 ? 'Sin Cupos' : 'Reservar'"
                     @click="reservarTour(tour)"
-                    class="!bg-red-600 !border-none !px-2 sm:!px-3 !py-1 sm:!py-1.5 !text-white !text-xs font-semibold rounded-lg hover:!bg-red-700 transition-all flex-1 shadow-sm"
+                    :disabled="(tour.cupos_disponibles || tour.cupo_max || 0) === 0"
+                    :class="[
+                      '!px-2 sm:!px-3 !py-1 sm:!py-1.5 !text-xs font-semibold rounded-lg transition-all flex-1 shadow-sm',
+                      (tour.cupos_disponibles || tour.cupo_max || 0) === 0 
+                        ? '!bg-gray-400 !border-none !text-white cursor-not-allowed' 
+                        : '!bg-red-600 !border-none !text-white hover:!bg-red-700'
+                    ]"
                   />
                   <Button
                     label="Info"

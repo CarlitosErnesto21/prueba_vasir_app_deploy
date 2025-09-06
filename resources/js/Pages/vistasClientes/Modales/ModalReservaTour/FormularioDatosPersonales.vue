@@ -20,7 +20,7 @@ const props = defineProps({
 })
 
 // Emits para comunicación con el componente padre
-const emit = defineEmits(['update:formulario', 'validate-telefono'])
+const emit = defineEmits(['update:formulario', 'validate-telefono', 'mostrar-toast'])
 
 // Estado para tipos de documentos
 const tiposDocumentos = ref([])
@@ -110,41 +110,76 @@ const onValidate = (phoneObject) => {
 const validateForm = () => {
   // Validación del tipo de documento
   if (!formularioLocal.value.tipo_documento && !formularioLocal.value.tipo_documento_id) {
-    alert('Por favor, seleccione un tipo de documento.')
+    emit('mostrar-toast', {
+      severity: 'error',
+      summary: 'Campo requerido',
+      detail: 'Por favor, seleccione un tipo de documento.',
+      life: 4000
+    })
     return false
   }
 
   // Validaciones adicionales
   if (!formularioLocal.value.numero_identificacion) {
-    alert('Por favor, ingrese su número de identificación.')
+    emit('mostrar-toast', {
+      severity: 'error',
+      summary: 'Campo requerido',
+      detail: 'Por favor, ingrese su número de identificación.',
+      life: 4000
+    })
     return false
   }
 
   if (!formularioLocal.value.fecha_nacimiento) {
-    alert('Por favor, seleccione su fecha de nacimiento.')
+    emit('mostrar-toast', {
+      severity: 'error',
+      summary: 'Campo requerido',
+      detail: 'Por favor, seleccione su fecha de nacimiento.',
+      life: 4000
+    })
     return false
   }
 
   if (!formularioLocal.value.direccion) {
-    alert('Por favor, ingrese su dirección.')
+    emit('mostrar-toast', {
+      severity: 'error',
+      summary: 'Campo requerido',
+      detail: 'Por favor, ingrese su dirección.',
+      life: 4000
+    })
     return false
   }
 
   // Validación del género
   if (!formularioLocal.value.genero) {
-    alert('Por favor, seleccione su género.')
+    emit('mostrar-toast', {
+      severity: 'error',
+      summary: 'Campo requerido',
+      detail: 'Por favor, seleccione su género.',
+      life: 4000
+    })
     return false
   }
 
   // Validación del teléfono
   if (!formularioLocal.value.telefono) {
-    alert('Por favor, ingrese su número de teléfono.')
+    emit('mostrar-toast', {
+      severity: 'error',
+      summary: 'Campo requerido',
+      detail: 'Por favor, ingrese su número de teléfono.',
+      life: 4000
+    })
     return false
   }
 
   // Solo validar formato si el teléfono fue modificado (no viene de datos precargados)
   if (formularioLocal.value.telefono && telefonoValidation.value.isValid === false && telefonoValidation.value.mensaje !== 'Número válido (guardado previamente)') {
-    alert('Por favor, ingrese un número de teléfono válido.')
+    emit('mostrar-toast', {
+      severity: 'error',
+      summary: 'Teléfono inválido',
+      detail: 'Por favor, ingrese un número de teléfono válido.',
+      life: 4000
+    })
     return false
   }
 

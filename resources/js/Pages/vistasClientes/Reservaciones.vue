@@ -1,6 +1,10 @@
 <script setup>
 import Catalogo from '../Catalogo.vue'
 import { ref, computed } from 'vue'
+import { useToast } from 'primevue/usetoast'
+
+// Inicializar toast
+const toast = useToast()
 
 // Datos estáticos de reservaciones disponibles
 const reservaciones = ref([
@@ -165,18 +169,34 @@ const reservacionesFiltradas = computed(() => {
 // Funciones para botones
 const reservarAhora = (reservacion) => {
   if (reservacion.estado === 'Agotado') {
-    alert('Lo sentimos, esta reservación está agotada.')
+    toast.add({
+      severity: 'warn',
+      summary: 'Reservación agotada',
+      detail: 'Lo sentimos, esta reservación está agotada.',
+      life: 4000
+    })
     return
   }
-  alert(`¡Reservación "${reservacion.titulo}" seleccionada!\nFecha: ${reservacion.fecha_salida}\nHora: ${reservacion.hora_salida}\nPrecio: $${reservacion.precio}\nCupos disponibles: ${reservacion.cupos_disponibles}`)
+  toast.add({
+    severity: 'success',
+    summary: `Reservación "${reservacion.titulo}" seleccionada`,
+    detail: `Fecha: ${reservacion.fecha_salida} | Hora: ${reservacion.hora_salida} | Precio: $${reservacion.precio} | Cupos disponibles: ${reservacion.cupos_disponibles}`,
+    life: 5000
+  })
 }
 
 const verMasInfo = (reservacion) => {
-  alert(`Información detallada:\n\nTour: ${reservacion.titulo}\nDestino: ${reservacion.destino}\nPunto de salida: ${reservacion.punto_salida}\nFecha: ${reservacion.fecha_salida}\nHorario: ${reservacion.hora_salida} - ${reservacion.hora_regreso}\nDuración: ${reservacion.duracion}\nDificultad: ${reservacion.dificultad}\nIncluye: ${reservacion.incluye.join(', ')}\nCupos disponibles: ${reservacion.cupos_disponibles}/${reservacion.cupo_maximo}`)
+  toast.add({
+    severity: 'info',
+    summary: `Información de ${reservacion.titulo}`,
+    detail: `Destino: ${reservacion.destino} | Salida: ${reservacion.punto_salida} | Fecha: ${reservacion.fecha_salida} | Horario: ${reservacion.hora_salida} - ${reservacion.hora_regreso} | Duración: ${reservacion.duracion} | Dificultad: ${reservacion.dificultad} | Incluye: ${reservacion.incluye.join(', ')} | Cupos: ${reservacion.cupos_disponibles}/${reservacion.cupo_maximo}`,
+    life: 8000
+  })
 }
 </script>
 <template>
   <Catalogo>
+    <Toast />
     <div class="p-4 bg-gray-50 min-h-screen">
       <div class="max-w-7xl mx-auto">
         <!-- Header -->

@@ -18,7 +18,7 @@ const props = defineProps({
 })
 
 // Emits para comunicación con el componente padre
-const emit = defineEmits(['update:cuposAdultos', 'update:cuposMenores'])
+const emit = defineEmits(['update:cuposAdultos', 'update:cuposMenores', 'mostrar-toast'])
 
 // Computed para el total de cupos
 const cupos_total = computed(() => {
@@ -27,10 +27,23 @@ const cupos_total = computed(() => {
   return adultos + menores
 })
 
+// Computed para cupos disponibles del tour
+const cuposDisponibles = computed(() => {
+  return props.tourSeleccionado?.cupos_disponibles || props.tourSeleccionado?.cupo_max || 0
+})
+
 // Funciones para incrementar/decrementar cupos
 const incrementAdultos = () => {
-  if (props.cuposAdultos < 20) {
+  const nuevoTotal = cupos_total.value + 1
+  if (props.cuposAdultos < 20 && nuevoTotal <= cuposDisponibles.value) {
     emit('update:cuposAdultos', props.cuposAdultos + 1)
+  } else if (nuevoTotal > cuposDisponibles.value) {
+    emit('mostrar-toast', {
+      severity: 'warn',
+      summary: 'Cupos insuficientes',
+      detail: `Solo hay ${cuposDisponibles.value} cupos disponibles para este tour.`,
+      life: 4000
+    })
   }
 }
 
@@ -41,8 +54,16 @@ const decrementAdultos = () => {
 }
 
 const incrementMenores = () => {
-  if (props.cuposMenores < 20) {
+  const nuevoTotal = cupos_total.value + 1
+  if (props.cuposMenores < 20 && nuevoTotal <= cuposDisponibles.value) {
     emit('update:cuposMenores', props.cuposMenores + 1)
+  } else if (nuevoTotal > cuposDisponibles.value) {
+    emit('mostrar-toast', {
+      severity: 'warn',
+      summary: 'Cupos insuficientes',
+      detail: `Solo hay ${cuposDisponibles.value} cupos disponibles para este tour.`,
+      life: 4000
+    })
   }
 }
 
@@ -61,9 +82,14 @@ const decrementMenores = () => {
         <span class="hidden sm:inline">Cupos a reservar</span>
         <span class="sm:hidden">Cupos</span>
       </span>
-      <span class="bg-red-100 text-red-700 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold self-start sm:self-auto">
-        Total: {{ cupos_total }}
-      </span>
+      <div class="flex gap-2 self-start sm:self-auto">
+        <span class="bg-blue-100 text-blue-700 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold">
+          Disponibles: {{ cuposDisponibles }}
+        </span>
+        <span class="bg-red-100 text-red-700 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-bold">
+          Total: {{ cupos_total }}
+        </span>
+      </div>
     </h4>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 bg-gray-50 p-3 sm:p-4 rounded-lg">
       <div>

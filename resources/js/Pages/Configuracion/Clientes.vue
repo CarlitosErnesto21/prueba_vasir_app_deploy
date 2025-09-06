@@ -1,5 +1,6 @@
 <template>
     <AuthenticatedLayout>
+        <Toast />
         <div class="container mx-auto px-4 py-8">
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <!-- Header -->
@@ -114,6 +115,10 @@ import { Link, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { useToast } from 'primevue/usetoast';
+
+// Inicializar toast
+const toast = useToast();
 import { 
     faUsers, 
     faUserPlus,
@@ -141,7 +146,12 @@ const loadClientes = async () => {
         }
     } catch (error) {
         console.error('Error loading clientes:', error);
-        alert('Error al cargar los clientes');
+        toast.add({
+            severity: 'error',
+            summary: 'Error al cargar',
+            detail: 'Error al cargar los clientes',
+            life: 4000
+        });
     }
 };
 
@@ -228,11 +238,21 @@ const toggleClienteStatus = async (cliente) => {
             const response = await axios.patch(`/api/clientes/${cliente.id}/toggle-status`);
             if (response.data.success) {
                 cliente.status = response.data.cliente.status;
-                alert(`Cliente ${action}do exitosamente`);
+                toast.add({
+                    severity: 'success',
+                    summary: 'Estado actualizado',
+                    detail: `Cliente ${action}do exitosamente`,
+                    life: 4000
+                });
             }
         } catch (error) {
             console.error('Error al cambiar estado del cliente:', error);
-            alert('Error al cambiar el estado del cliente');
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Error al cambiar el estado del cliente',
+                life: 4000
+            });
         }
     }
 };
@@ -246,11 +266,21 @@ const deleteCliente = async (cliente) => {
                 if (index !== -1) {
                     clientes.value.splice(index, 1);
                 }
-                alert('Cliente eliminado exitosamente');
+                toast.add({
+                    severity: 'success',
+                    summary: 'Cliente eliminado',
+                    detail: 'Cliente eliminado exitosamente',
+                    life: 4000
+                });
             }
         } catch (error) {
             console.error('Error al eliminar cliente:', error);
-            alert('Error al eliminar el cliente');
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Error al eliminar el cliente',
+                life: 4000
+            });
         }
     }
 };

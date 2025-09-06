@@ -1,6 +1,10 @@
 <script setup>
 import Catalogo from '../Catalogo.vue'
 import { ref, computed } from 'vue'
+import { useToast } from 'primevue/usetoast'
+
+// Inicializar toast
+const toast = useToast()
 
 const nombre = ref('')
 const email = ref('')
@@ -120,7 +124,12 @@ const contactoInfo = ref([
 // Funciones
 function enviarFormulario(e) {
   e.preventDefault()
-  alert('Mensaje enviado correctamente. Te responderemos pronto.')
+  toast.add({
+    severity: 'success',
+    summary: 'Mensaje enviado',
+    detail: 'Mensaje enviado correctamente. Te responderemos pronto.',
+    life: 5000
+  })
   nombre.value = ''
   email.value = ''
   mensaje.value = ''
@@ -147,6 +156,7 @@ const faqsFiltradas = computed(() => {
 
 <template>
   <Catalogo>
+    <Toast />
     <div class="p-4 bg-gray-50 min-h-screen">
       <div class="max-w-7xl mx-auto">
         <!-- Header -->

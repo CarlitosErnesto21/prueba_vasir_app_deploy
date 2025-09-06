@@ -28,6 +28,11 @@ class TourController extends Controller
         
         $tours = $query->get();
         
+        // Agregar cupos_disponibles a cada tour
+        $tours->each(function ($tour) {
+            $tour->cupos_disponibles = $tour->cupos_disponibles;
+        });
+        
         // Siempre devolver JSON para API
         return response()->json($tours);
     }
@@ -86,6 +91,9 @@ class TourController extends Controller
     {
         $tour = Tour::with(['transporte', 'imagenes'])
             ->findOrFail($id);
+        
+        // Agregar cupos_disponibles
+        $tour->cupos_disponibles = $tour->cupos_disponibles;
         
         return response()->json($tour);
     }
