@@ -114,9 +114,20 @@
                 <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">{{ tour.nombre }}</h1>
                 
                 <div class="mb-4 sm:mb-6">
-                  <span class="inline-flex items-center px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-100 text-blue-800">
-                    {{ tour.categoria === 'NACIONAL' ? 'Nacional' : tour.categoria === 'INTERNACIONAL' ? 'Internacional' : 'Categoría no asignada' }}
-                  </span>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-100 text-blue-800">
+                      {{ tour.categoria === 'NACIONAL' ? 'Nacional' : tour.categoria === 'INTERNACIONAL' ? 'Internacional' : 'Categoría no asignada' }}
+                    </span>
+                    <span 
+                      :class="[
+                        'inline-flex items-center px-3 py-1 rounded-full text-xs sm:text-sm font-medium',
+                        obtenerEstadoInfo(tour.estado, tour.cupos_disponibles).color
+                      ]"
+                      :title="obtenerEstadoInfo(tour.estado, tour.cupos_disponibles).descripcion"
+                    >
+                      {{ obtenerEstadoInfo(tour.estado, tour.cupos_disponibles).texto }}
+                    </span>
+                  </div>
                 </div>
 
                 <div class="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
@@ -140,9 +151,27 @@
                     <i class="pi pi-car mr-2 sm:mr-3 text-blue-600 mt-0.5 text-sm sm:text-base"></i>
                     <span><strong>Transporte:</strong> {{ tour.transporte.nombre }}</span>
                   </div>
-                  <div v-if="tour.cupo_min && tour.cupo_max" class="flex items-start text-gray-600 text-sm sm:text-base">
-                    <i class="pi pi-users mr-2 sm:mr-3 text-blue-600 mt-0.5 text-sm sm:text-base"></i>
-                    <span><strong>Cupo:</strong> {{ tour.cupo_min }} - {{ tour.cupo_max }} personas</span>
+                  <div v-if="tour.cupos_disponibles !== undefined" class="flex items-start text-gray-600 text-sm sm:text-base">
+                    <i class="pi pi-check-circle mr-2 sm:mr-3 mt-0.5 text-sm sm:text-base" :class="{
+                      'text-green-600': tour.cupos_disponibles > 5,
+                      'text-yellow-600': tour.cupos_disponibles > 0 && tour.cupos_disponibles <= 5,
+                      'text-red-600': tour.cupos_disponibles === 0
+                    }"></i>
+                    <span><strong>Disponibles:</strong> 
+                      <span :class="{
+                        'text-green-600': tour.cupos_disponibles > 5,
+                        'text-yellow-600': tour.cupos_disponibles > 0 && tour.cupos_disponibles <= 5,
+                        'text-red-600': tour.cupos_disponibles === 0
+                      }">
+                        {{ tour.cupos_disponibles }} cupos
+                        <span v-if="tour.cupos_disponibles === 0" class="text-red-600 font-medium">
+                          (Agotado)
+                        </span>
+                        <span v-else-if="tour.cupos_disponibles <= 5" class="text-yellow-600 font-medium">
+                          (¡Pocos disponibles!)
+                        </span>
+                      </span>
+                    </span>
                   </div>
                 </div>
 
@@ -157,14 +186,17 @@
                 <!-- Botón de reserva -->
                 <button
                   @click="reservarTour"
+                  :disabled="!esTourReservable(tour)"
                   :class="[
-                    'w-full text-white font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-lg transition-colors duration-200 text-sm sm:text-base',
-                    tipo === 'nacional' 
-                      ? 'bg-red-600 hover:bg-red-700' 
-                      : 'bg-blue-600 hover:bg-blue-700'
+                    'w-full font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-lg transition-colors duration-200 text-sm sm:text-base',
+                    !esTourReservable(tour)
+                      ? 'bg-gray-400 text-white cursor-not-allowed'
+                      : tipo === 'nacional' 
+                        ? 'bg-red-600 hover:bg-red-700 text-white' 
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
                   ]"
                 >
-                  Reservar Tour
+                  {{ esTourReservable(tour) ? 'Reservar Tour' : obtenerEstadoInfo(tour.estado, tour.cupos_disponibles).texto }}
                 </button>
               </div>
 
@@ -406,6 +438,78 @@ const obtenerTour = async () => {
   }
 }
 
+// Funciones helper para manejar estados de tours
+const obtenerEstadoInfo = (estado, cuposDisponibles = 0) => {
+  // Mapeo de estados del enum de la base de datos
+  const estadoUpper = estado?.toUpperCase()
+  
+  switch (estadoUpper) {
+    case 'DISPONIBLE':
+      if (cuposDisponibles === 0) {
+        return {
+          texto: 'AGOTADO',
+          color: 'bg-red-600 text-white',
+          descripcion: 'Sin cupos disponibles'
+        }
+      }
+      return {
+        texto: 'DISPONIBLE',
+        color: 'bg-green-600 text-white',
+        descripcion: 'Cupos disponibles para reservar'
+      }
+    case 'AGOTADO':
+      return {
+        texto: 'AGOTADO',
+        color: 'bg-red-600 text-white',
+        descripcion: 'Sin cupos disponibles'
+      }
+    case 'EN_CURSO':
+      return {
+        texto: 'EN CURSO',
+        color: 'bg-blue-600 text-white',
+        descripcion: 'Tour en progreso'
+      }
+    case 'COMPLETADO':
+      return {
+        texto: 'COMPLETADO',
+        color: 'bg-gray-600 text-white',
+        descripcion: 'Tour finalizado'
+      }
+    case 'CANCELADO':
+      return {
+        texto: 'CANCELADO',
+        color: 'bg-red-800 text-white',
+        descripcion: 'Tour cancelado'
+      }
+    case 'SUSPENDIDO':
+      return {
+        texto: 'SUSPENDIDO',
+        color: 'bg-orange-600 text-white',
+        descripcion: 'Tour temporalmente pausado'
+      }
+    case 'REPROGRAMADO':
+      return {
+        texto: 'REPROGRAMADO',
+        color: 'bg-purple-600 text-white',
+        descripcion: 'Tour reprogramado para nueva fecha'
+      }
+    default:
+      return {
+        texto: 'DESCONOCIDO',
+        color: 'bg-gray-400 text-white',
+        descripcion: 'Estado no definido'
+      }
+  }
+}
+
+// Función para verificar si un tour está disponible para reserva
+const esTourReservable = (tour) => {
+  const estadoUpper = tour.estado?.toUpperCase()
+  const estadosReservables = ['DISPONIBLE']
+  
+  return estadosReservables.includes(estadoUpper) && tour.cupos_disponibles > 0
+}
+
 // Función para formatear fecha
 const formatearFecha = (fecha) => {
   if (!fecha) return ''
@@ -508,6 +612,18 @@ const reanudarCarrusel = () => {
 
 // Función para reservar el tour
 const reservarTour = () => {
+  // Verificar si el tour está disponible para reserva
+  if (!esTourReservable(tour.value)) {
+    const estadoInfo = obtenerEstadoInfo(tour.value.estado, tour.value.cupos_disponibles)
+    toast.add({
+      severity: 'warn',
+      summary: 'Tour No Disponible',
+      detail: `Este tour está ${estadoInfo.texto.toLowerCase()}. ${estadoInfo.descripcion}`,
+      life: 4000
+    })
+    return
+  }
+
   // Verificar si el usuario está logueado
   if (!user.value) {
     showAuthDialog.value = true
@@ -561,16 +677,52 @@ const verificarReservaPendiente = () => {
 }
 
 // Función para manejar la confirmación de reserva desde el componente hijo
-const manejarConfirmacionReserva = (reserva) => {
+const manejarConfirmacionReserva = async (reserva) => {
+  const cuposReservados = reserva.cupos_reservados || 0
+  
   toast.add({ 
     severity: 'success', 
     summary: 'Reserva Confirmada', 
-    detail: 'Tu reserva ha sido registrada. Te contactaremos pronto.', 
+    detail: `Tu reserva de ${cuposReservados} cupo${cuposReservados > 1 ? 's' : ''} ha sido registrada. Te contactaremos pronto.`, 
     life: 5000 
   })
 
   // Cerrar modal
   showReservaDialog.value = false
+  
+  // Refrescar los datos del tour para obtener los cupos actualizados
+  try {
+    await obtenerTour()
+    console.log('Datos del tour actualizados después de la reserva')
+    
+    // Mostrar información de cupos disponibles después de la actualización
+    const cuposRestantes = tour.value.cupos_disponibles || 0
+    if (cuposRestantes > 0) {
+      setTimeout(() => {
+        toast.add({
+          severity: 'info',
+          summary: 'Cupos Disponibles',
+          detail: `Quedan ${cuposRestantes} cupo${cuposRestantes > 1 ? 's' : ''} disponible${cuposRestantes > 1 ? 's' : ''} para este tour.`,
+          life: 4000
+        })
+      }, 1500)
+    } else {
+      setTimeout(() => {
+        toast.add({
+          severity: 'warn',
+          summary: 'Tour Completo',
+          detail: 'Este tour ya no tiene cupos disponibles.',
+          life: 4000
+        })
+      }, 1500)
+    }
+  } catch (error) {
+    console.error('Error al actualizar datos del tour:', error)
+    // Fallback: actualizar cupos localmente si falla la API
+    if (tourData.value.cupos_disponibles && reserva.cupos_reservados) {
+      tourData.value.cupos_disponibles = Math.max(0, tourData.value.cupos_disponibles - reserva.cupos_reservados)
+    }
+  }
 }
 
 // Watch para verificar reserva pendiente cuando el usuario cambie

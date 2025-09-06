@@ -28,6 +28,31 @@ class TourController extends Controller
         
         $tours = $query->get();
         
+        // Agregar información de cupos disponibles a cada tour
+        $tours = $tours->map(function ($tour) {
+            return [
+                'id' => $tour->id,
+                'nombre' => $tour->nombre,
+                'categoria' => $tour->categoria,
+                'incluye' => $tour->incluye,
+                'no_incluye' => $tour->no_incluye,
+                'cupo_min' => $tour->cupo_min,
+                'cupo_max' => $tour->cupo_max,
+                'cupos_reservados' => $tour->cupos_reservados,
+                'cupos_disponibles' => $tour->cupos_disponibles,
+                'punto_salida' => $tour->punto_salida,
+                'fecha_salida' => $tour->fecha_salida,
+                'fecha_regreso' => $tour->fecha_regreso,
+                'estado' => $tour->estado,
+                'precio' => $tour->precio,
+                'transporte_id' => $tour->transporte_id,
+                'transporte' => $tour->transporte,
+                'imagenes' => $tour->imagenes,
+                'created_at' => $tour->created_at,
+                'updated_at' => $tour->updated_at,
+            ];
+        });
+        
         // Siempre devolver JSON para API
         return response()->json($tours);
     }
@@ -87,7 +112,30 @@ class TourController extends Controller
         $tour = Tour::with(['transporte', 'imagenes'])
             ->findOrFail($id);
         
-        return response()->json($tour);
+        // Agregar información de cupos disponibles
+        $tourData = [
+            'id' => $tour->id,
+            'nombre' => $tour->nombre,
+            'categoria' => $tour->categoria,
+            'incluye' => $tour->incluye,
+            'no_incluye' => $tour->no_incluye,
+            'cupo_min' => $tour->cupo_min,
+            'cupo_max' => $tour->cupo_max,
+            'cupos_reservados' => $tour->cupos_reservados,
+            'cupos_disponibles' => $tour->cupos_disponibles,
+            'punto_salida' => $tour->punto_salida,
+            'fecha_salida' => $tour->fecha_salida,
+            'fecha_regreso' => $tour->fecha_regreso,
+            'estado' => $tour->estado,
+            'precio' => $tour->precio,
+            'transporte_id' => $tour->transporte_id,
+            'transporte' => $tour->transporte,
+            'imagenes' => $tour->imagenes,
+            'created_at' => $tour->created_at,
+            'updated_at' => $tour->updated_at,
+        ];
+        
+        return response()->json($tourData);
     }
 
     /**
@@ -228,7 +276,7 @@ class TourController extends Controller
             ->where('categoria', 'NACIONAL')
             ->firstOrFail();
 
-        return inertia('VistasClientes/DetalleTour', [
+        return inertia('VistasClientes/tours/DetalleTour', [
             'tour' => $tour,
             'tipo' => 'nacional'
         ]);
@@ -244,7 +292,7 @@ class TourController extends Controller
             ->where('categoria', 'INTERNACIONAL')
             ->firstOrFail();
 
-        return inertia('VistasClientes/DetalleTour', [
+        return inertia('VistasClientes/tours/DetalleTour', [
             'tour' => $tour,
             'tipo' => 'internacional'
         ]);

@@ -17,12 +17,23 @@ use App\Http\Controllers\ProvinciaController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\TransporteController;
 use App\Http\Controllers\TipoDocumentoController;
+use App\Http\Controllers\Api\ReservaController as ApiReservaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+// Rutas API para gestión de reservas
+Route::prefix('reservas')->group(function () {
+    Route::get('/', [ApiReservaController::class, 'index']);
+    Route::get('/resumen', [ApiReservaController::class, 'resumen']);
+    Route::put('/{id}/confirmar', [ApiReservaController::class, 'confirmar']);
+    Route::put('/{id}/rechazar', [ApiReservaController::class, 'rechazar']);
+    Route::put('/{id}/reprogramar', [ApiReservaController::class, 'reprogramar']);
+    Route::get('/{id}/historial', [ApiReservaController::class, 'historial']);
+});
 
 // Rutas de API
 Route::apiResource('productos', ProductoController::class);
@@ -34,7 +45,6 @@ Route::apiResource('aerolineas', AerolineaController::class);
 Route::apiResource('empleados', EmpleadoController::class);
 Route::apiResource('hoteles', HotelController::class);
 Route::apiResource('metodos-pago', MetodoPagoController::class);
-Route::apiResource('reservas', ReservaController::class);
 Route::apiResource('tours', TourController::class);
 Route::apiResource('categorias-hoteles', CategoriaHotelController::class);
 Route::apiResource('paises', PaisController::class)->parameter('paises', 'pais');

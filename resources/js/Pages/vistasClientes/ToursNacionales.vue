@@ -25,6 +25,18 @@ const showAuthDialog = ref(false)
 const tourSeleccionado = ref(null)
 
 const reservarTour = (tour) => {
+  // Verificar si el tour está disponible para reserva
+  if (!esTourReservable(tour)) {
+    const estadoInfo = obtenerEstadoInfo(tour.estado, tour.cupos_disponibles)
+    toast.add({
+      severity: 'warn',
+      summary: 'Tour No Disponible',
+      detail: `Este tour está ${estadoInfo.texto.toLowerCase()}. ${estadoInfo.descripcion}`,
+      life: 4000
+    })
+    return
+  }
+  
   tourSeleccionado.value = tour
   
   // Verificar si el usuario está logueado
@@ -92,16 +104,64 @@ const verificarReservaPendiente = async () => {
 }
 
 // Función para manejar la confirmación de reserva desde el componente hijo
-const manejarConfirmacionReserva = (reserva) => {
+const manejarConfirmacionReserva = async (reserva) => {
+  const cuposReservados = reserva.cupos_reservados || 0
+  
   toast.add({ 
     severity: 'success', 
     summary: 'Reserva Confirmada', 
-    detail: 'Tu reserva ha sido registrada. Te contactaremos pronto.', 
+    detail: `Tu reserva de ${cuposReservados} cupo${cuposReservados > 1 ? 's' : ''} ha sido registrada. Te contactaremos pronto.`, 
     life: 5000 
   })
 
   // Cerrar modal
   showReservaDialog.value = false
+  
+  // Refrescar los datos de tours para obtener los cupos actualizados
+  try {
+    await obtenerTours()
+    console.log('Lista de tours actualizada después de la reserva')
+    
+    // Buscar el tour actualizado y mostrar información de cupos
+    if (reserva.tour_id) {
+      const tourActualizado = tours.value.find(t => t.id === reserva.tour_id)
+      if (tourActualizado) {
+        const cuposRestantes = tourActualizado.cupos_disponibles || 0
+        if (cuposRestantes > 0) {
+          setTimeout(() => {
+            toast.add({
+              severity: 'info',
+              summary: 'Cupos Disponibles',
+              detail: `Quedan ${cuposRestantes} cupo${cuposRestantes > 1 ? 's' : ''} disponible${cuposRestantes > 1 ? 's' : ''} para "${tourActualizado.nombre}".`,
+              life: 4000
+            })
+          }, 1500)
+        } else {
+          setTimeout(() => {
+            toast.add({
+              severity: 'warn',
+              summary: 'Tour Completo',
+              detail: `"${tourActualizado.nombre}" ya no tiene cupos disponibles.`,
+              life: 4000
+            })
+          }, 1500)
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error al actualizar lista de tours:', error)
+    
+    // Fallback: actualizar cupos localmente si falla la API
+    if (reserva.tour_id && reserva.cupos_reservados) {
+      const tourIndex = tours.value.findIndex(t => t.id === reserva.tour_id)
+      if (tourIndex !== -1 && tours.value[tourIndex].cupos_disponibles) {
+        tours.value[tourIndex].cupos_disponibles = Math.max(0, 
+          tours.value[tourIndex].cupos_disponibles - reserva.cupos_reservados
+        )
+        tours.value[tourIndex].cupos_reservados = (tours.value[tourIndex].cupos_reservados || 0) + reserva.cupos_reservados
+      }
+    }
+  }
 }
 
 // Watch para verificar reserva pendiente cuando el usuario cambie
@@ -149,6 +209,104 @@ const error = ref(null)
 const API_BASE_URL = '/api'
 // URL de la API para tours nacionales
 const url = "/api/tours?categoria=nacional"
+
+// Funciones helper para manejar estados de tours
+const obtenerEstadoInfo = (estado, cuposDisponibles = 0) => {
+  // Mapeo de estados del enum de la base de datos
+  const estadoUpper = estado?.toUpperCase()
+  
+  switch (estadoUpper) {
+    case 'DISPONIBLE':
+      if (cuposDisponibles === 0) {
+        return {
+          texto: 'AGOTADO',
+          color: 'bg-red-600 text-white',
+          descripcion: 'Sin cupos disponibles'
+        }
+      }
+      return {
+        texto: 'DISPONIBLE',
+        color: 'bg-yellow-500 text-black',
+        descripcion: 'Cupos disponibles para reservar'
+      }
+    case 'AGOTADO':
+      return {
+        texto: 'AGOTADO',
+        color: 'bg-red-600 text-white',
+        descripcion: 'Sin cupos disponibles'
+      }
+    case 'EN_CURSO':
+      return {
+        texto: 'EN CURSO',
+        color: 'bg-blue-600 text-white',
+        descripcion: 'Tour en progreso'
+      }
+    case 'COMPLETADO':
+      return {
+        texto: 'COMPLETADO',
+        color: 'bg-gray-600 text-white',
+        descripcion: 'Tour finalizado'
+      }
+    case 'CANCELADO':
+      return {
+        texto: 'CANCELADO',
+        color: 'bg-red-800 text-white',
+        descripcion: 'Tour cancelado'
+      }
+    case 'SUSPENDIDO':
+      return {
+        texto: 'SUSPENDIDO',
+        color: 'bg-orange-600 text-white',
+        descripcion: 'Tour temporalmente pausado'
+      }
+    case 'REPROGRAMADO':
+      return {
+        texto: 'REPROGRAMADO',
+        color: 'bg-purple-600 text-white',
+        descripcion: 'Tour reprogramado para nueva fecha'
+      }
+    default:
+      return {
+        texto: 'DESCONOCIDO',
+        color: 'bg-gray-400 text-white',
+        descripcion: 'Estado no definido'
+      }
+  }
+}
+
+// Función para verificar si un tour está disponible para reserva
+const esTourReservable = (tour) => {
+  const estadoUpper = tour.estado?.toUpperCase()
+  const estadosReservables = ['DISPONIBLE']
+  
+  return estadosReservables.includes(estadoUpper) && tour.cupos_disponibles > 0
+}
+
+// Función para obtener el texto del botón según el estado
+const obtenerTextoBoton = (tour) => {
+  const estadoUpper = tour.estado?.toUpperCase()
+  
+  if (tour.cupos_disponibles === 0 || estadoUpper === 'AGOTADO') {
+    return 'Agotado'
+  }
+  
+  switch (estadoUpper) {
+    case 'DISPONIBLE':
+      return 'Reservar'
+    case 'EN_CURSO':
+      return 'En Curso'
+    case 'COMPLETADO':
+      return 'Completado'
+    case 'CANCELADO':
+      return 'Cancelado'
+    case 'SUSPENDIDO':
+      return 'Suspendido'
+    case 'REPROGRAMADO':
+      return 'Reprogramado'
+    default:
+      return 'No Disponible'
+  }
+}
 
 // Computed properties para estadísticas dinámicas
 const estadisticas = computed(() => {
@@ -472,14 +630,14 @@ const verMasInfo = (tour) => {
         </div>
 
         <!-- Tours Grid -->
-        <div v-if="tours.length > 0" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div v-if="tours.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           <Card
             v-for="tour in tours"
             :key="tour.id"
-            class="border border-gray-300 bg-white shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-80 sm:h-96 transform hover:-translate-y-1 overflow-hidden"
+            class="border border-gray-300 bg-white shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-[360px] sm:h-[380px] transform hover:-translate-y-1 overflow-hidden"
           >
             <template #header>
-              <div class="relative w-full h-24 sm:h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg overflow-hidden group cursor-pointer"
+              <div class="relative w-full h-32 sm:h-36 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg overflow-hidden group cursor-pointer"
                    @click="mostrarGaleria(tour)">
                 <img
                   :src="obtenerImagenActual(tour)"
@@ -487,8 +645,11 @@ const verMasInfo = (tour) => {
                   class="object-contain h-full w-full bg-gray-50 group-hover:scale-105 transition-transform duration-500"
                   @error="$event.target.src = 'https://via.placeholder.com/300x200/ef4444/ffffff?text=' + encodeURIComponent(tour.nombre.substring(0, 15))"
                 />
-                <div class="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
-                  ${{ tour.precio }}
+                <div class="absolute top-2 right-2">
+                  <!-- Badge del precio -->
+                  <div class="bg-green-600 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
+                    ${{ tour.precio }}
+                  </div>
                 </div>
                 <div class="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs">
                   {{ calcularDuracion(tour.fecha_salida, tour.fecha_regreso) }}
@@ -503,7 +664,7 @@ const verMasInfo = (tour) => {
                 </div>
                 <!-- Indicador de carrusel activo -->
                 <div v-if="tour.imagenes && tour.imagenes.length > 1" 
-                     class="absolute bottom-2 right-2 flex space-x-1">
+                     class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
                   <div 
                     v-for="(_, index) in tour.imagenes" 
                     :key="index"
@@ -511,48 +672,80 @@ const verMasInfo = (tour) => {
                     :class="(cardImageIndices[tour.id] || 0) === index ? 'bg-white' : 'bg-white/50'"
                   ></div>
                 </div>
+                
+                <!-- Badge del estado del tour en esquina inferior derecha -->
+                <div 
+                  :class="[
+                    'absolute bottom-2 right-2 px-2 py-1 rounded-lg text-xs font-semibold shadow-lg z-10',
+                    obtenerEstadoInfo(tour.estado, tour.cupos_disponibles).color
+                  ]"
+                  :title="obtenerEstadoInfo(tour.estado, tour.cupos_disponibles).descripcion"
+                >
+                  {{ obtenerEstadoInfo(tour.estado, tour.cupos_disponibles).texto }}
+                </div>
               </div>
             </template>
             
             <template #title>
-              <div class="h-10 sm:h-12 flex items-start px-3 sm:px-4 pt-2 sm:pt-3 cursor-pointer hover:bg-gray-50 transition-colors"
+              <div class="h-12 sm:h-14 flex items-center px-3 sm:px-4 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
                    @click="verMasInfo(tour)">
-                <span class="text-xs sm:text-sm font-bold text-gray-800 leading-tight line-clamp-2">{{ tour.nombre }}</span>
+                <span class="text-xs sm:text-sm font-bold text-gray-800 leading-tight line-clamp-2 text-center w-full">{{ tour.nombre }}</span>
               </div>
             </template>
             
             <template #content>
               <div class="flex-1 flex flex-col px-3 sm:px-4 pb-2">
-                <div class="flex-1 space-y-1 sm:space-y-2 cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                <div class="flex-1 space-y-1.5 cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-1.5 -m-1.5"
                      @click="verMasInfo(tour)">
-                  <div class="flex items-center text-xs text-gray-500 mb-1">
+                  <!-- Punto de salida -->
+                  <div class="flex items-center text-xs text-gray-500">
                     <svg class="w-3 h-3 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
                     </svg>
                     <span class="truncate">{{ tour.punto_salida }}</span>
                   </div>
-                  <div class="space-y-1">
-                    <p class="text-xs font-semibold text-gray-700">Salida:</p>
-                    <p class="text-xs text-gray-600">{{ formatearFecha(tour.fecha_salida) }}</p>
+                  
+                  <!-- Fecha de salida -->
+                  <div class="text-xs">
+                    <span class="font-semibold text-gray-700">Salida: </span>
+                    <span class="text-gray-600">{{ formatearFecha(tour.fecha_salida) }}</span>
                   </div>
-                  <div v-if="tour.cupo_min && tour.cupo_max" class="text-xs">
-                    <p class="font-semibold text-gray-700">Cupo:</p>
-                    <p class="text-gray-600">{{ tour.cupo_min }}-{{ tour.cupo_max }} personas</p>
+                  
+                  <!-- Cupos disponibles -->
+                  <div v-if="tour.cupos_disponibles !== undefined" class="text-xs">
+                    <span class="font-semibold text-gray-700">Disponibles: </span>
+                    <span :class="{
+                      'text-green-600': tour.cupos_disponibles > 5,
+                      'text-yellow-600': tour.cupos_disponibles > 0 && tour.cupos_disponibles <= 5,
+                      'text-red-600': tour.cupos_disponibles === 0
+                    }">
+                      {{ tour.cupos_disponibles }} cupos
+                      <span v-if="tour.cupos_disponibles === 0" class="text-red-500 font-medium">
+                        (Agotado)
+                      </span>
+                      <span v-else-if="tour.cupos_disponibles <= 5" class="text-yellow-600 font-medium">
+                        (¡Pocos disponibles!)
+                      </span>
+                    </span>
                   </div>
                 </div>
                 
-                <!-- Botones dentro del content para estar dentro del card -->
-                <div class="flex gap-1 sm:gap-2 mt-2 sm:mt-3 pt-1 sm:pt-2">
+                <!-- Botones -->
+                <div class="flex gap-2 mt-2 pt-2 border-t border-gray-100">
                   <Button
-                    label="Reservar"
+                    :label="obtenerTextoBoton(tour)"
                     @click="reservarTour(tour)"
-                    class="!bg-red-600 !border-none !px-2 sm:!px-3 !py-1 sm:!py-1.5 !text-white !text-xs font-semibold rounded-lg hover:!bg-red-700 transition-all flex-1 shadow-sm"
+                    :disabled="!esTourReservable(tour)"
+                    :class="{
+                      '!bg-red-600 !border-none !px-2 !py-1.5 !text-white !text-xs font-semibold rounded-lg hover:!bg-red-700 transition-all flex-1 shadow-sm': esTourReservable(tour),
+                      '!bg-gray-400 !border-none !px-2 !py-1.5 !text-white !text-xs font-semibold rounded-lg cursor-not-allowed flex-1 shadow-sm': !esTourReservable(tour)
+                    }"
                   />
                   <Button
                     label="Info"
                     @click="verMasInfo(tour)"
                     outlined
-                    class="!border-red-600 !text-red-600 !px-2 sm:!px-3 !py-1 sm:!py-1.5 !text-xs font-semibold rounded-lg hover:!bg-red-50 transition-all"
+                    class="!border-red-600 !text-red-600 !px-2 !py-1.5 !text-xs font-semibold rounded-lg hover:!bg-red-50 transition-all min-w-[50px]"
                   />
                 </div>
               </div>

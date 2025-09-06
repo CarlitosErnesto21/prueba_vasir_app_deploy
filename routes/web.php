@@ -64,8 +64,8 @@ Route::middleware('auth')->group(function () {
 //Rutas de clientes
 Route::get('paquetes', fn() => Inertia::render('VistasClientes/Paquetes'))->name('paquetes');
 Route::get('reservaciones', fn() => Inertia::render('VistasClientes/Reservaciones'))->name('reservaciones');
-Route::get('tours-nacionales', fn() => Inertia::render('VistasClientes/ToursNacionales'))->name('tours-nacionales');
-Route::get('tours-internacionales', fn() => Inertia::render('VistasClientes/ToursInternacionales'))->name('tours-internacionales');
+Route::get('tours-nacionales', fn() => Inertia::render('VistasClientes/tours/ToursNacionales'))->name('tours-nacionales');
+Route::get('tours-internacionales', fn() => Inertia::render('VistasClientes/tours/ToursInternacionales'))->name('tours-internacionales');
 Route::get('tienda', fn() => Inertia::render('VistasClientes/Tienda'))->name('tienda');
 Route::get('sobre-nosotros', [SobreNosotrosController::class, 'index'])->name('sobre-nosotros');
 Route::get('contactos', fn() => Inertia::render('VistasClientes/Contactos'))->name('contactos');
