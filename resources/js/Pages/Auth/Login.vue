@@ -30,6 +30,25 @@ const form = useForm({
 const submit = () => {
     form.post(route('login'), {
         onFinish: () => form.reset('password'),
+        onSuccess: () => {
+            // Verificar si hay una reserva pendiente ACTIVA de esta sesión
+            const reservaPendiente = sessionStorage.getItem('tour_reserva_pendiente');
+            const sessionActiva = sessionStorage.getItem('reserva_session_activa');
+            
+            if (reservaPendiente && sessionActiva === 'true') {
+                const tourInfo = JSON.parse(reservaPendiente);
+                // NO limpiar aquí - dejar que la vista de destino lo maneje
+                // Redirigir a la vista original
+                router.visit(tourInfo.returnUrl);
+                return;
+            }
+            
+            // Si no hay reserva pendiente activa, limpiar cualquier dato residual
+            if (!sessionActiva || sessionActiva !== 'true') {
+                sessionStorage.removeItem('tour_reserva_pendiente');
+                sessionStorage.removeItem('reserva_session_activa');
+            }
+        }
     });
 };
 

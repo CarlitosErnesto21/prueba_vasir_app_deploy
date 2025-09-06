@@ -1,7 +1,5 @@
 <script setup>
 import Catalogo from '../Catalogo.vue'
-import Card from 'primevue/card'
-import Button from 'primevue/button'
 import { ref, computed } from 'vue'
 
 // Datos estáticos de paquetes turísticos
@@ -12,7 +10,7 @@ const paquetes = ref([
     descripcion: 'Paquete completo de adrenalina: rapel, canopy, senderismo y kayak en los mejores destinos naturales.',
     precio: 145,
     duracion: '3 días / 2 noches',
-    imagen: '/images/productos/producto1.jpg',
+    imagen: '',
     incluye: ['Transporte privado', 'Equipos de seguridad', 'Guía especializado', 'Desayunos y almuerzos', 'Hospedaje'],
     destinos: ['Cerro Verde', 'Lago de Coatepeque', 'Parque Nacional El Imposible'],
     categoria: 'Aventura',
@@ -25,7 +23,7 @@ const paquetes = ref([
     descripcion: 'Descubre la rica historia de El Salvador visitando sitios arqueológicos, museos y pueblos coloniales.',
     precio: 98,
     duracion: '2 días / 1 noche',
-    imagen: '/images/productos/producto2.jpg',
+    imagen: '',
     incluye: ['Transporte turístico', 'Entradas a sitios', 'Guía historiador', 'Almuerzo típico', 'Material informativo'],
     destinos: ['Joya de Cerén', 'Suchitoto', 'Museo Nacional de Antropología'],
     categoria: 'Cultural',
@@ -38,7 +36,7 @@ const paquetes = ref([
     descripcion: 'Escapada perfecta a las mejores playas del país con servicios de spa y gastronomía de primera.',
     precio: 189,
     duracion: '3 días / 2 noches',
-    imagen: '/images/productos/producto3.jpg',
+    imagen: '',
     incluye: ['Resort 4 estrellas', 'Spa incluido', 'Todas las comidas', 'Actividades acuáticas', 'Traslados'],
     destinos: ['El Tunco', 'Costa del Sol', 'Puerto de La Libertad'],
     categoria: 'Playa',
@@ -51,7 +49,7 @@ const paquetes = ref([
     descripcion: 'Paquete diseñado especialmente para familias con actividades seguras y divertidas para todas las edades.',
     precio: 125,
     duracion: '2 días / 1 noche',
-    imagen: '/images/productos/producto4.jpg',
+    imagen: '',
     incluye: ['Hotel familiar', 'Actividades para niños', 'Comidas incluidas', 'Transporte seguro', 'Entretenimiento'],
     destinos: ['Parque Acuático', 'Zoo Nacional', 'Parque de Diversiones'],
     categoria: 'Familiar',
@@ -64,7 +62,7 @@ const paquetes = ref([
     descripcion: 'Expedición a los volcanes más impresionantes con caminatas, observación de flora y fauna única.',
     precio: 165,
     duracion: '4 días / 3 noches',
-    imagen: '/images/productos/producto5.jpg',
+    imagen: '',
     incluye: ['Guía de montaña', 'Equipo de trekking', 'Camping', 'Todas las comidas', 'Transporte 4x4'],
     destinos: ['Volcán de Santa Ana', 'Volcán de Izalco', 'Cerro El Pital'],
     categoria: 'Montaña',
@@ -77,7 +75,7 @@ const paquetes = ref([
     descripcion: 'Tour gastronómico completo para conocer los sabores auténticos y tradiciones culinarias del país.',
     precio: 89,
     duracion: '1 día',
-    imagen: '/images/productos/producto6.jpg',
+    imagen: '',
     incluye: ['Chef especializado', 'Degustaciones', 'Recetas tradicionales', 'Mercados locales', 'Transporte'],
     destinos: ['Mercado Central', 'Restaurantes típicos', 'Cocina tradicional'],
     categoria: 'Gastronomía',
@@ -226,12 +224,20 @@ const reservarPaquete = (paquete) => {
           >
             <template #header>
               <div class="relative w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg overflow-hidden group">
-                <img
-                  :src="paquete.imagen"
-                  :alt="paquete.titulo"
-                  class="object-cover h-full w-full group-hover:scale-110 transition-transform duration-500"
-                  @error="$event.target.src = 'https://via.placeholder.com/350x250/ef4444/ffffff?text=' + encodeURIComponent(paquete.categoria)"
-                />
+                <div
+                  v-if="paquete.imagen"
+                  class="object-cover h-full w-full group-hover:scale-110 transition-transform duration-500 bg-center bg-cover"
+                  :style="{ backgroundImage: `url(${paquete.imagen})` }"
+                ></div>
+                <div 
+                  v-else
+                  class="h-full w-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300"
+                >
+                  <div class="text-center text-gray-500">
+                    <i class="fas fa-image text-4xl mb-2"></i>
+                    <p class="text-sm font-medium">{{ paquete.categoria }}</p>
+                  </div>
+                </div>
                 <div class="absolute top-2 right-2 bg-green-600 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
                   ${{ paquete.precio }}
                 </div>

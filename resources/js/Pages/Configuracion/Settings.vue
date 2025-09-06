@@ -3,307 +3,91 @@
         <!-- Toast para notificaciones -->
         <Toast />
         
-        <div class="container mx-auto px-4 py-8">
+        <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-6 lg:py-8">
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <!-- Header -->
-                <div class="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
-                    <h1 class="text-2xl font-bold text-white flex items-center">
-                        <FontAwesomeIcon :icon="faGear" class="mr-3" />
-                        Configuración del Sistema
+                <div class="bg-gradient-to-r from-red-600 to-red-700 px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4">
+                    <h1 class="text-sm sm:text-lg lg:text-2xl font-bold text-white flex items-center">
+                        <FontAwesomeIcon :icon="faGear" class="mr-1 sm:mr-2 lg:mr-3 text-sm sm:text-base lg:text-xl" />
+                        <span class="hidden sm:inline">Configuración del Sistema</span>
+                        <span class="sm:hidden">Configuración del sistema</span>
                     </h1>
-                    <p class="text-red-100 mt-2">Configure los parámetros generales del sistema</p>
+                    <p class="text-red-100 mt-0.5 sm:mt-1 lg:mt-2 text-xs sm:text-sm lg:text-base hidden sm:block">Configure los parámetros generales del sistema</p>
                 </div>
 
-                <!-- Content -->
-                <div class="p-6">
-                    <!-- Configuración General del Sistema -->
-                    <div class="mb-8">
-                        <div class="bg-white border border-gray-200 rounded-t-lg px-6 py-4 border-b-0">
-                            <h2 class="text-xl font-semibold text-gray-800 mb-1 flex items-center">
-                                <span class="text-2xl mr-3">⚙️</span>
-                                Configuración General del Sistema
-                            </h2>
-                            <p class="text-gray-600 text-sm">Información básica y configuraciones técnicas del sistema</p>
-                        </div>
-                        
-                        <div class="bg-white border-x border-b border-gray-200 rounded-b-lg p-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Sistema</label>
-                                    <input 
-                                        v-model="settings.systemName"
-                                        type="text"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
-                                    />
+                <!-- Layout principal con menú lateral -->
+                <div class="flex flex-col lg:flex-row min-h-screen">
+                    <!-- Menú lateral -->
+                    <div class="w-full lg:w-80 bg-gray-50 border-b lg:border-b-0 lg:border-r border-gray-200 p-2 sm:p-4 lg:p-6">
+                        <nav class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-1 sm:gap-2 lg:space-y-2 lg:gap-0">
+                            <button
+                                v-for="item in menuItems"
+                                :key="item.id"
+                                @click="activeSection = item.id"
+                                :class="[
+                                    'w-full flex flex-col lg:flex-row items-center lg:items-center px-1.5 sm:px-3 py-1.5 sm:py-2 lg:px-4 lg:py-3 text-center lg:text-left rounded-lg transition-all duration-200',
+                                    activeSection === item.id
+                                        ? 'bg-red-600 text-white shadow-md'
+                                        : 'text-gray-700 hover:bg-red-50 hover:text-red-700'
+                                ]"
+                            >
+                                <span class="text-sm sm:text-lg lg:text-xl mb-0.5 sm:mb-1 lg:mb-0 lg:mr-3">{{ item.icon }}</span>
+                                <div class="flex-1">
+                                    <div class="font-medium text-xs sm:text-sm lg:text-base">{{ item.title }}</div>
+                                    <div class="text-xs hidden lg:block" :class="activeSection === item.id ? 'text-red-100' : 'text-gray-500'">
+                                        {{ item.description }}
+                                    </div>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Versión</label>
-                                    <input 
-                                        v-model="settings.version"
-                                        type="text"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
-                                    />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Email de Contacto</label>
-                                    <input 
-                                        v-model="settings.contactEmail"
-                                        type="email"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
-                                    />
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono de Contacto</label>
-                                    <input 
-                                        v-model="settings.contactPhone"
-                                        type="tel"
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                            </button>
+                        </nav>
                     </div>
 
-                    <!-- Configuración de Seguridad -->
-                    <div class="mb-8">
-                        <div class="bg-white border border-gray-200 rounded-t-lg px-6 py-4 border-b-0">
-                            <h2 class="text-xl font-semibold text-gray-800 mb-1 flex items-center">
-                                <span class="text-2xl mr-3">🔐</span>
-                                Seguridad y Autenticación
-                            </h2>
-                            <p class="text-gray-600 text-sm">Configuraciones de seguridad y control de acceso</p>
-                        </div>
-                        
-                        <div class="bg-white border-x border-b border-gray-200 rounded-b-lg p-6">
-                            <div class="space-y-6">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div class="space-y-4">
-                                        <div class="flex items-center p-4 bg-red-50 rounded-lg border border-red-200">
-                                            <input 
-                                                v-model="settings.requireEmailVerification"
-                                                type="checkbox"
-                                                class="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                                            />
-                                            <label class="ml-3 text-sm font-medium text-gray-700">
-                                                Requerir verificación de email
-                                            </label>
-                                        </div>
-                                        <div class="flex items-center p-4 bg-red-50 rounded-lg border border-red-200">
-                                            <input 
-                                                v-model="settings.enableTwoFactor"
-                                                type="checkbox"
-                                                class="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                                            />
-                                            <label class="ml-3 text-sm font-medium text-gray-700">
-                                                Habilitar autenticación de dos factores
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Tiempo de sesión (minutos)
-                                        </label>
-                                        <input 
-                                            v-model="settings.sessionTimeout"
-                                            type="number"
-                                            min="5"
-                                            max="1440"
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
-                                        />
-                                        <p class="text-xs text-gray-500 mt-1">Entre 5 y 1440 minutos (24 horas)</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Contenido principal -->
+                    <div class="flex-1 p-2 sm:p-4 lg:p-6">
+                        <!-- General Settings -->
+                        <GeneralSettings
+                            v-if="activeSection === 'general'"
+                            :settings="settings"
+                            :is-saving="isSaving"
+                            @save="saveSettings"
+                            @reset="resetSettings"
+                        />
 
-                    <!-- Configuración de Notificaciones -->
-                    <div class="mb-8">
-                        <div class="bg-white border border-gray-200 rounded-t-lg px-6 py-4 border-b-0">
-                            <h2 class="text-xl font-semibold text-gray-800 mb-1 flex items-center">
-                                <span class="text-2xl mr-3">📧</span>
-                                Configuración de Notificaciones
-                            </h2>
-                            <p class="text-gray-600 text-sm">Gestión de comunicaciones y servicios de mensajería</p>
-                        </div>
-                        
-                        <div class="bg-white border-x border-b border-gray-200 rounded-b-lg p-6">
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <!-- Tipos de notificaciones -->
-                                <div class="space-y-4">
-                                    <h3 class="text-lg font-medium text-gray-800 mb-3">Tipos de Notificaciones</h3>
-                                    <div class="flex items-center p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                        <input 
-                                            v-model="settings.emailNotifications"
-                                            type="checkbox"
-                                            class="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                                        />
-                                        <label class="ml-3 text-sm font-medium text-gray-700">
-                                            Enviar notificaciones por email
-                                        </label>
-                                    </div>
-                                    <div class="flex items-center p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                        <input 
-                                            v-model="settings.smsNotifications"
-                                            type="checkbox"
-                                            class="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                                        />
-                                        <label class="ml-3 text-sm font-medium text-gray-700">
-                                            Enviar notificaciones por SMS
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <!-- Configuración SMTP -->
-                                <div>
-                                    <h3 class="text-lg font-medium text-gray-800 mb-3">Configuración SMTP</h3>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            Servidor SMTP
-                                        </label>
-                                        <input 
-                                            v-model="settings.smtpServer"
-                                            type="text"
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
-                                            placeholder="smtp.gmail.com"
-                                        />
-                                        <p class="text-xs text-gray-500 mt-1">Servidor para envío de correos electrónicos</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        <!-- Security Settings -->
+                        <SecuritySettings
+                            v-if="activeSection === 'security'"
+                            :settings="settings"
+                            :is-saving="isSaving"
+                            @save="saveSettings"
+                            @reset="resetSettings"
+                        />
 
-                    <!-- Información Corporativa -->
-                    <div class="mb-8">
-                        <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-t-lg px-6 py-4">
-                            <h2 class="text-xl font-semibold text-white mb-1 flex items-center">
-                                <span class="text-2xl mr-3">�</span>
-                                Información Corporativa
-                            </h2>
-                            <p class="text-blue-100 text-sm">Configure el contenido que aparece en la página "Sobre Nosotros"</p>
-                        </div>
-                        
-                        <div class="bg-white border-x border-b border-gray-200 rounded-b-lg p-6">
-                            <div class="grid grid-cols-1 gap-8">
-                                <!-- Descripción de la Empresa -->
-                                <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                                    <div class="flex items-center mb-4">
-                                        <span class="text-2xl mr-3">📝</span>
-                                        <div>
-                                            <label class="block text-lg font-semibold text-gray-800">
-                                                Descripción de la Empresa
-                                            </label>
-                                            <p class="text-sm text-gray-600">Presentación principal en el encabezado de "Sobre Nosotros"</p>
-                                        </div>
-                                    </div>
-                                    <textarea 
-                                        v-model="settings.description"
-                                        rows="4"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none shadow-sm"
-                                        placeholder="Describe brevemente qué es VASIR, su propósito y lo que ofrece a los clientes..."
-                                    ></textarea>
-                                </div>
+                        <!-- Notification Settings -->
+                        <NotificationSettings
+                            v-if="activeSection === 'notifications'"
+                            :settings="settings"
+                            :is-saving="isSaving"
+                            @save="saveSettings"
+                            @reset="resetSettings"
+                        />
 
-                                <!-- Grid para Misión y Visión -->
-                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    <!-- Misión -->
-                                    <div class="bg-slate-50 rounded-lg p-6 border border-slate-200">
-                                        <div class="flex items-center mb-4">
-                                            <span class="text-2xl mr-3">🎯</span>
-                                            <div>
-                                                <label class="block text-lg font-semibold text-gray-800">
-                                                    Misión Corporativa
-                                                </label>
-                                                <p class="text-sm text-slate-600">¿Cuál es el propósito de VASIR?</p>
-                                            </div>
-                                        </div>
-                                        <textarea 
-                                            v-model="settings.mission"
-                                            rows="5"
-                                            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none shadow-sm bg-white"
-                                            placeholder="Nuestra misión es..."
-                                        ></textarea>
-                                    </div>
-                                    
-                                    <!-- Visión -->
-                                    <div class="bg-slate-50 rounded-lg p-6 border border-slate-200">
-                                        <div class="flex items-center mb-4">
-                                            <span class="text-2xl mr-3">🌟</span>
-                                            <div>
-                                                <label class="block text-lg font-semibold text-gray-800">
-                                                    Visión Corporativa
-                                                </label>
-                                                <p class="text-sm text-slate-600">¿Hacia dónde se dirige VASIR?</p>
-                                            </div>
-                                        </div>
-                                        <textarea 
-                                            v-model="settings.vision"
-                                            rows="5"
-                                            class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none shadow-sm bg-white"
-                                            placeholder="Nuestra visión es..."
-                                        ></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        <!-- Corporate Settings -->
+                        <CorporateSettings
+                            v-if="activeSection === 'corporate'"
+                            :settings="settings"
+                            :is-saving="isSaving"
+                            @save="saveSettings"
+                            @reset="resetSettings"
+                        />
 
-                    <!-- Gestión de Base de Datos -->
-                    <div class="mb-8 border-t pt-8">
-                        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                            <FontAwesomeIcon :icon="faDatabase" class="mr-2 text-red-600" />
-                            Gestión de Base de Datos
-                        </h2>
-                        <div class="bg-gray-50 rounded-lg p-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <h3 class="text-lg font-medium text-gray-800 mb-2">Respaldo de Base de Datos</h3>
-                                    <p class="text-sm text-gray-600 mb-4">
-                                        Cree un respaldo completo de la base de datos para proteger su información.
-                                    </p>
-                                    <Link :href="route('backups')" 
-                                        class="px-6 py-3 bg-red-600 text-white w-56 rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center shadow-lg">
-                                        <FontAwesomeIcon :icon="faFileArchive" class="mr-2" />
-                                        Crear Respaldo
-                                    </Link>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-medium text-gray-800 mb-2">Información de la Base de Datos</h3>
-                                    <div class="space-y-2 text-sm text-gray-600">
-                                        <p><span class="font-medium">Último respaldo:</span> {{ databaseInfo.last_backup_formatted }}</p>
-                                        <p><span class="font-medium">Estado:</span> 
-                                            <span :class="getStatusClass(databaseInfo.status)" class="font-medium">
-                                                {{ databaseInfo.status_text }}
-                                            </span>
-                                        </p>
-                                        <p><span class="font-medium">Tamaño aproximado:</span> {{ databaseInfo.database_size }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Botones de Acción -->
-                    <div class="flex justify-end space-x-4">
-                        <button 
-                            @click="resetSettings"
-                            class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                        >
-                            Restablecer
-                        </button>
-                        <button 
-                            @click="saveSettings"
-                            :disabled="isSaving"
-                            class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 transition-colors duration-200 flex items-center"
-                        >
-                            <FontAwesomeIcon 
-                                v-if="isSaving" 
-                                :icon="faSpinner" 
-                                class="animate-spin mr-2" 
-                            />
-                            {{ isSaving ? 'Guardando...' : 'Guardar Configuración' }}
-                        </button>
+                        <!-- Database Settings -->
+                        <DatabaseSettings
+                            v-if="activeSection === 'database'"
+                            :database-info="databaseInfo"
+                            :is-saving="isSaving"
+                            @save="saveSettings"
+                            @reset="resetSettings"
+                        />
                     </div>
                 </div>
             </div>
@@ -317,9 +101,15 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
 import { useToast } from 'primevue/usetoast';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import Toast from 'primevue/toast';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faGear, faSpinner, faFileArchive, faDatabase } from '@fortawesome/free-solid-svg-icons';
+
+// Importar componentes de configuración
+import GeneralSettings from './SettingsComponent/GeneralSettings.vue';
+import SecuritySettings from './SettingsComponent/SecuritySettings.vue';
+import NotificationSettings from './SettingsComponent/NotificationSettings.vue';
+import CorporateSettings from './SettingsComponent/CorporateSettings.vue';
+import DatabaseSettings from './SettingsComponent/DatabaseSettings.vue';
 
 const page = usePage();
 const toast = useToast();
@@ -341,6 +131,41 @@ const props = defineProps({
 });
 
 const isSaving = ref(false);
+const activeSection = ref('general');
+
+// Elementos del menú lateral
+const menuItems = ref([
+    {
+        id: 'general',
+        icon: '⚙️',
+        title: 'Configuración General',
+        description: 'Información básica del sistema'
+    },
+    {
+        id: 'security',
+        icon: '🔐',
+        title: 'Seguridad',
+        description: 'Configuraciones de seguridad'
+    },
+    {
+        id: 'notifications',
+        icon: '📧',
+        title: 'Notificaciones',
+        description: 'Gestión de comunicaciones'
+    },
+    {
+        id: 'corporate',
+        icon: '🏢',
+        title: 'Información Corporativa',
+        description: 'Contenido empresarial'
+    },
+    {
+        id: 'database',
+        icon: '💾',
+        title: 'Base de Datos',
+        description: 'Respaldos y mantenimiento'
+    }
+]);
 
 // Configuraciones del sistema
 const settings = ref({
@@ -364,22 +189,6 @@ const settings = ref({
 
 // Configuraciones originales para restablecer
 const originalSettings = ref({...settings.value});
-
-// Función para obtener las clases CSS según el estado de la base de datos
-const getStatusClass = (status) => {
-    switch (status) {
-        case 'operational':
-            return 'text-green-600';
-        case 'high_load':
-            return 'text-yellow-600';
-        case 'warning':
-            return 'text-orange-600';
-        case 'error':
-            return 'text-red-600';
-        default:
-            return 'text-gray-600';
-    }
-};
 
 const saveSettings = async () => {
     isSaving.value = true;

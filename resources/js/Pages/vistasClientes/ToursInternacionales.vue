@@ -1,10 +1,20 @@
 <script setup>
 import Catalogo from '../Catalogo.vue'
-import Card from 'primevue/card'
-import Button from 'primevue/button'
-import Dialog from 'primevue/dialog'
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { router } from '@inertiajs/vue3'
+import ModalReservaTour from '../../Components/ModalReservaTour.vue'
+import ModalAuthRequerido from '../../Components/ModalAuthRequerido.vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { useToast } from 'primevue/usetoast'
+import { router, usePage } from '@inertiajs/vue3'
+
+const page = usePage()
+const user = computed(() => page.props.auth.user)
+
+const toast = useToast()
+
+// Variables para el modal de reserva de tour
+const showReservaDialog = ref(false)
+const showAuthDialog = ref(false)
+const tourSeleccionado = ref(null)
 
 // Recibir los props del controlador (opcional, como fallback)
 const props = defineProps({
@@ -177,6 +187,14 @@ onMounted(async () => {
   // Obtener tours desde la API
   await obtenerTours()
   
+  // Verificar reserva pendiente después del login
+  await verificarReservaPendiente()
+  
+  // Verificación adicional con delay para problemas de timing
+  setTimeout(async () => {
+    await verificarReservaPendiente()
+  }, 500)
+  
   // Inicializar carruseles para todos los tours con múltiples imágenes
   tours.value.forEach(tour => {
     if (tour.imagenes && tour.imagenes.length > 1) {
@@ -270,8 +288,94 @@ const irAImagen = (index) => {
 
 // Funciones para los botones
 const reservarTour = (tour) => {
-  alert(`¡Tour "${tour.nombre}" seleccionado para reserva!\nPrecio: $${tour.precio}\nDuración: ${calcularDuracion(tour.fecha_salida, tour.fecha_regreso)}`)
+  tourSeleccionado.value = tour
+  
+  // Verificar si el usuario está logueado
+  if (!user.value) {
+    showAuthDialog.value = true
+  } else {
+    showReservaDialog.value = true
+  }
 }
+
+// Función para verificar si hay una reserva pendiente después del login
+const verificarReservaPendiente = async () => {
+  try {
+    const reservaPendiente = sessionStorage.getItem('tour_reserva_pendiente')
+    const sessionActiva = sessionStorage.getItem('reserva_session_activa')
+    
+    // Solo procesar si hay reserva pendiente Y la sesión está activa
+    if (reservaPendiente && sessionActiva === 'true' && user.value && tours.value && Array.isArray(tours.value)) {
+      const data = JSON.parse(reservaPendiente)
+      // Buscar el tour en la lista actual
+      const tour = tours.value.find(t => t && t.id === data.tourId)
+      
+      if (tour) {
+        // Usar nextTick para asegurar que el componente esté completamente montado
+        await nextTick()
+        
+        // Pequeño delay adicional para asegurar el rendering
+        setTimeout(() => {
+          // Abrir modal de reserva automáticamente
+          tourSeleccionado.value = tour
+          showReservaDialog.value = true
+          
+          // Mostrar mensaje informativo DESPUÉS de abrir el modal
+          setTimeout(() => {
+            toast.add({
+              severity: 'success',
+              summary: '🎯 Continuando con tu reserva',
+              detail: `¡Perfecto! Ahora puedes completar la reserva para: ${tour.nombre}`,
+              life: 6000 // 6 segundos para que sea más visible
+            })
+          }, 500) // Delay para que aparezca después del modal
+        }, 100)
+        
+        // Limpiar sessionStorage
+        sessionStorage.removeItem('tour_reserva_pendiente')
+        sessionStorage.removeItem('reserva_session_activa')
+      } else {
+        // Si no encontramos el tour, limpiar la información obsoleta
+        sessionStorage.removeItem('tour_reserva_pendiente')
+        sessionStorage.removeItem('reserva_session_activa')
+      }
+    } else {
+      if (reservaPendiente && sessionActiva !== 'true') {
+        // Si hay información de reserva pero no es de la sesión activa, limpiarla
+        sessionStorage.removeItem('tour_reserva_pendiente')
+        sessionStorage.removeItem('reserva_session_activa')
+      }
+    }
+  } catch (error) {
+    // Limpiar sessionStorage si hay errores
+    sessionStorage.removeItem('tour_reserva_pendiente')
+    sessionStorage.removeItem('reserva_session_activa')
+  }
+}
+
+// Función para manejar la confirmación de reserva desde el componente hijo
+const manejarConfirmacionReserva = (reserva) => {
+  toast.add({ 
+    severity: 'success', 
+    summary: 'Reserva Confirmada', 
+    detail: 'Tu reserva ha sido registrada. Te contactaremos pronto.', 
+    life: 5000 
+  })
+
+  // Cerrar modal
+  showReservaDialog.value = false
+}
+
+// Watch para verificar reserva pendiente cuando el usuario cambie
+watch(user, async (newUser) => {
+  try {
+    if (newUser && tours.value && tours.value.length > 0) {
+      await verificarReservaPendiente()
+    }
+  } catch (error) {
+    console.error('Error en watcher de usuario:', error)
+  }
+}, { immediate: false })
 
 const verMasInfo = (tour) => {
   // Navegar a la vista detallada del tour internacional
@@ -281,6 +385,7 @@ const verMasInfo = (tour) => {
 
 <template>
   <Catalogo>
+    <Toast />
     <div class="p-4 bg-gray-50 min-h-screen">
       <div class="max-w-7xl mx-auto">
         <!-- Header -->
@@ -379,14 +484,16 @@ const verMasInfo = (tour) => {
             </template>
             
             <template #title>
-              <div class="h-10 sm:h-12 flex items-start px-3 sm:px-4 pt-2 sm:pt-3">
+              <div class="h-10 sm:h-12 flex items-start px-3 sm:px-4 pt-2 sm:pt-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                   @click="verMasInfo(tour)">
                 <span class="text-xs sm:text-sm font-bold text-gray-800 leading-tight line-clamp-2">{{ tour.nombre }}</span>
               </div>
             </template>
             
             <template #content>
               <div class="flex-1 flex flex-col px-3 sm:px-4 pb-2">
-                <div class="flex-1 space-y-1 sm:space-y-2">
+                <div class="flex-1 space-y-1 sm:space-y-2 cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                     @click="verMasInfo(tour)">
                   <div class="flex items-center text-xs text-gray-500 mb-1">
                     <svg class="w-3 h-3 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
@@ -554,6 +661,20 @@ const verMasInfo = (tour) => {
         </div>
       </div>
     </Dialog>
+
+    <!-- Modal de reserva de tour usando el componente reutilizable -->
+    <ModalReservaTour
+      v-model:visible="showReservaDialog"
+      :tour-seleccionado="tourSeleccionado"
+      :user="user"
+      @confirmar-reserva="manejarConfirmacionReserva"
+    />
+
+    <!-- Modal de autenticación requerida -->
+    <ModalAuthRequerido
+      v-model:visible="showAuthDialog"
+      :tour-info="tourSeleccionado"
+    />
   </Catalogo>
 </template>
 

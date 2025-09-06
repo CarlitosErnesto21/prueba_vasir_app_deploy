@@ -3,7 +3,7 @@ import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const props = defineProps({
@@ -24,6 +24,25 @@ const form = useForm({
 const submit = () => {
     form.post(route('register'), {
         onFinish: () => form.reset('password', 'password_confirmation'),
+        onSuccess: () => {
+            // Verificar si hay una reserva pendiente ACTIVA de esta sesión
+            const reservaPendiente = sessionStorage.getItem('tour_reserva_pendiente');
+            const sessionActiva = sessionStorage.getItem('reserva_session_activa');
+            
+            if (reservaPendiente && sessionActiva === 'true') {
+                const tourInfo = JSON.parse(reservaPendiente);
+                // NO limpiar aquí - dejar que la vista de destino lo maneje
+                // Redirigir a la vista original
+                router.visit(tourInfo.returnUrl);
+                return;
+            }
+            
+            // Si no hay reserva pendiente activa, limpiar cualquier dato residual
+            if (!sessionActiva || sessionActiva !== 'true') {
+                sessionStorage.removeItem('tour_reserva_pendiente');
+                sessionStorage.removeItem('reserva_session_activa');
+            }
+        }
     });
 };
 </script>

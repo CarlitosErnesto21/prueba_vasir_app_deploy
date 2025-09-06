@@ -139,8 +139,6 @@ import { Link, router } from '@inertiajs/vue3';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import Toast from 'primevue/toast';
-import ConfirmDialog from 'primevue/confirmdialog';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { 
     faFileArchive, 

@@ -465,15 +465,7 @@
 import { ref, computed, watch } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-import Dialog from 'primevue/dialog'
-import Button from 'primevue/button'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import DatePicker from 'primevue/datepicker'
-import InputText from 'primevue/inputtext'
-import ConfirmDialog from 'primevue/confirmdialog'
 import { useConfirm } from 'primevue/useconfirm'
-import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 
 // Filtros

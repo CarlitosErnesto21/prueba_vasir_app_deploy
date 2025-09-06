@@ -1,8 +1,5 @@
 <script setup>
 import Catalogo from './Catalogo.vue'
-import Carousel from 'primevue/carousel'
-import Card from 'primevue/card'
-import Button from 'primevue/button'
 import { Link, Head } from '@inertiajs/vue3'
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
@@ -15,22 +12,22 @@ const fallbackData = [
   {
     titulo: 'Tours Culturales El Salvador',
     descripcion: 'Descubre la rica historia y tradiciones de El Salvador visitando sitios arqueológicos, pueblos coloniales y museos fascinantes.',
-    imagen: 'tour-cultural.jpg'
+    imagen: ''
   },
   {
     titulo: 'Aventuras en la Naturaleza',
     descripcion: 'Explora volcanes activos, lagos cristalinos y bosques tropicales en emocionantes expediciones llenas de adrenalina.',
-    imagen: 'aventura-naturaleza.jpg'
+    imagen: ''
   },
   {
     titulo: 'Experiencias Gastronómicas',
     descripcion: 'Deléitate con los sabores auténticos salvadoreños en tours culinarios que despertarán todos tus sentidos.',
-    imagen: 'gastronomia.jpg'
+    imagen: ''
   },
   {
     titulo: 'Playas Paradisíacas',
     descripcion: 'Relájate en las mejores playas del Pacífico con arenas negras volcánicas y perfectas olas para surfear.',
-    imagen: 'playas.jpg'
+    imagen: ''
   }
 ]
 
@@ -168,12 +165,21 @@ const slides = computed(() =>
                   <Card class="bg-white shadow-xl border border-gray-200 w-full mx-4 rounded-xl overflow-hidden transform hover:scale-105 transition-all duration-300">
                     <template #header>
                       <div class="relative w-full h-64 sm:h-80 md:h-96 bg-gradient-to-br from-red-100 to-red-200 overflow-hidden">
-                        <img
-                          :src="data.imagen ? `/images/productos/${data.imagen}` : 'https://via.placeholder.com/800x400/ef4444/ffffff?text=VASIR+Experiencia'"
-                          :alt="data.imagen ? data.titulo : 'Experiencia VASIR'"
-                          class="object-cover h-full w-full hover:scale-110 transition-transform duration-500"
-                          @error="$event.target.src = 'https://via.placeholder.com/800x400/ef4444/ffffff?text=' + encodeURIComponent(data.titulo)"
-                        />
+                        <div
+                          v-if="data.imagen"
+                          class="object-cover h-full w-full hover:scale-110 transition-transform duration-500 bg-center bg-cover"
+                          :style="{ backgroundImage: `url(/images/productos/${data.imagen})` }"
+                        ></div>
+                        <div 
+                          v-else
+                          class="h-full w-full flex items-center justify-center bg-gradient-to-br from-red-200 to-red-300"
+                        >
+                          <div class="text-center text-red-600">
+                            <i class="fas fa-map-marked-alt text-6xl mb-4"></i>
+                            <p class="text-lg font-bold">VASIR</p>
+                            <p class="text-sm">Experiencia Premium</p>
+                          </div>
+                        </div>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                         <div class="absolute bottom-4 left-4 right-4">
                           <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold">Experiencia Premium</span>

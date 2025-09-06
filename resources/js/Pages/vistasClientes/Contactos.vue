@@ -1,9 +1,6 @@
 <script setup>
 import Catalogo from '../Catalogo.vue'
 import { ref, computed } from 'vue'
-import InputText from 'primevue/inputtext'
-import Textarea from 'primevue/textarea'
-import Button from 'primevue/button'
 
 const nombre = ref('')
 const email = ref('')

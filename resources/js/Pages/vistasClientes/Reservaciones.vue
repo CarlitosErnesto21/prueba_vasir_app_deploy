@@ -1,7 +1,5 @@
 <script setup>
 import Catalogo from '../Catalogo.vue'
-import Card from 'primevue/card'
-import Button from 'primevue/button'
 import { ref, computed } from 'vue'
 
 // Datos estáticos de reservaciones disponibles
@@ -11,7 +9,7 @@ const reservaciones = ref([
     titulo: 'Cerro Verde y Lago de Ilopango',
     descripcion: 'Aventura completa en uno de los volcanes más espectaculares con vista al lago más grande de El Salvador.',
     precio: 60,
-    imagen: '/images/productos/producto1.jpg',
+    imagen: '',
     destino: 'Cerro Verde, Santa Ana',
     punto_salida: 'Oficina Central San Salvador',
     fecha_salida: '2025-08-25',
@@ -30,7 +28,7 @@ const reservaciones = ref([
     titulo: 'Festival del Melocotón - El Pital',
     descripcion: 'Experiencia única en el punto más alto de El Salvador durante el famoso Festival del Melocotón.',
     precio: 85,
-    imagen: '/images/productos/producto2.jpg',
+    imagen: '',
     destino: 'Cerro El Pital, Chalatenango',
     punto_salida: 'Terminal de Oriente',
     fecha_salida: '2025-08-30',
@@ -49,7 +47,7 @@ const reservaciones = ref([
     titulo: 'Ruta de las Flores Completa',
     descripcion: 'Recorrido por los pueblos más pintorescos: Nahuizalco, Salcoatitán, Juayúa, Apaneca y Ataco.',
     precio: 75,
-    imagen: '/images/productos/producto3.jpg',
+    imagen: '',
     destino: 'Ruta de las Flores, Ahuachapán',
     punto_salida: 'Plaza Salvador del Mundo',
     fecha_salida: '2025-09-01',
@@ -68,7 +66,7 @@ const reservaciones = ref([
     titulo: 'Joya de Cerén - Pompeya de América',
     descripcion: 'Descubre el sitio arqueológico mejor conservado de Mesoamérica, Patrimonio de la Humanidad.',
     precio: 45,
-    imagen: '/images/productos/producto4.jpg',
+    imagen: '',
     destino: 'Joya de Cerén, La Libertad',
     punto_salida: 'Metrocentro',
     fecha_salida: '2025-09-05',
@@ -87,7 +85,7 @@ const reservaciones = ref([
     titulo: 'Suchitoto Colonial y Lago Suchitlán',
     descripcion: 'Ciudad colonial mejor conservada de El Salvador con paseo en lancha por el embalse más grande.',
     precio: 70,
-    imagen: '/images/productos/producto5.jpg',
+    imagen: '',
     destino: 'Suchitoto, Cuscatlán',
     punto_salida: 'Centro Histórico San Salvador',
     fecha_salida: '2025-09-08',
@@ -106,7 +104,7 @@ const reservaciones = ref([
     titulo: 'Tazumal y Casa Blanca Arqueológicos',
     descripcion: 'Dos importantes sitios arqueológicos mayas en Chalchuapa con museo incluido.',
     precio: 50,
-    imagen: '/images/productos/producto6.jpg',
+    imagen: '',
     destino: 'Chalchuapa, Santa Ana',
     fecha_salida: '2025-09-12',
     punto_salida: 'Terminal de Occidente',
@@ -300,12 +298,20 @@ const verMasInfo = (reservacion) => {
           >
             <template #header>
               <div class="relative w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg overflow-hidden group">
-                <img
-                  :src="reservacion.imagen"
-                  :alt="reservacion.titulo"
-                  class="object-cover h-full w-full group-hover:scale-110 transition-transform duration-500"
-                  @error="$event.target.src = 'https://via.placeholder.com/350x250/ef4444/ffffff?text=' + encodeURIComponent(reservacion.categoria)"
-                />
+                <div
+                  v-if="reservacion.imagen"
+                  class="object-cover h-full w-full group-hover:scale-110 transition-transform duration-500 bg-center bg-cover"
+                  :style="{ backgroundImage: `url(${reservacion.imagen})` }"
+                ></div>
+                <div 
+                  v-else
+                  class="h-full w-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300"
+                >
+                  <div class="text-center text-gray-500">
+                    <i class="fas fa-calendar-alt text-4xl mb-2"></i>
+                    <p class="text-sm font-medium">{{ reservacion.categoria }}</p>
+                  </div>
+                </div>
                 <div class="absolute top-2 right-2 bg-green-600 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
                   ${{ reservacion.precio }}
                 </div>

@@ -2,7 +2,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faList, faUser, faDoorOpen, faShop, faPhone, faEnvelope, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons'
+import { faList, faUser, faDoorOpen, faShop, faPhone, faEnvelope, faMapMarkerAlt, faSignInAlt, faUserPlus, faChevronDown } from '@fortawesome/free-solid-svg-icons'
 import { faFacebook, faInstagram, faTiktok, faWhatsapp } from '@fortawesome/free-brands-svg-icons'
 
 const isSidebarOpen = ref(false)
@@ -31,6 +31,9 @@ onBeforeUnmount(() => {
     document.removeEventListener('click', closeUserMenu)
 })
 const logout = () => {
+    // Limpiar cualquier información de reserva pendiente al cerrar sesión
+    sessionStorage.removeItem('tour_reserva_pendiente')
+    
     router.post(route('logout'), {}, {
         onSuccess: () => router.visit('/')
     })
@@ -108,9 +111,7 @@ const redes = [
                         ]"
                         type="button">
                         Paquetes
-                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                        </svg>
+                        <FontAwesomeIcon :icon="faChevronDown" class="ml-2 w-4 h-4" />
                     </button>
                     <div
                         class="absolute left-0 mt-2 w-56 bg-white/95 border border-red-100 rounded-2xl z-50 transition-all"
@@ -149,9 +150,7 @@ const redes = [
                         ]"
                         type="button">
                         Tours
-                        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                        </svg>
+                        <FontAwesomeIcon :icon="faChevronDown" class="ml-2 w-4 h-4" />
                     </button>
                     <div
                         class="absolute left-0 mt-2 w-56 bg-white/95 border border-red-100 rounded-2xl z-50 transition-all"
@@ -214,7 +213,7 @@ const redes = [
                         :href="route('login')"
                         class="px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-lg bg-gradient-to-r from-red-600 to-red-500 text-white font-medium shadow-md border border-red-700 hover:from-red-700 hover:to-red-600 hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 text-sm md:text-base"
                     >
-                        <FontAwesomeIcon :icon="faUser" class="mr-1 md:mr-2" />
+                        <FontAwesomeIcon :icon="faSignInAlt" class="mr-1 md:mr-2" />
                         <span class="hidden sm:inline">Iniciar Sesión</span>
                         <span class="inline sm:hidden">Entrar</span>
                     </Link>
@@ -222,9 +221,7 @@ const redes = [
                         :href="route('register')"
                         class="px-3 py-1.5 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-lg text-red-700 font-medium shadow-md border border-red-700 bg-white hover:bg-gradient-to-r hover:from-red-600 hover:to-red-500 hover:text-white hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 text-sm md:text-base"
                     >
-                        <svg class="inline-block mr-1 md:mr-2 w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                        </svg>
+                        <FontAwesomeIcon :icon="faUserPlus" class="mr-1 md:mr-2" />
                         <span class="hidden sm:inline">Registrarse</span>
                         <span class="inline sm:hidden">Registro</span>
                     </Link>
@@ -241,9 +238,7 @@ const redes = [
                             <span class="text-sm text-gray-800 font-medium max-w-[100px] md:max-w-[120px] truncate hidden sm:block">
                                 {{ user?.name || user?.email }}
                             </span>
-                            <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" :class="{ 'rotate-180': userMenuOpen }" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                            </svg>
+                            <FontAwesomeIcon :icon="faChevronDown" class="w-4 h-4 text-gray-500 transition-transform duration-200" :class="{ 'rotate-180': userMenuOpen }" />
                         </button>
                         
                         <div v-show="userMenuOpen"
@@ -333,9 +328,7 @@ const redes = [
               :class="{ 'bg-gradient-to-r from-red-600 to-red-500 text-white': paquetesOpenAside || route().current('paquetes') || route().current('reservaciones') }"
             >
               Paquetes
-              <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-              </svg>
+              <FontAwesomeIcon :icon="faChevronDown" class="ml-2 w-4 h-4" />
             </button>
             <div v-show="paquetesOpenAside" class="ml-2 mt-1 flex flex-col space-y-1">
               <Link
@@ -366,9 +359,7 @@ const redes = [
               :class="{ 'bg-gradient-to-r from-red-600 to-red-500 text-white': toursOpenAside || route().current('tours-nacionales') || route().current('tours-internacionales') }"
             >
               Tours
-              <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-              </svg>
+              <FontAwesomeIcon :icon="faChevronDown" class="ml-2 w-4 h-4" />
             </button>
             <div v-show="toursOpenAside" class="ml-2 mt-1 flex flex-col space-y-1">
               <Link
@@ -433,9 +424,7 @@ const redes = [
                 class="block w-full py-1 px-2 sm:py-2 sm:px-2 rounded-lg bg-white text-red-700 font-semibold shadow-md border border-red-700 hover:bg-gradient-to-r from-red-600 to-red-500 hover:text-white hover:scale-105 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-200 animate-fade-in text-sm sm:text-base text-left"
                 @click="isSidebarOpen = false"
             >
-                <svg class="inline-block mr-1 sm:mr-2 w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                </svg>
+                <FontAwesomeIcon :icon="faUserPlus" class="mr-1 sm:mr-2" />
                 <span class="hidden sm:inline">Registrarse</span>
                 <span class="inline sm:hidden">Registro</span>
             </Link>

@@ -15,6 +15,7 @@ import 'primeicons/primeicons.css';
 // Importaciones de componentes de PrimeVue
 import Toast from 'primevue/toast';
 import Button from 'primevue/button';
+import Card from 'primevue/card';
 import Toolbar from 'primevue/toolbar';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -57,6 +58,7 @@ createInertiaApp({
             // Definimos los componentes de PrimeVue
             app.component('Toast', Toast); // Componente de notificaciones
             app.component('Button', Button); // Componente de botones
+            app.component('Card', Card); // Componente de tarjetas
             app.component('Toolbar', Toolbar); // Componente de barra de herramientas
             app.component('DataTable', DataTable); // Componente de tabla de datos
             app.component('Column', Column); // Componente de columna para tablas

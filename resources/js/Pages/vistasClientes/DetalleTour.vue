@@ -156,11 +156,12 @@
 
                 <!-- Botón de reserva -->
                 <button
+                  @click="reservarTour"
                   :class="[
                     'w-full text-white font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-lg transition-colors duration-200 text-sm sm:text-base',
                     tipo === 'nacional' 
-                      ? 'bg-red-400 hover:bg-red-500' 
-                      : 'bg-blue-400 hover:bg-blue-500'
+                      ? 'bg-red-600 hover:bg-red-700' 
+                      : 'bg-blue-600 hover:bg-blue-700'
                   ]"
                 >
                   Reservar Tour
@@ -299,14 +300,41 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de reserva de tour usando el componente reutilizable -->
+    <Toast />
+    <ModalReservaTour
+      v-model:visible="showReservaDialog"
+      :tour-seleccionado="tour"
+      :user="user"
+      @confirmar-reserva="manejarConfirmacionReserva"
+    />
+
+    <!-- Modal de autenticación requerida -->
+    <ModalAuthRequerido
+      v-model:visible="showAuthDialog"
+      :tour-info="tour"
+    />
   </Catalogo>
 </template>
 
 <script setup>
 import Catalogo from '../Catalogo.vue'
+import ModalReservaTour from '../../Components/ModalReservaTour.vue'
+import ModalAuthRequerido from '../../Components/ModalAuthRequerido.vue'
 import { Link } from '@inertiajs/vue3'
-import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { router } from '@inertiajs/vue3'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { router, usePage } from '@inertiajs/vue3'
+import { useToast } from 'primevue/usetoast'
+
+const page = usePage()
+const user = computed(() => page.props.auth.user)
+
+const toast = useToast()
+
+// Variables para el modal de reserva de tour
+const showReservaDialog = ref(false)
+const showAuthDialog = ref(false)
 
 // Props
 const props = defineProps({
@@ -478,9 +506,88 @@ const reanudarCarrusel = () => {
   iniciarCarrusel()
 }
 
+// Función para reservar el tour
+const reservarTour = () => {
+  // Verificar si el usuario está logueado
+  if (!user.value) {
+    showAuthDialog.value = true
+  } else {
+    showReservaDialog.value = true
+  }
+}
+
+// Función para verificar si hay una reserva pendiente después del login
+const verificarReservaPendiente = () => {
+  try {
+    const reservaPendiente = sessionStorage.getItem('tour_reserva_pendiente')
+    const sessionActiva = sessionStorage.getItem('reserva_session_activa')
+    
+    // Solo procesar si hay reserva pendiente Y la sesión está activa
+    if (reservaPendiente && sessionActiva === 'true' && user.value && tour.value) {
+      const data = JSON.parse(reservaPendiente)
+      
+      // Verificar si es el tour actual
+      if (tour.value.id === data.tourId) {
+        // Abrir modal de reserva automáticamente
+        showReservaDialog.value = true
+        
+        // Limpiar sessionStorage
+        sessionStorage.removeItem('tour_reserva_pendiente')
+        sessionStorage.removeItem('reserva_session_activa')
+        
+        // Mostrar mensaje informativo DESPUÉS de abrir el modal
+        setTimeout(() => {
+          toast.add({
+            severity: 'success',
+            summary: '🎯 Continuando con tu reserva',
+            detail: `¡Perfecto! Ahora puedes completar la reserva para: ${tour.value.nombre}`,
+            life: 6000
+          })
+        }, 500)
+      } else {
+        sessionStorage.removeItem('tour_reserva_pendiente')
+        sessionStorage.removeItem('reserva_session_activa')
+      }
+    } else if (reservaPendiente && sessionActiva !== 'true') {
+      // Si hay información de reserva pero no es de la sesión activa, limpiarla
+      sessionStorage.removeItem('tour_reserva_pendiente')
+      sessionStorage.removeItem('reserva_session_activa')
+    }
+  } catch (error) {
+    // Limpiar sessionStorage si hay errores
+    sessionStorage.removeItem('tour_reserva_pendiente')
+    sessionStorage.removeItem('reserva_session_activa')
+  }
+}
+
+// Función para manejar la confirmación de reserva desde el componente hijo
+const manejarConfirmacionReserva = (reserva) => {
+  toast.add({ 
+    severity: 'success', 
+    summary: 'Reserva Confirmada', 
+    detail: 'Tu reserva ha sido registrada. Te contactaremos pronto.', 
+    life: 5000 
+  })
+
+  // Cerrar modal
+  showReservaDialog.value = false
+}
+
+// Watch para verificar reserva pendiente cuando el usuario cambie
+watch(user, (newUser) => {
+  try {
+    if (newUser && tour.value) {
+      verificarReservaPendiente()
+    }
+  } catch (error) {
+    console.error('Error en watcher de usuario:', error)
+  }
+}, { immediate: false })
+
 // Lifecycle hooks
-onMounted(() => {
-  obtenerTour()
+onMounted(async () => {
+  await obtenerTour()
+  verificarReservaPendiente()
   iniciarCarrusel()
 })
 

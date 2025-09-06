@@ -3,8 +3,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { Head } from '@inertiajs/vue3'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
-import Toast from 'primevue/toast'
-import DatePicker from 'primevue/datepicker'
 
 // Locale español para PrimeVue DatePicker
 const esLocale = {

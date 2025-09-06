@@ -1,8 +1,5 @@
 <script setup>
 import Catalogo from '../Catalogo.vue'
-import Card from 'primevue/card'
-import Button from 'primevue/button'
-import Toast from 'primevue/toast'
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { useToast } from 'primevue/usetoast'
