@@ -16,7 +16,7 @@
                 <div>
                     <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Nombre del Sistema</label>
                     <input 
-                        v-model="settings.systemName"
+                        v-model="currentFormData.systemName"
                         type="text"
                         class="w-full px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 text-xs sm:text-sm lg:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
                     />
@@ -24,7 +24,7 @@
                 <div>
                     <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Versión</label>
                     <input 
-                        v-model="settings.version"
+                        v-model="currentFormData.version"
                         type="text"
                         class="w-full px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 text-xs sm:text-sm lg:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
                     />
@@ -32,7 +32,7 @@
                 <div>
                     <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Email de Contacto</label>
                     <input 
-                        v-model="settings.contactEmail"
+                        v-model="currentFormData.contactEmail"
                         type="email"
                         class="w-full px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 text-xs sm:text-sm lg:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
                     />
@@ -40,7 +40,7 @@
                 <div>
                     <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Teléfono de Contacto</label>
                     <input 
-                        v-model="settings.contactPhone"
+                        v-model="currentFormData.contactPhone"
                         type="tel"
                         class="w-full px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 text-xs sm:text-sm lg:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
                     />
@@ -50,15 +50,16 @@
             <!-- Botones de Acción -->
             <div class="flex flex-col space-y-1 sm:flex-row sm:justify-end sm:space-y-0 sm:space-x-2 lg:space-x-4 mt-3 sm:mt-6 lg:mt-8 pt-2 sm:pt-4 lg:pt-6 border-t border-gray-200">
                 <button 
-                    @click="$emit('reset')"
-                    class="w-full sm:w-auto px-2 sm:px-4 lg:px-6 py-1.5 sm:py-2 text-xs sm:text-sm lg:text-base border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                    @click="handleReset"
+                    :disabled="!canReset || isSaving"
+                    class="w-full sm:w-auto px-2 sm:px-4 lg:px-6 py-1.5 sm:py-2 text-xs sm:text-sm lg:text-base border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                     Restablecer
                 </button>
                 <button 
-                    @click="$emit('save')"
-                    :disabled="isSaving"
-                    class="w-full sm:w-auto px-2 sm:px-4 lg:px-6 py-1.5 sm:py-2 text-xs sm:text-sm lg:text-base bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 transition-colors duration-200 flex items-center justify-center"
+                    @click="handleSave"
+                    :disabled="!canSave || isSaving"
+                    class="w-full sm:w-auto px-2 sm:px-4 lg:px-6 py-1.5 sm:py-2 text-xs sm:text-sm lg:text-base bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center"
                 >
                     <FontAwesomeIcon 
                         v-if="isSaving" 
@@ -69,14 +70,24 @@
                 </button>
             </div>
         </div>
+
+        <!-- Modal de cambios sin guardar -->
+        <UnsavedChangesModal
+            v-model:visible="showUnsavedModal"
+            @continue-editing="cancelExit"
+            @exit-without-saving="confirmExit"
+        />
     </div>
 </template>
 
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { watch } from 'vue'
+import { useUnsavedChanges } from './components/useUnsavedChanges'
+import UnsavedChangesModal from './components/UnsavedChangesModal.vue'
 
-defineProps({
+const props = defineProps({
     settings: {
         type: Object,
         required: true
@@ -87,5 +98,41 @@ defineProps({
     }
 })
 
-defineEmits(['save', 'reset'])
+const emit = defineEmits(['save', 'reset', 'unsaved-changes'])
+
+// Usar el composable para manejar cambios no guardados
+const saveCallback = async (formData) => {
+    emit('save', formData)
+}
+
+const {
+    hasUnsavedChanges,
+    showUnsavedModal,
+    currentFormData,
+    canSave,
+    canReset,
+    saveChanges,
+    resetChanges,
+    confirmExit,
+    cancelExit
+} = useUnsavedChanges(props.settings, saveCallback)
+
+// Funciones para manejar los botones
+const handleSave = async () => {
+    try {
+        await saveChanges()
+    } catch (error) {
+        console.error('Error al guardar configuración general:', error)
+    }
+}
+
+const handleReset = () => {
+    resetChanges()
+    emit('reset')
+}
+
+// Watcher para emitir cambios al componente padre
+watch(hasUnsavedChanges, (newValue) => {
+    emit('unsaved-changes', newValue)
+}, { immediate: true })
 </script>

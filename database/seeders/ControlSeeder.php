@@ -13,22 +13,12 @@ class ControlSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->command->info('🚀 Iniciando creación de roles y permisos...');
-        $this->command->info('📋 Creando roles del sistema...');
         $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         $clienteRole = Role::firstOrCreate(['name' => 'cliente', 'guard_name' => 'web']);
         $empleadoRole = Role::firstOrCreate(['name' => 'empleado', 'guard_name' => 'web']);
-        $this->command->info('✅ Roles creados: admin, cliente, empleado');
 
-        $this->command->info('🔑 Creando permisos del sistema...');
         $this->createPermissions();
-        $this->command->info('✅ Permisos creados exitosamente');
-
-        $this->command->info('🔗 Asignando permisos a roles...');
         $this->assignPermissionsToRoles($adminRole, $empleadoRole, $clienteRole);
-        $this->command->info('✅ Permisos asignados correctamente');
-
-        $this->command->info('🎉 ¡Sistema de roles y permisos configurado exitosamente!');
     }
 
         private function createPermissions(): void
@@ -81,7 +71,6 @@ class ControlSeeder extends Seeder
 
     private function assignPermissionsToRoles($adminRole, $empleadoRole, $clienteRole): void {
         $adminRole->syncPermissions(Permission::all());
-        $this->command->info('  👑 Admin: Acceso completo asignado');
 
         $empleadoPermissions = Permission::whereIn('name', [
             'ver reservas', 'crear reservas', 'editar reservas', 'cancelar reservas',
@@ -91,7 +80,6 @@ class ControlSeeder extends Seeder
             'ver perfil', 'editar perfil'
         ])->get();
         $empleadoRole->syncPermissions($empleadoPermissions);
-        $this->command->info('  👔 Empleado: Permisos operativos asignados');
 
         $clientePermissions = Permission::whereIn('name', [
             'ver tours',
@@ -99,6 +87,5 @@ class ControlSeeder extends Seeder
             'ver perfil', 'editar perfil'
         ])->get();
         $clienteRole->syncPermissions($clientePermissions);
-        $this->command->info('  🧑‍🤝‍🧑 Cliente: Permisos básicos asignados');
     }
 }

@@ -23,7 +23,7 @@
                             <button
                                 v-for="item in menuItems"
                                 :key="item.id"
-                                @click="activeSection = item.id"
+                                @click="handleSectionChange(item.id)"
                                 :class="[
                                     'w-full flex flex-col lg:flex-row items-center lg:items-center px-1.5 sm:px-3 py-1.5 sm:py-2 lg:px-4 lg:py-3 text-center lg:text-left rounded-lg transition-all duration-200',
                                     activeSection === item.id
@@ -51,6 +51,7 @@
                             :is-saving="isSaving"
                             @save="saveSettings"
                             @reset="resetSettings"
+                            @unsaved-changes="reportUnsavedChanges"
                         />
 
                         <!-- Security Settings -->
@@ -60,6 +61,7 @@
                             :is-saving="isSaving"
                             @save="saveSettings"
                             @reset="resetSettings"
+                            @unsaved-changes="reportUnsavedChanges"
                         />
 
                         <!-- Notification Settings -->
@@ -69,15 +71,18 @@
                             :is-saving="isSaving"
                             @save="saveSettings"
                             @reset="resetSettings"
+                            @unsaved-changes="reportUnsavedChanges"
                         />
 
                         <!-- Corporate Settings -->
                         <CorporateSettings
                             v-if="activeSection === 'corporate'"
                             :settings="settings"
+                            :company-values="companyValues"
                             :is-saving="isSaving"
-                            @save="saveSettings"
                             @reset="resetSettings"
+                            @unsaved-changes="reportUnsavedChanges"
+                            @settings-updated="reloadSettings"
                         />
 
                         <!-- Database Settings -->
@@ -87,11 +92,19 @@
                             :is-saving="isSaving"
                             @save="saveSettings"
                             @reset="resetSettings"
+                            @unsaved-changes="reportUnsavedChanges"
                         />
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Modal global de cambios sin guardar -->
+        <UnsavedChangesModal
+            v-model:visible="showUnsavedModal"
+            @continue-editing="cancelSectionChange"
+            @exit-without-saving="confirmSectionChange"
+        />
     </AuthenticatedLayout>
 </template>
 
@@ -111,6 +124,10 @@ import NotificationSettings from './SettingsComponent/NotificationSettings.vue';
 import CorporateSettings from './SettingsComponent/CorporateSettings.vue';
 import DatabaseSettings from './SettingsComponent/DatabaseSettings.vue';
 
+// Importar composable y modal para cambios sin guardar
+import { useUnsavedChanges } from './SettingsComponent/components/useUnsavedChanges.js';
+import UnsavedChangesModal from './SettingsComponent/components/UnsavedChangesModal.vue';
+
 const page = usePage();
 const toast = useToast();
 
@@ -118,6 +135,10 @@ const props = defineProps({
     siteSettings: {
         type: Object,
         default: () => ({})
+    },
+    companyValues: {
+        type: Array,
+        default: () => []
     },
     databaseInfo: {
         type: Object,
@@ -132,6 +153,45 @@ const props = defineProps({
 
 const isSaving = ref(false);
 const activeSection = ref('general');
+
+// Variable reactiva para companyValues que se actualiza desde el servidor
+const companyValues = ref(props.companyValues);
+
+// Variables para manejo global de cambios sin guardar
+const globalHasUnsavedChanges = ref(false);
+const showUnsavedModal = ref(false);
+const pendingSection = ref(null);
+
+// Función para verificar cambios antes de cambiar de sección
+const handleSectionChange = (newSection) => {
+    if (globalHasUnsavedChanges.value) {
+        pendingSection.value = newSection;
+        showUnsavedModal.value = true;
+    } else {
+        activeSection.value = newSection;
+    }
+};
+
+// Confirmar cambio de sección sin guardar
+const confirmSectionChange = () => {
+    globalHasUnsavedChanges.value = false;
+    showUnsavedModal.value = false;
+    if (pendingSection.value) {
+        activeSection.value = pendingSection.value;
+        pendingSection.value = null;
+    }
+};
+
+// Cancelar cambio de sección
+const cancelSectionChange = () => {
+    showUnsavedModal.value = false;
+    pendingSection.value = null;
+};
+
+// Función para que los componentes hijos reporten cambios
+const reportUnsavedChanges = (hasChanges) => {
+    globalHasUnsavedChanges.value = hasChanges;
+};
 
 // Elementos del menú lateral
 const menuItems = ref([
@@ -245,5 +305,38 @@ const resetSettings = () => {
     if (confirm('¿Está seguro de restablecer todos los cambios?')) {
         settings.value = {...originalSettings.value};
     }
+};
+
+// Función para recargar settings después de un guardado exitoso
+const reloadSettings = () => {
+    console.log('🔄 Iniciando recarga de settings...');
+    
+    router.get(route('settings'), {}, {
+        preserveState: false,
+        preserveScroll: true,
+        only: ['siteSettings', 'companyValues'],
+        onSuccess: (page) => {
+            console.log('✅ Datos recargados exitosamente:', page.props);
+            
+            // Actualizar los settings locales con los nuevos datos del servidor
+            settings.value.mission = page.props.siteSettings.mission || '';
+            settings.value.vision = page.props.siteSettings.vision || '';
+            settings.value.description = page.props.siteSettings.description || '';
+            
+            // Actualizar también los originalSettings
+            originalSettings.value.mission = settings.value.mission;
+            originalSettings.value.vision = settings.value.vision;
+            originalSettings.value.description = settings.value.description;
+            
+            // Actualizar companyValues con los datos frescos del servidor
+            companyValues.value = page.props.companyValues;
+            
+            console.log('📊 Settings actualizados:', settings.value);
+            console.log('🏢 Company values actualizados:', companyValues.value);
+        },
+        onError: (errors) => {
+            console.error('❌ Error al recargar settings:', errors);
+        }
+    });
 };
 </script>

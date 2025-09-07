@@ -52,6 +52,11 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
     // Configuración del Sistema - Solo para Administradores
     Route::get('/configuracion/settings', [SettingsController::class, 'index'])->name('settings')->middleware('role:admin');
     Route::post('/configuracion/settings', [SettingsController::class, 'update'])->name('settings.update')->middleware('role:admin');
+    
+    // Valores Corporativos - Solo para Administradores
+    Route::post('/configuracion/values', [SettingsController::class, 'storeValue'])->name('settings.values.store')->middleware('role:admin');
+    Route::put('/configuracion/values/{id}', [SettingsController::class, 'updateValue'])->name('settings.values.update')->middleware('role:admin');
+    Route::delete('/configuracion/values/{id}', [SettingsController::class, 'destroyValue'])->name('settings.values.destroy')->middleware('role:admin');
 });
 
 //Rutas de perfil

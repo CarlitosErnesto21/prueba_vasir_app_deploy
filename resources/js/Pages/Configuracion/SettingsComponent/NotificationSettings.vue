@@ -18,7 +18,7 @@
                     <h3 class="text-base lg:text-lg font-medium text-gray-800 mb-2 lg:mb-3">Tipos de Notificaciones</h3>
                     <div class="flex items-center p-3 lg:p-4 bg-gray-50 rounded-lg border border-gray-200">
                         <input 
-                            v-model="settings.emailNotifications"
+                            v-model="currentFormData.emailNotifications"
                             type="checkbox"
                             class="h-4 w-4 lg:h-5 lg:w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
                         />
@@ -28,7 +28,7 @@
                     </div>
                     <div class="flex items-center p-3 lg:p-4 bg-gray-50 rounded-lg border border-gray-200">
                         <input 
-                            v-model="settings.smsNotifications"
+                            v-model="currentFormData.smsNotifications"
                             type="checkbox"
                             class="h-4 w-4 lg:h-5 lg:w-5 text-red-600 focus:ring-red-500 border-gray-300 rounded"
                         />
@@ -46,7 +46,7 @@
                             Servidor SMTP
                         </label>
                         <input 
-                            v-model="settings.smtpServer"
+                            v-model="currentFormData.smtpServer"
                             type="text"
                             class="w-full px-3 lg:px-4 py-2 text-sm lg:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
                             placeholder="smtp.gmail.com"
@@ -59,15 +59,16 @@
             <!-- Botones de Acción -->
             <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-6 lg:mt-8 pt-4 lg:pt-6 border-t border-gray-200">
                 <button 
-                    @click="$emit('reset')"
-                    class="w-full sm:w-auto px-4 lg:px-6 py-2 text-sm lg:text-base border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                    @click="handleReset"
+                    :disabled="!canReset || isSaving"
+                    class="w-full sm:w-auto px-4 lg:px-6 py-2 text-sm lg:text-base border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                     Restablecer
                 </button>
                 <button 
-                    @click="$emit('save')"
-                    :disabled="isSaving"
-                    class="w-full sm:w-auto px-4 lg:px-6 py-2 text-sm lg:text-base bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 transition-colors duration-200 flex items-center justify-center"
+                    @click="handleSave"
+                    :disabled="!canSave || isSaving"
+                    class="w-full sm:w-auto px-4 lg:px-6 py-2 text-sm lg:text-base bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center"
                 >
                     <FontAwesomeIcon 
                         v-if="isSaving" 
@@ -78,14 +79,24 @@
                 </button>
             </div>
         </div>
+
+        <!-- Modal de cambios sin guardar -->
+        <UnsavedChangesModal
+            v-model:visible="showUnsavedModal"
+            @continue-editing="cancelExit"
+            @exit-without-saving="confirmExit"
+        />
     </div>
 </template>
 
 <script setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { watch } from 'vue'
+import { useUnsavedChanges } from './components/useUnsavedChanges'
+import UnsavedChangesModal from './components/UnsavedChangesModal.vue'
 
-defineProps({
+const props = defineProps({
     settings: {
         type: Object,
         required: true
@@ -96,5 +107,41 @@ defineProps({
     }
 })
 
-defineEmits(['save', 'reset'])
+const emit = defineEmits(['save', 'reset', 'unsaved-changes'])
+
+// Usar el composable para manejar cambios no guardados
+const saveCallback = async (formData) => {
+    emit('save', formData)
+}
+
+const {
+    hasUnsavedChanges,
+    showUnsavedModal,
+    currentFormData,
+    canSave,
+    canReset,
+    saveChanges,
+    resetChanges,
+    confirmExit,
+    cancelExit
+} = useUnsavedChanges(props.settings, saveCallback)
+
+// Funciones para manejar los botones
+const handleSave = async () => {
+    try {
+        await saveChanges()
+    } catch (error) {
+        console.error('Error al guardar configuración de notificaciones:', error)
+    }
+}
+
+const handleReset = () => {
+    resetChanges()
+    emit('reset')
+}
+
+// Watcher para emitir cambios al componente padre
+watch(hasUnsavedChanges, (newValue) => {
+    emit('unsaved-changes', newValue)
+}, { immediate: true })
 </script>

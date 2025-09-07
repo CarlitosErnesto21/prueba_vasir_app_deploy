@@ -9,28 +9,26 @@ class SiteSettingsSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->command->info('⚙️ Creando configuraciones del sitio...');
-        
         $settings = [
             [
-                'key' => 'mision',
+                'key' => 'company_mission',
                 'value' => '',
                 'type' => 'textarea',
-                'label' => 'Misión',
+                'label' => 'Misión de la Empresa',
                 'description' => 'Misión corporativa que aparece en la página Sobre Nosotros'
             ],
             [
-                'key' => 'vision',
+                'key' => 'company_vision',
                 'value' => '',
                 'type' => 'textarea',
-                'label' => 'Visión',
+                'label' => 'Visión de la Empresa',
                 'description' => 'Visión corporativa que aparece en la página Sobre Nosotros'
             ],
             [
-                'key' => 'descripcion_principal',
+                'key' => 'company_description',
                 'value' => '',
                 'type' => 'textarea',
-                'label' => 'Descripción Principal',
+                'label' => 'Descripción de la Empresa',
                 'description' => 'Descripción principal que aparece en el encabezado de la página Sobre Nosotros'
             ],
             [
@@ -64,8 +62,5 @@ class SiteSettingsSeeder extends Seeder
                 $setting
             );
         }
-        
-        $this->command->info('✅ Configuraciones del sitio creadas correctamente');
-        $this->command->info('🔧 Admin automático configurado para el primer usuario');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\SiteSetting;
+use App\Models\CompanyValue;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -18,12 +19,14 @@ class SettingsController extends Controller
         $mission = SiteSetting::get('company_mission');
         $vision = SiteSetting::get('company_vision');
         $description = SiteSetting::get('company_description');
+        $companyValues = CompanyValue::getAllValues();
         
         // Log para debug
         Log::info('Settings loaded:', [
             'mission' => $mission,
             'vision' => $vision,
-            'description' => $description
+            'description' => $description,
+            'values_count' => $companyValues->count()
         ]);
         
         return Inertia::render('Configuracion/Settings', [
@@ -32,6 +35,7 @@ class SettingsController extends Controller
                 'vision' => $vision,
                 'description' => $description,
             ],
+            'companyValues' => $companyValues,
             'databaseInfo' => $this->getDatabaseInfo()
         ]);
     }
@@ -203,13 +207,18 @@ class SettingsController extends Controller
             'mission' => 'required|string|max:1000',
             'vision' => 'required|string|max:1000',
             'description' => 'required|string|max:1000',
+            'companyValues' => 'sometimes|array',
+            'companyValues.new' => 'sometimes|array',
+            'companyValues.updated' => 'sometimes|array',
+            'companyValues.deleted' => 'sometimes|array',
         ]);
 
         // Log para debug
         Log::info('Updating settings:', [
             'mission' => $request->mission,
             'vision' => $request->vision,
-            'description' => $request->description
+            'description' => $request->description,
+            'companyValues' => $request->companyValues
         ]);
 
         try {
@@ -249,6 +258,39 @@ class SettingsController extends Controller
                 ]
             );
 
+            // Manejar valores corporativos si se enviaron
+            if ($request->has('companyValues')) {
+                $companyValues = $request->companyValues;
+                
+                // Crear nuevos valores
+                if (isset($companyValues['new']) && is_array($companyValues['new'])) {
+                    foreach ($companyValues['new'] as $newValue) {
+                        CompanyValue::create([
+                            'titulo' => $newValue['titulo'],
+                            'descripcion' => $newValue['descripcion'],
+                        ]);
+                    }
+                }
+                
+                // Actualizar valores existentes
+                if (isset($companyValues['updated']) && is_array($companyValues['updated'])) {
+                    foreach ($companyValues['updated'] as $updatedValue) {
+                        $value = CompanyValue::find($updatedValue['id']);
+                        if ($value) {
+                            $value->update([
+                                'titulo' => $updatedValue['titulo'],
+                                'descripcion' => $updatedValue['descripcion'],
+                            ]);
+                        }
+                    }
+                }
+                
+                // Eliminar valores
+                if (isset($companyValues['deleted']) && is_array($companyValues['deleted'])) {
+                    CompanyValue::whereIn('id', $companyValues['deleted'])->delete();
+                }
+            }
+
             // Log para confirmar la actualización
             Log::info('Settings updated successfully:', [
                 'mission_id' => $missionSetting->id,
@@ -277,6 +319,102 @@ class SettingsController extends Controller
             ]);
             
             return back()->with('error', 'Error al actualizar la configuración: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Crear un nuevo valor corporativo
+     */
+    public function storeValue(Request $request)
+    {
+        $request->validate([
+            'titulo' => 'required|string|max:100',
+            'descripcion' => 'required|string|max:500',
+        ]);
+
+        try {
+            $value = CompanyValue::create([
+                'titulo' => $request->titulo,
+                'descripcion' => $request->descripcion,
+            ]);
+
+            Log::info('Company value created:', [
+                'id' => $value->id,
+                'titulo' => $value->titulo
+            ]);
+
+            return back()->with('success', 'Valor corporativo agregado correctamente');
+            
+        } catch (\Exception $e) {
+            Log::error('Error creating company value:', [
+                'error' => $e->getMessage(),
+                'titulo' => $request->titulo
+            ]);
+            
+            return back()->with('error', 'Error al agregar el valor: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Actualizar un valor corporativo
+     */
+    public function updateValue(Request $request, $id)
+    {
+        $request->validate([
+            'titulo' => 'required|string|max:100',
+            'descripcion' => 'required|string|max:500',
+        ]);
+
+        try {
+            $value = CompanyValue::findOrFail($id);
+            
+            $value->update([
+                'titulo' => $request->titulo,
+                'descripcion' => $request->descripcion,
+            ]);
+
+            Log::info('Company value updated:', [
+                'id' => $value->id,
+                'titulo' => $value->titulo
+            ]);
+
+            return back()->with('success', 'Valor corporativo actualizado correctamente');
+            
+        } catch (\Exception $e) {
+            Log::error('Error updating company value:', [
+                'error' => $e->getMessage(),
+                'id' => $id
+            ]);
+            
+            return back()->with('error', 'Error al actualizar el valor: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Eliminar un valor corporativo
+     */
+    public function destroyValue($id)
+    {
+        try {
+            $value = CompanyValue::findOrFail($id);
+            $titulo = $value->titulo;
+            
+            $value->delete();
+
+            Log::info('Company value deleted:', [
+                'id' => $id,
+                'titulo' => $titulo
+            ]);
+
+            return back()->with('success', 'Valor corporativo eliminado correctamente');
+            
+        } catch (\Exception $e) {
+            Log::error('Error deleting company value:', [
+                'error' => $e->getMessage(),
+                'id' => $id
+            ]);
+            
+            return back()->with('error', 'Error al eliminar el valor: ' . $e->getMessage());
         }
     }
 }
