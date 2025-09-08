@@ -8,7 +8,7 @@ import FileUpload from "primevue/fileupload";
 import Toast from "primevue/toast";
 import Select from "primevue/select";
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faEdit, faEye, faGlobe, faMapLocation, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faEye, faGlobe, faMapLocation, faPlus, faTags, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import axios from "axios";
 import Carousel from "primevue/carousel";
 
@@ -338,13 +338,19 @@ const viewImages = (imagenesHotel) => {
                 <h3 class="text-xl font-bold">Catálogo hoteles</h3>
                 <div class="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto lg:justify-end">
                     <Link :href="route('controlPaisesProvincias')" 
-                        class="p-button-sm p-button-info w-full sm:w-auto rounded-lg">
-                        <FontAwesomeIcon :icon="faGlobe" size="lg" class="drop-shadow-md"/>
+                        class="bg-blue-500 border border-blue-500 p-2 text-sm text-white shadow-md hover:shadow-lg rounded-md hover:-translate-y-1 transition-transform duration-300">
+                        <FontAwesomeIcon :icon="faGlobe" class="h-4"/>
                         <span class="ml-2 whitespace-nowrap">Control paises</span>
                     </Link>
-                    <Button label="Agregar hotel" icon="pi pi-plus" class="p-button-sm p-button-danger w-full sm:w-auto"
-                        @click="openNew"
-                    />
+                    <Link :href="route('catHoteles')" 
+                        class="bg-blue-500 border border-blue-500 p-2 text-sm text-white shadow-md hover:shadow-lg rounded-md hover:-translate-y-1 transition-transform duration-300">
+                        <FontAwesomeIcon :icon="faTags" class="h-4"/>
+                        <span class="ml-2 whitespace-nowrap">Gestionar categorías</span>
+                    </Link>
+                    <button
+                        class="bg-red-500 border border-red-500 p-2 text-sm text-white shadow-md hover:shadow-lg rounded-md hover:-translate-y-1 transition-transform duration-300" @click="openNew">
+                        <FontAwesomeIcon :icon="faPlus" class="h-4 w-4 text-white" /><span>&nbsp;Agregar hotel</span>
+                    </button>  
                 </div>
             </div>
 

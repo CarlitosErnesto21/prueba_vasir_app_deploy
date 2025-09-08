@@ -1,23 +1,23 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
-import { Head } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { useToast } from 'primevue/usetoast'
 import { FilterMatchMode } from "@primevue/core/api"
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faCheck, faExclamationTriangle, faPencil, faPlus, faSignOut, faTrashCan, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { faArrowLeft, faCheck, faExclamationTriangle, faPencil, faPlus, faSignOut, faTrashCan, faXmark } from '@fortawesome/free-solid-svg-icons'
 import axios from 'axios'
 
 const toast = useToast()
 
-// 📊 Estados reactivos
+// Estados reactivos
 const categorias = ref([])
 const categoria = ref({
     id: null,
     nombre: ""
 })
 
-// 📝 Modal states
+// Modal states
 const dialog = ref(false)
 const deleteDialog = ref(false)
 const unsavedChangesDialog = ref(false)
@@ -25,17 +25,17 @@ const submitted = ref(false)
 const hasUnsavedChanges = ref(false)
 const originalCategoriaData = ref(null)
 
-// 🔍 Filtros
+// Filtros
 const filters = ref({
     global: { value: null, matchMode: FilterMatchMode.CONTAINS }
 })
 
-// 📄 Paginación
+// Paginación
 const rowsPerPage = ref(10)
 const rowsPerPageOptions = ref([5, 10, 20, 50])
 const btnTitle = ref("Guardar")
 
-// 🔍 Categorías filtradas
+// Categorías filtradas
 const categoriasFiltradas = computed(() => {
     let filtered = categorias.value
     if (filters.value.global.value) {
@@ -47,7 +47,7 @@ const categoriasFiltradas = computed(() => {
     return filtered
 })
 
-// 👀 Watcher para detectar cambios en el modal
+// Watcher para detectar cambios en el modal
 watch([categoria], () => {
     if (originalCategoriaData.value && dialog.value) {
         nextTick(() => {
@@ -60,13 +60,13 @@ watch([categoria], () => {
     }
 }, { deep: true, flush: 'post' })
 
-// 🔄 Función para resetear formulario
+// Función para resetear formulario
 function resetForm() {
     categoria.value = { id: null, nombre: "" }
     submitted.value = false
 }
 
-// 📊 Cargar datos
+// Cargar datos
 onMounted(() => {
     cargarCategorias()
 })
@@ -88,7 +88,7 @@ const cargarCategorias = async () => {
     }
 }
 
-// 📝 CRUD Operations
+// CRUD Operations
 const openNew = () => {
     resetForm()
     btnTitle.value = "Guardar"
@@ -171,7 +171,7 @@ const deleteCategoria = async () => {
     }
 }
 
-// 🚪 Funciones para cerrar modales
+// Funciones para cerrar modales
 const hideDialog = () => {
     if (hasUnsavedChanges.value) {
         unsavedChangesDialog.value = true
@@ -205,7 +205,12 @@ const validateNombre = () => {
         <Toast class="z-[9999]" />        
         <div class="py-4 sm:py-6 px-4 sm:px-7 mt-6 sm:mt-10 mx-auto bg-red-50 shadow-md rounded-lg h-screen-full">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-0">
-                <h3 class="text-lg sm:text-2xl text-blue-600 font-bold">Control de categorías de productos</h3>
+                <div class="flex items-center gap-3">
+                    <Link :href="route('productos')" class="flex items-center text-blue-600 hover:text-blue-700 transition-colors duration-200 px-4 rounded-lg" title="Regresar a Productos">
+                        <FontAwesomeIcon :icon="faArrowLeft" class="h-8" />
+                    </Link>
+                    <h3 class="text-lg sm:text-2xl text-blue-600 font-bold">Control de categorías de productos</h3>
+                </div>
                 <button
                     class="bg-blue-500 border border-blue-500 p-2 text-sm text-white shadow-md hover:shadow-lg rounded-md hover:-translate-y-1 transition-transform duration-300" @click="openNew">
                     <FontAwesomeIcon :icon="faPlus" class="h-4 w-4 text-white" /><span>&nbsp;Agregar categoría</span>
@@ -264,7 +269,7 @@ const validateNombre = () => {
                 </Column>
             </DataTable>
 
-            <!-- 📝 Modal de formulario -->
+            <!-- Modal de formulario -->
             <Dialog v-model:visible="dialog" :header="btnTitle + ' Categoría'" :modal="true" :style="{ width: '450px' }" :closable="false">
                 <div class="space-y-4">
                     <!-- Nombre -->
@@ -317,7 +322,7 @@ const validateNombre = () => {
                 </template>
             </Dialog>
 
-            <!-- 🗑️ Modal de confirmación de eliminación -->
+            <!-- Modal de confirmación de eliminación -->
             <Dialog v-model:visible="deleteDialog" header="Eliminar categoría" :modal="true" :style="{ width: '350px' }" :closable="false">
                 <div class="flex items-center gap-3">
                     <FontAwesomeIcon :icon="faExclamationTriangle" class="h-8 w-8 text-red-500" />
@@ -348,7 +353,7 @@ const validateNombre = () => {
                 </template>
             </Dialog>
 
-            <!-- ⚠️ Modal de cambios sin guardar -->
+            <!-- Modal de cambios sin guardar -->
             <Dialog v-model:visible="unsavedChangesDialog" header="Cambios sin guardar" :modal="true" :style="{ width: '400px' }" :closable="false">
                 <div class="flex items-center gap-3">
                     <FontAwesomeIcon :icon="faExclamationTriangle" class="h-8 w-8 text-red-500" />

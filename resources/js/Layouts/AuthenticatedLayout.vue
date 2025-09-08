@@ -535,18 +535,6 @@ function manageClientes() {
                             />
                             <span v-if="!isSidebarCollapsed">Informes</span>
                         </Link>
-                        <Link
-                            :href="route('catPTH')"
-                            class="px-5 py-3 hover:bg-red-600 flex items-center cursor-pointer w-full"
-                            :class="
-                                isSidebarCollapsed
-                                    ? 'justify-center'
-                                    : 'justify-start'
-                            "
-                            title="Control de categorias">
-                            <FontAwesomeIcon :icon="faListCheck" :class="[isSidebarCollapsed ? '' : 'mr-3', 'drop-shadow-md']" class="h-6"/>
-                            <span v-if="!isSidebarCollapsed">Gestión categorías</span>
-                        </Link>
                     </ul>
                 </nav>
                 <ul

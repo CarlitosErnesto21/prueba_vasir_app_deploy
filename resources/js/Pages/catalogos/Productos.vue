@@ -557,7 +557,7 @@ const validateDescripcion = () => {
             <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4 gap-4">
                 <h3 class="text-lg sm:text-2xl text-blue-600 font-bold">Catálogo de Productos</h3>
                 <div class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto lg:justify-end">
-                    <Link :href="route('catPTH')" 
+                    <Link :href="route('catProductos')" 
                          class="bg-blue-500 border border-blue-500 p-2 text-sm text-white shadow-md hover:shadow-lg rounded-md hover:-translate-y-1 transition-transform duration-300">
                         <FontAwesomeIcon :icon="faTags" class="h-4"/>
                         <span>&nbsp;Gestionar categorías</span>
