@@ -43,16 +43,37 @@ const estadisticas = computed(() => {
     }
   }
 
-  const precios = tours.value.map(tour => parseFloat(tour.precio)).filter(precio => !isNaN(precio))
+  // Filtrar solo tours que tienen cupos disponibles
+  const toursDisponibles = tours.value.filter(tour => {
+    const cuposDisponibles = tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0
+    return cuposDisponibles > 0
+  })
+
+  const precios = toursDisponibles.map(tour => parseFloat(tour.precio)).filter(precio => !isNaN(precio))
   // Como no tenemos campo pais aún, usaremos punto_salida como ubicación
-  const ubicacionesUnicas = [...new Set(tours.value.map(tour => tour.punto_salida).filter(ubicacion => ubicacion))]
+  const ubicacionesUnicas = [...new Set(toursDisponibles.map(tour => tour.punto_salida).filter(ubicacion => ubicacion))]
   
   return {
-    totalDestinos: tours.value.length,
+    totalDestinos: toursDisponibles.length,
     totalPaises: ubicacionesUnicas.length,
     precioMinimo: precios.length > 0 ? Math.min(...precios) : 0,
     paisesUnicos: ubicacionesUnicas
   }
+})
+
+// Computed properties para separar tours por disponibilidad
+const toursDisponibles = computed(() => {
+  return tours.value.filter(tour => {
+    const cuposDisponibles = tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0
+    return cuposDisponibles > 0
+  })
+})
+
+const toursSinCupos = computed(() => {
+  return tours.value.filter(tour => {
+    const cuposDisponibles = tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0
+    return cuposDisponibles === 0
+  })
 })
 
 // Función para obtener tours desde la API
@@ -498,101 +519,188 @@ const verMasInfo = (tour) => {
           </div>
         </div>
 
-        <!-- Tours Grid -->
-        <div v-if="tours.length > 0" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          <Card
-            v-for="tour in tours"
-            :key="tour.id"
-            class="border border-gray-300 bg-white shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-80 sm:h-96 transform hover:-translate-y-1 overflow-hidden"
-          >
-            <template #header>
-              <div class="relative w-full h-24 sm:h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg overflow-hidden group cursor-pointer"
-                   @click="mostrarGaleria(tour)">
-                <img
-                  :src="obtenerImagenActual(tour)"
-                  :alt="tour.nombre"
-                  class="object-contain h-full w-full bg-gray-50 group-hover:scale-105 transition-transform duration-500"
-                  @error="$event.target.src = 'https://via.placeholder.com/300x200/2563eb/ffffff?text=' + encodeURIComponent(tour.nombre.substring(0, 15))"
-                />
-                <div class="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
-                  ${{ tour.precio }}
-                </div>
-                <div class="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs">
-                  {{ calcularDuracion(tour.fecha_salida, tour.fecha_regreso) }}
-                </div>
-                <!-- Indicador de múltiples imágenes -->
-                <div v-if="tour.imagenes && tour.imagenes.length > 1" 
-                     class="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs flex items-center">
-                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
-                  </svg>
-                  {{ tour.imagenes.length }}
-                </div>
-                <!-- Indicador de carrusel activo -->
-                <div v-if="tour.imagenes && tour.imagenes.length > 1" 
-                     class="absolute bottom-2 right-2 flex space-x-1">
-                  <div 
-                    v-for="(_, index) in tour.imagenes" 
-                    :key="index"
-                    class="w-2 h-2 rounded-full transition-all duration-300"
-                    :class="(cardImageIndices[tour.id] || 0) === index ? 'bg-white' : 'bg-white/50'"
-                  ></div>
-                </div>
-              </div>
-            </template>
-            
-            <template #title>
-              <div class="h-10 sm:h-12 flex items-start px-3 sm:px-4 pt-2 sm:pt-3 cursor-pointer hover:bg-gray-50 transition-colors"
-                   @click="verMasInfo(tour)">
-                <span class="text-xs sm:text-sm font-bold text-gray-800 leading-tight line-clamp-2">{{ tour.nombre }}</span>
-              </div>
-            </template>
-            
-            <template #content>
-              <div class="flex-1 flex flex-col px-3 sm:px-4 pb-2">
-                <div class="flex-1 space-y-1 sm:space-y-2 cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
-                     @click="verMasInfo(tour)">
-                  <div class="flex items-center text-xs text-gray-500 mb-1">
-                    <svg class="w-3 h-3 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+        <!-- Tours Disponibles -->
+        <div v-if="toursDisponibles.length > 0" class="mb-8">
+          <div class="bg-gradient-to-r from-blue-600 to-green-600 text-white text-center py-4 px-6 rounded-t-xl mb-6">
+            <h2 class="text-xl md:text-2xl font-bold">🌍 Tours Internacionales Disponibles</h2>
+            <p class="text-blue-100 text-sm mt-1">{{ toursDisponibles.length }} destino{{ toursDisponibles.length !== 1 ? 's' : '' }} con cupos disponibles</p>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            <Card
+              v-for="tour in toursDisponibles"
+              :key="tour.id"
+              class="border border-gray-300 bg-white shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-80 sm:h-96 transform hover:-translate-y-1 overflow-hidden"
+            >
+              <template #header>
+                <div class="relative w-full h-24 sm:h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg overflow-hidden group cursor-pointer"
+                     @click="mostrarGaleria(tour)">
+                  <img
+                    :src="obtenerImagenActual(tour)"
+                    :alt="tour.nombre"
+                    class="object-contain h-full w-full bg-gray-50 group-hover:scale-105 transition-transform duration-500"
+                    @error="$event.target.src = 'https://via.placeholder.com/300x200/2563eb/ffffff?text=' + encodeURIComponent(tour.nombre.substring(0, 15))"
+                  />
+                  <div class="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
+                    ${{ tour.precio }}
+                  </div>
+                  <div class="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs">
+                    {{ calcularDuracion(tour.fecha_salida, tour.fecha_regreso) }}
+                  </div>
+                  <!-- Indicador de múltiples imágenes -->
+                  <div v-if="tour.imagenes && tour.imagenes.length > 1" 
+                       class="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
                     </svg>
-                    <span class="truncate">{{ tour.punto_salida }}</span>
+                    {{ tour.imagenes.length }}
                   </div>
-                  <div class="space-y-1">
-                    <p class="text-xs font-semibold text-gray-700">Salida:</p>
-                    <p class="text-xs text-gray-600">{{ formatearFecha(tour.fecha_salida) }}</p>
-                  </div>
-                  <div class="text-xs">
-                    <p class="font-semibold text-gray-700">Disponibles:</p>
-                    <p class="text-xs font-medium" :class="obtenerClaseCupos(tour)">
-                      {{ tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0 }} cupos
-                    </p>
+                  <!-- Indicador de carrusel activo -->
+                  <div v-if="tour.imagenes && tour.imagenes.length > 1" 
+                       class="absolute bottom-2 right-2 flex space-x-1">
+                    <div 
+                      v-for="(_, index) in tour.imagenes" 
+                      :key="index"
+                      class="w-2 h-2 rounded-full transition-all duration-300"
+                      :class="(cardImageIndices[tour.id] || 0) === index ? 'bg-white' : 'bg-white/50'"
+                    ></div>
                   </div>
                 </div>
-                
-                <!-- Botones dentro del content para estar dentro del card -->
-                <div class="flex gap-1 sm:gap-2 mt-2 sm:mt-3 pt-1 sm:pt-2">
-                  <Button
-                    :label="(tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0) === 0 ? 'Sin Cupos' : 'Reservar'"
-                    @click="reservarTour(tour)"
-                    :disabled="(tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0) === 0"
-                    :class="[
-                      '!px-2 sm:!px-3 !py-1 sm:!py-1.5 !text-xs font-semibold rounded-lg transition-all flex-1 shadow-sm',
-                      (tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0) === 0 
-                        ? '!bg-gray-400 !border-none !text-white cursor-not-allowed' 
-                        : '!bg-blue-600 !border-none !text-white hover:!bg-blue-700'
-                    ]"
-                  />
-                  <Button
-                    label="Info"
-                    @click="verMasInfo(tour)"
-                    outlined
-                    class="!border-blue-600 !text-blue-600 !px-2 sm:!px-3 !py-1 sm:!py-1.5 !text-xs font-semibold rounded-lg hover:!bg-blue-50 transition-all"
-                  />
+              </template>
+              
+              <template #title>
+                <div class="h-10 sm:h-12 flex items-start px-3 sm:px-4 pt-2 sm:pt-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                     @click="verMasInfo(tour)">
+                  <span class="text-xs sm:text-sm font-bold text-gray-800 leading-tight line-clamp-2">{{ tour.nombre }}</span>
                 </div>
-              </div>
-            </template>
-          </Card>
+              </template>
+              
+              <template #content>
+                <div class="flex-1 flex flex-col px-3 sm:px-4 pb-2">
+                  <div class="flex-1 space-y-1 sm:space-y-2 cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
+                       @click="verMasInfo(tour)">
+                    <div class="flex items-center text-xs text-gray-500 mb-1">
+                      <svg class="w-3 h-3 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                      </svg>
+                      <span class="truncate">{{ tour.punto_salida }}</span>
+                    </div>
+                    <div class="space-y-1">
+                      <p class="text-xs font-semibold text-gray-700">Salida:</p>
+                      <p class="text-xs text-gray-600">{{ formatearFecha(tour.fecha_salida) }}</p>
+                    </div>
+                    <div class="text-xs">
+                      <p class="font-semibold text-gray-700">Disponibles:</p>
+                      <p class="text-xs font-medium" :class="obtenerClaseCupos(tour)">
+                        {{ tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0 }} cupos
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <!-- Botones dentro del content para estar dentro del card -->
+                  <div class="flex gap-1 sm:gap-2 mt-2 sm:mt-3 pt-1 sm:pt-2">
+                    <Button
+                      label="Reservar"
+                      @click="reservarTour(tour)"
+                      class="!px-2 sm:!px-3 !py-1 sm:!py-1.5 !text-xs font-semibold rounded-lg transition-all flex-1 shadow-sm !bg-blue-600 !border-none !text-white hover:!bg-blue-700"
+                    />
+                    <Button
+                      label="Info"
+                      @click="verMasInfo(tour)"
+                      outlined
+                      class="!border-blue-600 !text-blue-600 !px-2 sm:!px-3 !py-1 sm:!py-1.5 !text-xs font-semibold rounded-lg hover:!bg-blue-50 transition-all"
+                    />
+                  </div>
+                </div>
+              </template>
+            </Card>
+          </div>
+        </div>
+
+        <!-- Tours Sin Cupos -->
+        <div v-if="toursSinCupos.length > 0" class="mb-8">
+          <div class="bg-gradient-to-r from-gray-500 to-gray-600 text-white text-center py-4 px-6 rounded-t-xl mb-6">
+            <h2 class="text-xl md:text-2xl font-bold">😔 Tours Sin Cupos Disponibles</h2>
+            <p class="text-gray-200 text-sm mt-1">{{ toursSinCupos.length }} destino{{ toursSinCupos.length !== 1 ? 's' : '' }} temporalmente agotado{{ toursSinCupos.length !== 1 ? 's' : '' }}</p>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            <Card
+              v-for="tour in toursSinCupos"
+              :key="tour.id"
+              class="border-2 border-gray-300 bg-gray-50 opacity-75 shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-80 sm:h-96 overflow-hidden"
+            >
+              <template #header>
+                <div class="relative w-full h-24 sm:h-32 bg-gradient-to-br from-gray-200 to-gray-300 rounded-t-lg overflow-hidden group cursor-pointer"
+                     @click="mostrarGaleria(tour)">
+                  <img
+                    :src="obtenerImagenActual(tour)"
+                    :alt="tour.nombre"
+                    class="object-contain h-full w-full bg-gray-100 group-hover:scale-105 transition-transform duration-500 filter grayscale"
+                    @error="$event.target.src = 'https://via.placeholder.com/300x200/6b7280/ffffff?text=' + encodeURIComponent(tour.nombre.substring(0, 15))"
+                  />
+                  <div class="absolute top-2 right-2 bg-gray-600 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
+                    ${{ tour.precio }}
+                  </div>
+                  <div class="absolute bottom-2 left-2 bg-red-600/90 text-white px-2 py-1 rounded-full text-xs font-bold">
+                    SIN CUPOS
+                  </div>
+                  <!-- Indicador de múltiples imágenes -->
+                  <div v-if="tour.imagenes && tour.imagenes.length > 1" 
+                       class="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ tour.imagenes.length }}
+                  </div>
+                </div>
+              </template>
+              
+              <template #title>
+                <div class="h-10 sm:h-12 flex items-start px-3 sm:px-4 pt-2 sm:pt-3 cursor-pointer hover:bg-gray-100 transition-colors"
+                     @click="verMasInfo(tour)">
+                  <span class="text-xs sm:text-sm font-bold text-gray-600 leading-tight line-clamp-2">{{ tour.nombre }}</span>
+                </div>
+              </template>
+              
+              <template #content>
+                <div class="flex-1 flex flex-col px-3 sm:px-4 pb-2">
+                  <div class="flex-1 space-y-1 sm:space-y-2 cursor-pointer hover:bg-gray-100 transition-colors rounded-lg p-2 -m-2"
+                       @click="verMasInfo(tour)">
+                    <div class="flex items-center text-xs text-gray-500 mb-1">
+                      <svg class="w-3 h-3 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                      </svg>
+                      <span class="truncate">{{ tour.punto_salida }}</span>
+                    </div>
+                    <div class="space-y-1">
+                      <p class="text-xs font-semibold text-gray-600">Salida:</p>
+                      <p class="text-xs text-gray-500">{{ formatearFecha(tour.fecha_salida) }}</p>
+                    </div>
+                    <div class="text-xs">
+                      <p class="font-semibold text-gray-600">Disponibles:</p>
+                      <p class="text-xs font-bold text-red-600">
+                        0 cupos
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <!-- Botones dentro del content para estar dentro del card -->
+                  <div class="flex gap-1 sm:gap-2 mt-2 sm:mt-3 pt-1 sm:pt-2">
+                    <Button
+                      label="Sin Cupos"
+                      disabled
+                      class="!px-2 sm:!px-3 !py-1 sm:!py-1.5 !text-xs font-semibold rounded-lg transition-all flex-1 shadow-sm !bg-gray-400 !border-none !text-white cursor-not-allowed"
+                    />
+                    <Button
+                      label="Info"
+                      @click="verMasInfo(tour)"
+                      outlined
+                      class="!border-gray-400 !text-gray-600 !px-2 sm:!px-3 !py-1 sm:!py-1.5 !text-xs font-semibold rounded-lg hover:!bg-gray-100 transition-all"
+                    />
+                  </div>
+                </div>
+              </template>
+            </Card>
+          </div>
         </div>
 
         <!-- Info adicional -->
@@ -619,20 +727,6 @@ const verMasInfo = (tour) => {
               <h3 class="font-semibold text-red-600 mb-2">Soporte 24/7</h3>
               <p class="text-gray-600 text-sm">Asistencia completa durante todo tu viaje</p>
             </div>
-          </div>
-        </div>
-
-        <!-- Países disponibles -->
-        <div v-if="estadisticas.paisesUnicos.length > 0" class="mt-8 bg-white rounded-xl p-6 shadow-md border border-gray-200">
-          <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Puntos de Salida Disponibles</h3>
-          <div class="flex flex-wrap justify-center gap-3">
-            <span 
-              v-for="ubicacion in estadisticas.paisesUnicos" 
-              :key="ubicacion"
-              class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium"
-            >
-              {{ ubicacion }}
-            </span>
           </div>
         </div>
       </div>

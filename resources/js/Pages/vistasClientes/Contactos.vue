@@ -158,7 +158,7 @@ const faqsFiltradas = computed(() => {
   <Catalogo>
     <Toast />
     <div class="bg-gradient-to-br from-gray-50 via-blue-50/30 to-red-50/30 min-h-screen">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6 sm:pb-8">
         <!-- Header Professional -->
         <div class="mb-8 sm:mb-12">
           <div class="bg-gradient-to-br from-white via-blue-50 to-red-50 rounded-xl shadow-xl border border-gray-200 overflow-hidden">

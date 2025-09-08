@@ -19,6 +19,11 @@ const user = computed(() => page.props.auth.user)
 
 const toast = useToast()
 
+// Estados reactivos principales (movidos al inicio para evitar problemas de referencia)
+const tours = ref([])
+const loading = ref(true)
+const error = ref(null)
+
 // Variables para el modal de reserva de tour
 const showReservaDialog = ref(false)
 const showAuthDialog = ref(false)
@@ -77,14 +82,13 @@ const verificarReservaPendiente = async () => {
         sessionStorage.removeItem('tour_reserva_pendiente')
         sessionStorage.removeItem('reserva_session_activa')
       }
-    } else {
-      if (reservaPendiente && sessionActiva !== 'true') {
-        // Si hay información de reserva pero no es de la sesión activa, limpiarla
-        sessionStorage.removeItem('tour_reserva_pendiente')
-        sessionStorage.removeItem('reserva_session_activa')
-      }
+    } else if (reservaPendiente && sessionActiva !== 'true') {
+      // Si hay información de reserva pero no es de la sesión activa, limpiarla
+      sessionStorage.removeItem('tour_reserva_pendiente')
+      sessionStorage.removeItem('reserva_session_activa')
     }
   } catch (error) {
+    console.error('Error en verificarReservaPendiente:', error)
     // Limpiar sessionStorage si hay errores
     sessionStorage.removeItem('tour_reserva_pendiente')
     sessionStorage.removeItem('reserva_session_activa')
@@ -155,11 +159,6 @@ watch(user, async (newUser) => {
   }
 }, { immediate: false })
 
-// Estados reactivos
-const tours = ref([])
-const loading = ref(true)
-const error = ref(null)
-
 // URL de la API para tours nacionales
 const url = "/api/tours?categoria=nacional"
 
@@ -174,16 +173,37 @@ const estadisticas = computed(() => {
     }
   }
 
-  const precios = tours.value.map(tour => parseFloat(tour.precio)).filter(precio => !isNaN(precio))
+  // Filtrar solo tours que tienen cupos disponibles
+  const toursDisponibles = tours.value.filter(tour => {
+    const cuposDisponibles = tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0
+    return cuposDisponibles > 0
+  })
+
+  const precios = toursDisponibles.map(tour => parseFloat(tour.precio)).filter(precio => !isNaN(precio))
   // Como no tenemos campo pais aún, usaremos punto_salida como ubicación
-  const ubicacionesUnicas = [...new Set(tours.value.map(tour => tour.punto_salida).filter(ubicacion => ubicacion))]
+  const ubicacionesUnicas = [...new Set(toursDisponibles.map(tour => tour.punto_salida).filter(ubicacion => ubicacion))]
   
   return {
-    totalDestinos: tours.value.length,
+    totalDestinos: toursDisponibles.length,
     totalPaises: ubicacionesUnicas.length,
     precioMinimo: precios.length > 0 ? Math.min(...precios) : 0,
     paisesUnicos: ubicacionesUnicas
   }
+})
+
+// Computed properties para separar tours por disponibilidad
+const toursDisponibles = computed(() => {
+  return tours.value.filter(tour => {
+    const cuposDisponibles = parseInt(tour.cupos_disponibles) || 0
+    return cuposDisponibles > 0
+  })
+})
+
+const toursSinCupos = computed(() => {
+  return tours.value.filter(tour => {
+    const cuposDisponibles = parseInt(tour.cupos_disponibles) || 0
+    return cuposDisponibles <= 0
+  })
 })
 
 // Función para obtener tours desde la API
@@ -196,7 +216,6 @@ const obtenerTours = async () => {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
       }
     })
@@ -293,7 +312,7 @@ const obtenerImagenActual = (tour) => {
 
 // Función para inicializar carrusel automático
 const inicializarCarrusel = (tour) => {
-  if (!tour.imagenes || tour.imagenes.length <= 1) return
+  if (!tour.imagenes || tour.imagenes.length <= 1 || !tour.id) return
   
   // Inicializar índice si no existe
   if (!(tour.id in cardImageIndices.value)) {
@@ -303,7 +322,10 @@ const inicializarCarrusel = (tour) => {
   // Crear intervalo para cambiar imágenes automáticamente
   if (!(tour.id in intervalIds.value)) {
     intervalIds.value[tour.id] = setInterval(() => {
-      cardImageIndices.value[tour.id] = (cardImageIndices.value[tour.id] + 1) % tour.imagenes.length
+      // Validación adicional de seguridad
+      if (tour.imagenes && tour.imagenes.length > 0) {
+        cardImageIndices.value[tour.id] = (cardImageIndices.value[tour.id] + 1) % tour.imagenes.length
+      }
     }, 3000) // Cambiar cada 3 segundos
   }
 }
@@ -324,11 +346,6 @@ onMounted(async () => {
   
   // Verificar reserva pendiente después de cargar los tours
   await verificarReservaPendiente()
-  
-  // Verificación adicional con delay para problemas de timing
-  setTimeout(async () => {
-    await verificarReservaPendiente()
-  }, 500)
   
   // Inicializar carruseles para todos los tours con múltiples imágenes
   tours.value.forEach(tour => {
@@ -448,285 +465,456 @@ const verMasInfo = (tour) => {
 <template>
   <Catalogo>
     <Toast />
-    <div class="p-4 bg-gray-50 min-h-screen">
-      <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="text-center mb-8">
-          <h1 class="text-4xl font-bold mb-4 text-red-700 flex items-center justify-center gap-3">
-            <img src="/images/sv.png" alt="Bandera El Salvador" class="w-8 h-8" />
-            Tours Nacionales
-          </h1>
-          <p class="text-lg text-gray-600 mb-2">Descubre las maravillas de El Salvador</p>
-          <p class="text-sm text-gray-500">Experiencias auténticas en nuestro hermoso país</p>
+    <div class="bg-gradient-to-br from-gray-50 via-white to-gray-100 min-h-screen">
+      <div class="w-full px-4 sm:px-6 lg:px-8">
+        <!-- Header Profesional con Stats Integradas -->
+        <div class="mb-8 sm:mb-12">
+          <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+            <!-- Header con gradiente -->
+            <div class="bg-gradient-to-r from-red-600 via-red-500 to-blue-600 text-white text-center py-8 sm:py-12">
+              <div class="flex items-center justify-center gap-3 mb-4">
+                <img src="/images/sv.png" alt="Bandera El Salvador" class="w-10 h-10 sm:w-12 sm:h-12 shadow-lg rounded-full border-2 border-white/30" />
+                <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-red-100 bg-clip-text text-transparent">
+                  Tours Nacionales
+                </h1>
+              </div>
+              <p class="text-lg sm:text-xl text-red-100 px-4 max-w-2xl mx-auto">Descubre las maravillas de El Salvador</p>
+            </div>
+
+            <!-- Stats integradas en el header -->
+            <div v-if="tours.length > 0" class="bg-white py-8 px-6">
+              <div class="max-w-4xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <!-- Stat 1: Tours Disponibles -->
+                  <div class="relative bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-red-200">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg border-4 border-white">
+                        <span class="text-2xl">🎯</span>
+                      </div>
+                    </div>
+                    <div class="mt-4">
+                      <h3 class="text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent mb-2">
+                        {{ estadisticas.totalDestinos }}
+                      </h3>
+                      <p class="text-gray-700 font-semibold text-sm uppercase tracking-wide">Tours Disponibles</p>
+                      <p class="text-gray-500 text-xs mt-1">Experiencias únicas</p>
+                    </div>
+                  </div>
+
+                  <!-- Stat 2: Precios -->
+                  <div class="relative bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-green-200">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg border-4 border-white">
+                        <span class="text-2xl">💰</span>
+                      </div>
+                    </div>
+                    <div class="mt-4">
+                      <h3 class="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent mb-2">
+                        {{ estadisticas.precioMinimo > 0 ? `Desde $${estadisticas.precioMinimo.toFixed(2)}` : 'Consultar' }}
+                      </h3>
+                      <p class="text-gray-700 font-semibold text-sm uppercase tracking-wide">Precios Accesibles</p>
+                      <p class="text-gray-500 text-xs mt-1">Para todos los presupuestos</p>
+                    </div>
+                  </div>
+
+                  <!-- Stat 3: Ubicaciones -->
+                  <div class="relative bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-blue-200">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg border-4 border-white">
+                        <span class="text-2xl">📍</span>
+                      </div>
+                    </div>
+                    <div class="mt-4">
+                      <h3 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">
+                        {{ estadisticas.totalPaises }}
+                      </h3>
+                      <p class="text-gray-700 font-semibold text-sm uppercase tracking-wide">Ubicaciones</p>
+                      <p class="text-gray-500 text-xs mt-1">Destinos únicos</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Estado de carga -->
         <div v-if="loading && tours.length === 0" class="text-center py-12">
-          <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-          <p class="mt-4 text-gray-600">Cargando tours nacionales...</p>
+          <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg p-8 max-w-md mx-auto border border-gray-200">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-red-200 border-t-red-600 mb-4"></div>
+            <p class="text-lg font-semibold bg-gradient-to-r from-red-600 to-blue-600 bg-clip-text text-transparent">Cargando tours nacionales...</p>
+            <p class="text-sm text-gray-500 mt-2">Preparando las mejores experiencias para ti</p>
+          </div>
         </div>
 
         <!-- Estado de error -->
         <div v-else-if="error && tours.length === 0" class="text-center py-12">
-          <div class="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg max-w-md mx-auto">
-            <div class="text-4xl mb-3">⚠️</div>
-            <h3 class="font-semibold mb-2">No se pudieron cargar los tours</h3>
-            <p class="text-sm text-red-600">Por favor, intenta recargar la página o contacta con nosotros.</p>
+          <div class="bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200 text-red-700 px-8 py-6 rounded-xl shadow-lg max-w-md mx-auto">
+            <div class="text-4xl mb-4">⚠️</div>
+            <h3 class="text-xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent mb-3">No se pudieron cargar los tours</h3>
+            <p class="text-sm text-red-600 leading-relaxed">Por favor, intenta recargar la página o contacta con nosotros.</p>
           </div>
         </div>
 
         <!-- Estado vacío -->
         <div v-else-if="!loading && tours.length === 0" class="text-center py-12">
-          <div class="text-6xl mb-4">🏔️</div>
-          <h3 class="text-xl font-semibold text-gray-700 mb-2">No hay tours nacionales disponibles</h3>
-          <p class="text-gray-500 mb-4">Próximamente tendremos nuevos destinos nacionales.</p>
-          <p class="text-sm text-gray-400">Mientras tanto, puedes explorar nuestros tours internacionales.</p>
-        </div>
-
-        <!-- Stats -->
-        <div v-if="tours.length > 0" class="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 mb-6 sm:mb-8">
-          <div class="bg-white rounded-lg p-3 sm:p-4 md:p-6 shadow-md text-center border border-gray-200">
-            <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-red-600">{{ estadisticas.totalDestinos }}</h3>
-            <p class="text-xs sm:text-sm md:text-base text-gray-600">Tours Disponibles</p>
-          </div>
-          <div class="bg-white rounded-lg p-3 sm:p-4 md:p-6 shadow-md text-center border border-gray-200">
-            <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-green-600">
-              {{ estadisticas.precioMinimo > 0 ? `Desde $${estadisticas.precioMinimo.toFixed(2)}` : 'Consultar' }}
-            </h3>
-            <p class="text-xs sm:text-sm md:text-base text-gray-600">Precios Accesibles</p>
-          </div>
-          <div class="bg-white rounded-lg p-3 sm:p-4 md:p-6 shadow-md text-center border border-gray-200">
-            <h3 class="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">{{ estadisticas.totalPaises }}</h3>
-            <p class="text-xs sm:text-sm md:text-base text-gray-600">Ubicaciones</p>
+          <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl shadow-lg p-8 max-w-lg mx-auto">
+            <div class="text-6xl mb-4">🏔️</div>
+            <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">No hay tours nacionales disponibles</h3>
+            <p class="text-gray-600 mb-4 leading-relaxed">Próximamente tendremos nuevos destinos nacionales.</p>
+            <p class="text-sm text-gray-500">Mientras tanto, puedes explorar nuestros tours internacionales.</p>
           </div>
         </div>
 
-        <!-- Tours Grid -->
-        <div v-if="tours.length > 0" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          <Card
-            v-for="tour in tours"
-            :key="tour.id"
-            class="border border-gray-300 bg-white shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-80 sm:h-96 transform hover:-translate-y-1 overflow-hidden"
-          >
-            <template #header>
-              <div class="relative w-full h-24 sm:h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-lg overflow-hidden group cursor-pointer"
-                   @click="mostrarGaleria(tour)">
-                <img
-                  :src="obtenerImagenActual(tour)"
-                  :alt="tour.nombre"
-                  class="object-contain h-full w-full bg-gray-50 group-hover:scale-105 transition-transform duration-500"
-                  @error="$event.target.src = 'https://via.placeholder.com/300x200/ef4444/ffffff?text=' + encodeURIComponent(tour.nombre.substring(0, 15))"
-                />
-                <div class="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-lg">
-                  ${{ tour.precio }}
-                </div>
-                <div class="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs">
-                  {{ calcularDuracion(tour.fecha_salida, tour.fecha_regreso) }}
-                </div>
-                <!-- Indicador de múltiples imágenes -->
-                <div v-if="tour.imagenes && tour.imagenes.length > 1" 
-                     class="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded-full text-xs flex items-center">
-                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
-                  </svg>
-                  {{ tour.imagenes.length }}
-                </div>
-                <!-- Indicador de carrusel activo -->
-                <div v-if="tour.imagenes && tour.imagenes.length > 1" 
-                     class="absolute bottom-2 right-2 flex space-x-1">
-                  <div 
-                    v-for="(_, index) in tour.imagenes" 
-                    :key="index"
-                    class="w-2 h-2 rounded-full transition-all duration-300"
-                    :class="(cardImageIndices[tour.id] || 0) === index ? 'bg-white' : 'bg-white/50'"
-                  ></div>
-                </div>
-              </div>
-            </template>
-            
-            <template #title>
-              <div class="h-10 sm:h-12 flex items-start px-3 sm:px-4 pt-2 sm:pt-3 cursor-pointer hover:bg-gray-50 transition-colors"
-                   @click="verMasInfo(tour)">
-                <span class="text-xs sm:text-sm font-bold text-gray-800 leading-tight line-clamp-2">{{ tour.nombre }}</span>
-              </div>
-            </template>
-            
-            <template #content>
-              <div class="flex-1 flex flex-col px-3 sm:px-4 pb-2">
-                <div class="flex-1 space-y-1 sm:space-y-2 cursor-pointer hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2"
-                     @click="verMasInfo(tour)">
-                  <div class="flex items-center text-xs text-gray-500 mb-1">
-                    <svg class="w-3 h-3 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+        <!-- Tours Disponibles -->
+        <div v-if="toursDisponibles.length > 0" class="mb-8">
+          <div class="bg-gradient-to-r from-red-600 via-red-500 to-blue-600 text-white text-center py-4 px-6 rounded-t-xl mb-6">
+            <h2 class="text-xl md:text-2xl font-bold">🇸🇻 Tours Nacionales Disponibles</h2>
+            <p class="text-red-100 text-sm mt-1">{{ toursDisponibles.length }} destino{{ toursDisponibles.length !== 1 ? 's' : '' }} con cupos disponibles</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+            <Card
+              v-for="tour in toursDisponibles"
+              :key="tour.id"
+              class="bg-gradient-to-br from-white to-gray-50 hover:from-gray-50 hover:to-white border-2 border-gray-200 hover:border-red-300 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col min-h-[400px] sm:min-h-[450px] transform hover:-translate-y-2 hover:scale-[1.02] overflow-hidden rounded-xl"
+              >
+              <template #header>
+                <div class="relative w-full h-36 sm:h-40 bg-gradient-to-br from-gray-100 via-gray-50 to-gray-200 rounded-t-xl overflow-hidden group cursor-pointer border-b border-gray-200"
+                    @click="mostrarGaleria(tour)">
+                  <img
+                    :src="obtenerImagenActual(tour)"
+                    :alt="tour.nombre"
+                    class="object-contain h-full w-full bg-gradient-to-br from-gray-50 to-white group-hover:scale-110 transition-transform duration-500"
+                    @error="$event.target.src = 'https://via.placeholder.com/300x200/ef4444/ffffff?text=' + encodeURIComponent((tour.nombre || 'Tour').substring(0, 15))"
+                  />
+                  <div class="absolute top-2 right-2 bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg border border-green-400">
+                    ${{ tour.precio }}
+                  </div>
+                  <div class="absolute bottom-2 left-2 bg-gradient-to-r from-black/80 to-gray-800/80 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium border border-white/20">
+                    {{ calcularDuracion(tour.fecha_salida, tour.fecha_regreso) }}
+                  </div>
+                  <!-- Indicador de múltiples imágenes -->
+                  <div v-if="tour.imagenes && tour.imagenes.length > 1" 
+                      class="absolute top-2 left-2 bg-gradient-to-r from-black/80 to-gray-800/80 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs flex items-center border border-white/20">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
                     </svg>
-                    <span class="truncate">{{ tour.punto_salida }}</span>
+                    {{ tour.imagenes.length }}
                   </div>
-                  <div class="space-y-1">
-                    <p class="text-xs font-semibold text-gray-700">Salida:</p>
-                    <p class="text-xs text-gray-600">{{ formatearFecha(tour.fecha_salida) }}</p>
+                  <!-- Indicador de carrusel activo -->
+                  <div v-if="tour.imagenes && tour.imagenes.length > 1" 
+                      class="absolute bottom-2 right-2 flex space-x-1">
+                    <div 
+                      v-for="(_, index) in tour.imagenes" 
+                      :key="index"
+                      class="w-2 h-2 rounded-full transition-all duration-300 border border-white/50"
+                      :class="(cardImageIndices[tour.id] || 0) === index ? 'bg-white shadow-md' : 'bg-white/60'"
+                    ></div>
                   </div>
-                  <div class="text-xs">
-                    <p class="font-semibold text-gray-700">Disponibles:</p>
-                    <p class="text-xs font-medium" :class="obtenerClaseCupos(tour)">
-                      {{ tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0 }} cupos
-                    </p>
+                  <!-- Overlay de hover -->
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+              </template>
+            
+              <template #title>
+                <div class="h-10 sm:h-12 flex items-start px-4 pt-3 cursor-pointer hover:bg-gradient-to-r hover:from-gray-50 hover:to-red-50 transition-all duration-300 rounded-lg mx-2"
+                    @click="verMasInfo(tour)">
+                  <span class="text-xs sm:text-sm font-bold bg-gradient-to-r from-gray-800 to-gray-700 bg-clip-text text-transparent leading-tight line-clamp-2 hover:from-red-600 hover:to-blue-600 transition-all duration-300">{{ tour.nombre }}</span>
+                </div>
+              </template>
+              
+              <template #content>
+                <div class="flex-1 flex flex-col px-4 pb-4 min-h-0">
+                  <div class="flex-1 space-y-2 cursor-pointer hover:bg-gradient-to-br hover:from-gray-50 hover:to-red-50 transition-all duration-300 rounded-lg p-2 -m-2 border border-transparent hover:border-red-100"
+                      @click="verMasInfo(tour)">
+                    <div class="flex items-center text-xs text-gray-600 mb-2 bg-gray-50 rounded-lg p-2">
+                      <svg class="w-3 h-3 mr-2 flex-shrink-0 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                      </svg>
+                      <span class="truncate font-medium">{{ tour.punto_salida }}</span>
+                    </div>
+                    <div class="space-y-2">
+                      <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                        <p class="text-xs font-bold text-blue-700 mb-1">📅 Fecha de Salida:</p>
+                        <p class="text-xs text-blue-600 font-medium">{{ formatearFecha(tour.fecha_salida) }}</p>
+                      </div>
+                      <div class="bg-green-50 rounded-lg p-2 border border-green-100">
+                        <p class="text-xs font-bold text-green-700 mb-1">👥 Disponibles:</p>
+                        <p class="text-xs font-bold" :class="obtenerClaseCupos(tour)">
+                          {{ tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0 }} cupos
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Botones profesionales - SIEMPRE VISIBLES -->
+                  <div class="flex gap-2 mt-2 pt-3 border-t border-gray-100 flex-shrink-0">
+                    <button
+                      @click="reservarTour(tour)"
+                      class="px-3 py-2 text-xs font-bold rounded-lg transition-all duration-300 flex-1 shadow-md hover:shadow-lg bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white transform hover:scale-105"
+                      >
+                        Reservar
+                    </button>
+                    <button
+                        @click="verMasInfo(tour)"
+                        class="border-2 border-blue-500 text-blue-600 hover:text-blue-700 px-3 py-2 text-xs font-bold rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg bg-white"
+                      >
+                        Info
+                    </button>
                   </div>
                 </div>
-                
-                <!-- Botones dentro del content para estar dentro del card -->
-                <div class="flex gap-1 sm:gap-2 mt-2 sm:mt-3 pt-1 sm:pt-2">
-                  <Button
-                    :label="(tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0) === 0 ? 'Sin Cupos' : 'Reservar'"
-                    @click="reservarTour(tour)"
-                    :disabled="(tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0) === 0"
-                    :class="[
-                      '!px-2 sm:!px-3 !py-1 sm:!py-1.5 !text-xs font-semibold rounded-lg transition-all flex-1 shadow-sm',
-                      (tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0) === 0 
-                        ? '!bg-gray-400 !border-none !text-white cursor-not-allowed' 
-                        : '!bg-red-600 !border-none !text-white hover:!bg-red-700'
-                    ]"
+              </template>
+            </Card>
+          </div>
+        </div>
+
+        <!-- Tours Sin Cupos -->
+        <div v-if="toursSinCupos.length > 0" class="mb-8">
+          <div class="bg-gradient-to-r from-gray-500 to-gray-600 text-white text-center py-4 px-6 rounded-t-xl mb-6">
+            <h2 class="text-xl md:text-2xl font-bold">😔 Tours Sin Cupos Disponibles</h2>
+            <p class="text-gray-200 text-sm mt-1">{{ toursSinCupos.length }} destino{{ toursSinCupos.length !== 1 ? 's' : '' }} temporalmente agotado{{ toursSinCupos.length !== 1 ? 's' : '' }}</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+            <Card
+              v-for="tour in toursSinCupos"
+              :key="tour.id"
+              class="border-2 border-gray-300 bg-gray-50 opacity-75 shadow-md hover:shadow-lg transition-all duration-300 flex flex-col min-h-[400px] sm:min-h-[450px] overflow-hidden rounded-xl"
+              >
+              <template #header>
+                <div class="relative w-full h-36 sm:h-40 bg-gradient-to-br from-gray-200 via-gray-150 to-gray-300 rounded-t-xl overflow-hidden group cursor-pointer border-b border-gray-300"
+                    @click="mostrarGaleria(tour)">
+                  <img
+                    :src="obtenerImagenActual(tour)"
+                    :alt="tour.nombre"
+                    class="object-contain h-full w-full bg-gradient-to-br from-gray-100 to-gray-200 group-hover:scale-110 transition-transform duration-500 filter grayscale"
+                    @error="$event.target.src = 'https://via.placeholder.com/300x200/6b7280/ffffff?text=' + encodeURIComponent((tour.nombre || 'Tour').substring(0, 15))"
                   />
-                  <Button
-                    label="Info"
-                    @click="verMasInfo(tour)"
-                    outlined
-                    class="!border-red-600 !text-red-600 !px-2 sm:!px-3 !py-1 sm:!py-1.5 !text-xs font-semibold rounded-lg hover:!bg-red-50 transition-all"
-                  />
+                  <div class="absolute top-2 right-2 bg-gray-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg border border-gray-500">
+                    ${{ tour.precio }}
+                  </div>
+                  <div class="absolute bottom-2 left-2 bg-red-600/90 text-white px-3 py-1 rounded-full text-xs font-bold border border-red-400">
+                    SIN CUPOS
+                  </div>
+                  <!-- Indicador de múltiples imágenes -->
+                  <div v-if="tour.imagenes && tour.imagenes.length > 1" 
+                      class="absolute top-2 left-2 bg-gradient-to-r from-black/80 to-gray-800/80 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs flex items-center border border-white/20">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
+                    </svg>
+                    {{ tour.imagenes.length }}
+                  </div>
+                </div>
+              </template>
+            
+              <template #title>
+                <div class="h-10 sm:h-12 flex items-start px-4 pt-3 cursor-pointer hover:bg-gray-100 transition-all duration-300 rounded-lg mx-2"
+                    @click="verMasInfo(tour)">
+                  <span class="text-xs sm:text-sm font-bold text-gray-600 leading-tight line-clamp-2">{{ tour.nombre }}</span>
+                </div>
+              </template>
+              
+              <template #content>
+                <div class="flex-1 flex flex-col px-4 pb-4 min-h-0">
+                  <div class="flex-1 space-y-2 cursor-pointer hover:bg-gray-100 transition-all duration-300 rounded-lg p-2 -m-2 border border-transparent hover:border-gray-200"
+                      @click="verMasInfo(tour)">
+                    <div class="flex items-center text-xs text-gray-500 mb-2 bg-gray-100 rounded-lg p-2">
+                      <svg class="w-3 h-3 mr-2 flex-shrink-0 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                      </svg>
+                      <span class="truncate font-medium">{{ tour.punto_salida }}</span>
+                    </div>
+                    <div class="space-y-2">
+                      <div class="bg-gray-100 rounded-lg p-2 border border-gray-200">
+                        <p class="text-xs font-bold text-gray-600 mb-1">📅 Fecha de Salida:</p>
+                        <p class="text-xs text-gray-500 font-medium">{{ formatearFecha(tour.fecha_salida) }}</p>
+                      </div>
+                      <div class="bg-red-100 rounded-lg p-2 border border-red-200">
+                        <p class="text-xs font-bold text-red-700 mb-1">👥 Disponibles:</p>
+                        <p class="text-xs font-bold text-red-600">
+                          0 cupos
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Botones profesionales - SIEMPRE VISIBLES -->
+                  <div class="flex gap-2 mt-2 pt-3 border-t border-gray-200 flex-shrink-0">
+                    <button
+                      disabled
+                      class="px-3 py-2 text-xs font-bold rounded-lg transition-all duration-300 flex-1 shadow-md bg-gray-400 text-white cursor-not-allowed"
+                      >
+                        Sin Cupos
+                    </button>
+                    <button
+                        @click="verMasInfo(tour)"
+                        class="border-2 border-gray-400 text-gray-600 hover:text-gray-700 px-3 py-2 text-xs font-bold rounded-lg hover:bg-gray-100 transition-all duration-300 shadow-md bg-white"
+                      >
+                        Info
+                    </button>
+                  </div>
+                </div>
+              </template>
+            </Card>
+          </div>
+        </div>
+
+        <!-- Info adicional profesional -->
+        <div class="max-w-7xl mx-auto">
+          <div class="bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+          <!-- Header con gradiente -->
+            <div class="bg-gradient-to-r from-blue-600 to-red-600 text-white text-center py-6">
+              <h2 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent mb-2">
+                ¿Por qué elegir nuestros tours nacionales?
+              </h2>
+              <p class="text-blue-100 text-lg">Descubre El Salvador como nunca antes</p>
+            </div>
+          
+            <!-- Contenido -->
+            <div class="p-8">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center bg-gradient-to-br from-white to-red-50 hover:from-red-50 hover:to-red-100 rounded-xl p-6 shadow-md hover:shadow-xl border-2 border-transparent hover:border-red-200 transform hover:-translate-y-2 hover:scale-105 transition-all duration-300">
+                  <div class="text-5xl mb-4">🏛️</div>
+                  <h3 class="text-xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent mb-3">Historia y Cultura</h3>
+                  <p class="text-gray-700 leading-relaxed">Descubre la rica historia y tradiciones de El Salvador con guías locales expertos</p>
+                </div>
+                <div class="text-center bg-gradient-to-br from-white to-green-50 hover:from-green-50 hover:to-green-100 rounded-xl p-6 shadow-md hover:shadow-xl border-2 border-transparent hover:border-green-200 transform hover:-translate-y-2 hover:scale-105 transition-all duration-300">
+                  <div class="text-5xl mb-4">🌋</div>
+                  <h3 class="text-xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent mb-3">Naturaleza Única</h3>
+                  <p class="text-gray-700 leading-relaxed">Explora volcanes, lagos, playas y bosques en paisajes únicos de Centroamérica</p>
+                </div>
+                <div class="text-center bg-gradient-to-br from-white to-blue-50 hover:from-blue-50 hover:to-blue-100 rounded-xl p-6 shadow-md hover:shadow-xl border-2 border-transparent hover:border-blue-200 transform hover:-translate-y-2 hover:scale-105 transition-all duration-300">
+                  <div class="text-5xl mb-4">🤝</div>
+                  <h3 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-3">Apoyo Local</h3>
+                  <p class="text-gray-700 leading-relaxed">Contribuye al desarrollo de las comunidades locales con turismo responsable</p>
                 </div>
               </div>
-            </template>
-          </Card>
-        </div>
-
-        <!-- Info adicional -->
-        <div class="mt-12 bg-white rounded-xl p-8 shadow-md border border-gray-200">
-          <h2 class="text-2xl font-bold text-red-700 mb-6 text-center">¿Por qué elegir nuestros tours nacionales?</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="text-center">
-              <div class="text-4xl mb-3">🏛️</div>
-              <h3 class="font-semibold text-red-600 mb-2">Historia y Cultura</h3>
-              <p class="text-gray-600 text-sm">Descubre la rica historia y tradiciones de El Salvador con guías locales expertos</p>
-            </div>
-            <div class="text-center">
-              <div class="text-4xl mb-3">🌋</div>
-              <h3 class="font-semibold text-red-600 mb-2">Naturaleza Única</h3>
-              <p class="text-gray-600 text-sm">Explora volcanes, lagos, playas y bosques en paisajes únicos de Centroamérica</p>
-            </div>
-            <div class="text-center">
-              <div class="text-4xl mb-3">🤝</div>
-              <h3 class="font-semibold text-red-600 mb-2">Apoyo Local</h3>
-              <p class="text-gray-600 text-sm">Contribuye al desarrollo de las comunidades locales con turismo responsable</p>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Diálogo para mostrar galería de imágenes -->
-    <Dialog 
-      v-model:visible="showImageDialog" 
-      modal 
-      :closable="true"
-      class="max-w-4xl w-full mx-4"
-      :draggable="false"
-    >
-      <template #header>
-        <div class="flex items-center justify-between w-full">
-          <h3 class="text-lg font-semibold">Galería de Imágenes</h3>
-          <button 
-            v-if="selectedTourImages.length > 1"
-            @click="toggleGalleryAutoPlay"
-            class="flex items-center gap-2 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-all text-sm"
-            :title="isGalleryAutoPlaying ? 'Pausar carrusel automático' : 'Reanudar carrusel automático'"
-          >
-            <svg v-if="isGalleryAutoPlaying" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-            </svg>
-            <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
-            </svg>
-            <span>{{ isGalleryAutoPlaying ? 'Pausar' : 'Reproducir' }}</span>
-          </button>
-        </div>
-      </template>
-      
-      <div class="relative">
-        <!-- Imagen principal -->
-        <div class="relative h-96 bg-gray-100 rounded-lg overflow-hidden mb-4 flex items-center justify-center">
-          <img 
-            :src="selectedTourImages[currentImageIndex]" 
-            alt="Tour imagen"
-            class="max-w-full max-h-full object-contain"
-          />
-          
-          <!-- Botones de navegación -->
-          <div v-if="selectedTourImages.length > 1" class="absolute inset-0 flex items-center justify-between p-4">
-            <button 
-              @click="imagenAnterior"
-              class="bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-all z-10"
-            >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-              </svg>
-            </button>
-            <button 
-              @click="siguienteImagen"
-              class="bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-all z-10"
-            >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-              </svg>
-            </button>
+    <!-- Diálogo profesional para mostrar galería de imágenes -->
+      <Dialog 
+        v-model:visible="showImageDialog" 
+        modal 
+        :closable="false"
+        class="max-w-4xl w-full mx-4"
+        :draggable="false"
+        :pt="{
+          content: { class: 'p-0 overflow-hidden rounded-lg' },
+          header: { class: 'p-0 border-none' }
+        }"
+      >
+        <template #header>
+          <div class="w-full bg-gradient-to-r from-red-600 to-blue-600 text-white p-6 flex items-center justify-between">
+            <h3 class="text-xl font-bold bg-gradient-to-r from-white to-red-100 bg-clip-text text-transparent">🖼️ Galería de Imágenes</h3>
+            <div class="flex items-center gap-3">
+              <button 
+                v-if="selectedTourImages.length > 1"
+                @click="toggleGalleryAutoPlay"
+                class="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg transition-all text-sm font-medium border border-white/30 hover:border-white/50 transform hover:scale-105"
+                :title="isGalleryAutoPlaying ? 'Pausar carrusel automático' : 'Reanudar carrusel automático'"
+              >
+                <svg v-if="isGalleryAutoPlaying" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+                </svg>
+                <span>{{ isGalleryAutoPlaying ? 'Pausar' : 'Reproducir' }}</span>
+              </button>
+              <!-- Botón de cerrar personalizado y visible -->
+              <button 
+                @click="showImageDialog = false"
+                class="flex items-center justify-center w-10 h-10 bg-red-500/80 hover:bg-red-600 backdrop-blur-sm text-white rounded-full transition-all border-2 border-white/30 hover:border-white/50 transform hover:scale-110 shadow-lg"
+                title="Cerrar galería"
+              >
+                <svg class="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
           </div>
-          
-          <!-- Contador de imágenes -->
-          <div v-if="selectedTourImages.length > 1" 
-               class="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm z-10">
-            {{ currentImageIndex + 1 }} / {{ selectedTourImages.length }}
-          </div>
-          
-          <!-- Indicador de autoplay -->
-          <div v-if="selectedTourImages.length > 1 && isGalleryAutoPlaying" 
-               class="absolute top-4 right-4 bg-green-600/80 text-white px-2 py-1 rounded-full text-xs z-10 flex items-center gap-1">
-            <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-            <span>Auto</span>
-          </div>
-        </div>
+        </template>
         
-        <!-- Miniaturas -->
-        <div v-if="selectedTourImages.length > 1" class="flex gap-2 overflow-x-auto pb-2">
-          <button
-            v-for="(imagen, index) in selectedTourImages"
-            :key="index"
-            @click="irAImagen(index)"
-            class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all bg-gray-100 flex items-center justify-center"
-            :class="currentImageIndex === index ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'"
-          >
+        <div class="bg-gradient-to-br from-gray-50 to-white p-6">
+          <!-- Imagen principal -->
+          <div class="relative h-96 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl overflow-hidden mb-6 flex items-center justify-center shadow-lg border-2 border-gray-200">
             <img 
-              :src="imagen" 
-              :alt="`Miniatura ${index + 1}`"
-              class="max-w-full max-h-full object-contain"
+              :src="selectedTourImages[currentImageIndex]" 
+              alt="Tour imagen"
+              class="max-w-full max-h-full object-contain rounded-lg"
             />
-          </button>
+            
+            <!-- Botones de navegación profesionales -->
+            <div v-if="selectedTourImages.length > 1" class="absolute inset-0 flex items-center justify-between p-6">
+              <button 
+                @click="imagenAnterior"
+                class="bg-gradient-to-r from-black/60 to-gray-800/60 backdrop-blur-sm text-white p-3 rounded-full hover:from-black/80 hover:to-gray-800/80 transition-all z-10 border border-white/20 shadow-lg transform hover:scale-110"
+              >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+              </button>
+              <button 
+                @click="siguienteImagen"
+                class="bg-gradient-to-r from-black/60 to-gray-800/60 backdrop-blur-sm text-white p-3 rounded-full hover:from-black/80 hover:to-gray-800/80 transition-all z-10 border border-white/20 shadow-lg transform hover:scale-110"
+              >
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+            
+            <!-- Contador de imágenes profesional -->
+            <div v-if="selectedTourImages.length > 1" 
+                class="absolute bottom-4 right-4 bg-gradient-to-r from-black/80 to-gray-800/80 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium z-10 border border-white/20 shadow-lg">
+              {{ currentImageIndex + 1 }} / {{ selectedTourImages.length }}
+            </div>
+            
+            <!-- Indicador de autoplay profesional -->
+            <div v-if="selectedTourImages.length > 1 && isGalleryAutoPlaying" 
+                class="absolute top-4 right-4 bg-gradient-to-r from-green-500/90 to-green-600/90 backdrop-blur-sm text-white px-3 py-2 rounded-full text-xs font-medium z-10 flex items-center gap-2 border border-green-300/30 shadow-lg">
+              <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <span>Auto</span>
+            </div>
+          </div>
+          
+          <!-- Miniaturas profesionales -->
+          <div v-if="selectedTourImages.length > 1" class="flex gap-3 overflow-x-auto pb-2 px-2">
+            <button
+              v-for="(imagen, index) in selectedTourImages"
+              :key="index"
+              @click="irAImagen(index)"
+              class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-3 transition-all bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-md hover:shadow-lg transform hover:scale-110"
+              :class="currentImageIndex === index ? 'border-red-500 ring-2 ring-red-300' : 'border-gray-300 hover:border-gray-400'"
+            >
+              <img 
+                :src="imagen" 
+                :alt="`Miniatura ${index + 1}`"
+                class="max-w-full max-h-full object-contain rounded"
+              />
+            </button>
+          </div>
         </div>
-      </div>
-    </Dialog>
+      </Dialog>
 
-    <!-- Modal de reserva de tour usando el componente reutilizable -->
-    <ModalReservaTour
-      v-model:visible="showReservaDialog"
-      :tour-seleccionado="tourSeleccionado"
-      :user="user"
-      @confirmar-reserva="manejarConfirmacionReserva"
-      @actualizar-cupos="actualizarCupos"
-      @refrescar-tour="refrescarTour"
-    />
+      <!-- Modal de reserva de tour usando el componente reutilizable -->
+      <ModalReservaTour
+        v-model:visible="showReservaDialog"
+        :tour-seleccionado="tourSeleccionado"
+        :user="user"
+        @confirmar-reserva="manejarConfirmacionReserva"
+        @actualizar-cupos="actualizarCupos"
+        @refrescar-tour="refrescarTour"
+      />
 
     <!-- Modal de autenticación requerida -->
-    <ModalAuthRequerido
-      v-model:visible="showAuthDialog"
-      :tour-info="tourSeleccionado"
-    />
+      <ModalAuthRequerido
+        v-model:visible="showAuthDialog"
+        :tour-info="tourSeleccionado"
+      />
+    </div>
   </Catalogo>
 </template>
 

@@ -37,10 +37,27 @@ const submit = () => {
                 return;
             }
             
-            // Si no hay reserva pendiente activa, limpiar cualquier dato residual
+            // Verificar si hay un producto pendiente ACTIVO de esta sesión
+            const productoPendiente = sessionStorage.getItem('producto_compra_pendiente');
+            const sessionActivaProducto = sessionStorage.getItem('compra_session_activa');
+            
+            if (productoPendiente && sessionActivaProducto === 'true') {
+                const productoInfo = JSON.parse(productoPendiente);
+                // NO limpiar aquí - dejar que la vista de destino lo maneje
+                // Redirigir a la vista original
+                router.visit(productoInfo.returnUrl);
+                return;
+            }
+            
+            // Si no hay reserva o compra pendiente activa, limpiar cualquier dato residual
             if (!sessionActiva || sessionActiva !== 'true') {
                 sessionStorage.removeItem('tour_reserva_pendiente');
                 sessionStorage.removeItem('reserva_session_activa');
+            }
+            
+            if (!sessionActivaProducto || sessionActivaProducto !== 'true') {
+                sessionStorage.removeItem('producto_compra_pendiente');
+                sessionStorage.removeItem('compra_session_activa');
             }
         }
     });

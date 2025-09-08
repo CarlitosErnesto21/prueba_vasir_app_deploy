@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faUserPlus, faXmark, faSignInAlt } from '@fortawesome/free-solid-svg-icons'
+import Dialog from 'primevue/dialog'
 
 // Props del componente
 const props = defineProps({
@@ -11,6 +12,10 @@ const props = defineProps({
     default: false
   },
   tourInfo: {
+    type: Object,
+    default: null
+  },
+  productoInfo: {
     type: Object,
     default: null
   }
@@ -38,6 +43,18 @@ const irALogin = () => {
     sessionStorage.setItem('reserva_session_activa', 'true')
   }
   
+  // Guardar información del producto en sessionStorage para recuperarla después del login
+  if (props.productoInfo) {
+    const productoData = {
+      productoId: props.productoInfo.id,
+      productoNombre: props.productoInfo.nombre,
+      returnUrl: window.location.pathname
+    }
+    
+    sessionStorage.setItem('producto_compra_pendiente', JSON.stringify(productoData))
+    sessionStorage.setItem('compra_session_activa', 'true')
+  }
+  
   router.visit('/login')
 }
 
@@ -55,6 +72,18 @@ const irARegistro = () => {
     sessionStorage.setItem('reserva_session_activa', 'true')
   }
   
+  // Guardar información del producto en sessionStorage para recuperarla después del registro
+  if (props.productoInfo) {
+    const productoData = {
+      productoId: props.productoInfo.id,
+      productoNombre: props.productoInfo.nombre,
+      returnUrl: window.location.pathname
+    }
+    
+    sessionStorage.setItem('producto_compra_pendiente', JSON.stringify(productoData))
+    sessionStorage.setItem('compra_session_activa', 'true')
+  }
+  
   router.visit('/register')
 }
 </script>
@@ -69,7 +98,11 @@ const irARegistro = () => {
     :draggable="false"
   >
     <template #header>
-      <h3 class="text-lg font-bold text-red-700">🔐 Inicia Sesión para Reservar</h3>
+      <h3 class="text-lg font-bold text-red-700">
+        <span v-if="tourInfo">🔐 Inicia Sesión para Reservar</span>
+        <span v-else-if="productoInfo">🔐 Inicia Sesión para Comprar</span>
+        <span v-else>🔐 Inicia Sesión para Continuar</span>
+      </h3>
     </template>
 
     <div class="text-center py-6">
@@ -88,7 +121,9 @@ const irARegistro = () => {
       </h3>
       
       <p class="text-gray-600 mb-2">
-        Para realizar una reserva necesitas tener una cuenta en nuestra plataforma.
+        <span v-if="tourInfo">Para realizar una reserva necesitas tener una cuenta en nuestra plataforma.</span>
+        <span v-else-if="productoInfo">Para realizar una compra necesitas tener una cuenta en nuestra plataforma.</span>
+        <span v-else>Para continuar necesitas tener una cuenta en nuestra plataforma.</span>
       </p>
 
       <div v-if="tourInfo" class="bg-blue-50 rounded-lg p-3 mb-6 text-left">
@@ -97,6 +132,15 @@ const irARegistro = () => {
         </p>
         <p class="text-xs text-blue-600 mt-1">
           Te redirigiremos automáticamente a la reserva después del login.
+        </p>
+      </div>
+
+      <div v-if="productoInfo" class="bg-green-50 rounded-lg p-3 mb-6 text-left">
+        <p class="text-sm text-green-800">
+          <strong>Producto seleccionado:</strong> {{ productoInfo.nombre }}
+        </p>
+        <p class="text-xs text-green-600 mt-1">
+          Te redirigiremos automáticamente a la compra después del login.
         </p>
       </div>
 

@@ -7,6 +7,7 @@ import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import Swal from 'sweetalert2';
 import PrimeVue from 'primevue/config';
+import { createPinia } from 'pinia';
 
 import Aura from '@primeuix/themes/aura';
 import { ToastService } from 'primevue';
@@ -53,6 +54,7 @@ createInertiaApp({
         const app =  createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
+            .use(createPinia()) // Configurar Pinia para el estado global
             //configuración global de SweetAlert2 
             app.config.globalProperties.$swal = Swal;
             app.use(PrimeVue, {

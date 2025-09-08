@@ -1,9 +1,13 @@
 <script setup>
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faList, faUser, faDoorOpen, faShop, faPhone, faEnvelope, faMapMarkerAlt, faSignInAlt, faUserPlus, faChevronDown } from '@fortawesome/free-solid-svg-icons'
 import { faFacebook, faInstagram, faTiktok, faWhatsapp } from '@fortawesome/free-brands-svg-icons'
+import { useCarritoStore } from '@/stores/carrito'
+
+const carrito = useCarritoStore()
+const page = usePage()
 
 const isSidebarOpen = ref(false)
 const paquetesOpen = ref(false)
@@ -31,8 +35,14 @@ onBeforeUnmount(() => {
     document.removeEventListener('click', closeUserMenu)
 })
 const logout = () => {
+    // Limpiar carrito al cerrar sesión
+    carrito.limpiarCarritoAlCerrarSesion()
+    
     // Limpiar cualquier información de reserva pendiente al cerrar sesión
     sessionStorage.removeItem('tour_reserva_pendiente')
+    sessionStorage.removeItem('reserva_session_activa')
+    sessionStorage.removeItem('producto_compra_pendiente')
+    sessionStorage.removeItem('compra_session_activa')
     
     router.post(route('logout'), {}, {
         onSuccess: () => router.visit('/')
@@ -40,10 +50,18 @@ const logout = () => {
 }
 
 // Computed properties para autenticación segura
-const page = usePage()
 const auth = computed(() => page.props.auth || {})
 const user = computed(() => auth.value.user || null)
 const isAuthenticated = computed(() => !!user.value)
+
+// Watcher para detectar cambios en el estado de autenticación
+watch(isAuthenticated, (newValue, oldValue) => {
+  // Si cambia de autenticado a no autenticado (logout)
+  if (oldValue === true && newValue === false) {
+    console.log('🚪 Logout detectado - Limpiando carrito')
+    carrito.limpiarCarritoAlCerrarSesion()
+  }
+}, { immediate: false })
 
 // Redes sociales
 const redes = [

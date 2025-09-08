@@ -121,8 +121,9 @@ class TourController extends Controller
         return response()->json($tour);
     }
 
-        /**
+    /**
      * Update the specified resource in storage.
+     */
     public function update(Request $request, Tour $tour)
     {
         $validated = $request->validate([
