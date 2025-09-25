@@ -17,6 +17,7 @@ use App\Http\Controllers\ProvinciaController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\TransporteController;
 use App\Http\Controllers\TipoDocumentoController;
+use App\Http\Controllers\PaqueteController;
 // Eliminamos el import del controlador de API y usamos solo el principal
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -51,6 +52,7 @@ Route::apiResource('paises', PaisController::class)->parameter('paises', 'pais')
 Route::apiResource('provincias', ProvinciaController::class)->parameter('provincias', 'provincia');
 Route::apiResource('transportes', TransporteController::class);
 Route::apiResource('tipo-documentos', TipoDocumentoController::class);
+Route::apiResource('paquetes', PaqueteController::class);
 
 Route::prefix('backups')->group(function () {
     Route::get('/', [BackupController::class, 'index']);
