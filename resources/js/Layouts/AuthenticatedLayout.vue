@@ -1,12 +1,25 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import { usePage, Link, router } from '@inertiajs/vue3';
-import { FontAwesomeIcon, } from "@fortawesome/vue-fontawesome";
-import  { faRoute, faDoorOpen, faUserCircle, 
-    faChevronCircleDown, faUser, faHotel, faPlaneDeparture, faGear, faBoxesStacked, 
-    faClipboardList, faBox, faHouseChimneyUser, faBarsProgress,faListCheck,
-    faFileInvoice, 
-    faUserPen} from "@fortawesome/free-solid-svg-icons";   
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
+import { usePage, Link, router } from "@inertiajs/vue3";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import {
+    faRoute,
+    faDoorOpen,
+    faUserCircle,
+    faChevronCircleDown,
+    faUser,
+    faHotel,
+    faPlaneDeparture,
+    faGear,
+    faBoxesStacked,
+    faClipboardList,
+    faBox,
+    faHouseChimneyUser,
+    faBarsProgress,
+    faListCheck,
+    faFileInvoice,
+    faUserPen,
+} from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { route } from "ziggy-js";
 
@@ -26,8 +39,8 @@ const toggleSidebar = () => {
 const logout = async () => {
     try {
         // Limpiar cualquier información de reserva pendiente al cerrar sesión
-        sessionStorage.removeItem('tour_reserva_pendiente')
-        
+        sessionStorage.removeItem("tour_reserva_pendiente");
+
         await axios.post("/logout");
         window.location.href = "/";
     } catch (err) {
@@ -47,7 +60,7 @@ function handleResize() {
 
 function handleGlobalClick(e) {
     const aside = document.querySelector("aside");
-    
+
     // Cerrar sidebar en móvil o escritorio cuando se hace click fuera
     if (
         (isSidebarOpen.value || !isSidebarCollapsed.value) &&
@@ -59,7 +72,7 @@ function handleGlobalClick(e) {
             isSidebarCollapsed.value = true;
         }
     }
-    
+
     // Cerrar dropdown de catálogos
     if (isOpen.value) {
         const catalogBtn = document.querySelector('button[title="Catálogos"]');
@@ -70,7 +83,7 @@ function handleGlobalClick(e) {
             isOpen.value = false;
         }
     }
-    
+
     // Cerrar menú de perfil
     if (showProfileMenu.value) {
         const menu = document.getElementById("profile-menu");
@@ -78,7 +91,7 @@ function handleGlobalClick(e) {
             showProfileMenu.value = false;
         }
     }
-    
+
     // Cerrar dropdown de configuración
     if (
         isConfigDropdownOpen.value &&
@@ -131,13 +144,13 @@ onBeforeUnmount(() => {
 });
 
 function assignRoles() {
-    navigateAndCloseSidebar('roles');
+    navigateAndCloseSidebar("roles");
 }
 function systemSettings() {
-    navigateAndCloseSidebar('settings');
+    navigateAndCloseSidebar("settings");
 }
 function manageClientes() {
-    navigateAndCloseSidebar('clientes');
+    navigateAndCloseSidebar("clientes");
 }
 </script>
 
@@ -192,10 +205,14 @@ function manageClientes() {
                                 v-if="showProfileMenu"
                                 id="profile-menu"
                                 class="absolute right-0 mt-3 w-72 bg-white rounded-xl shadow-2xl border border-red-100 z-50 overflow-hidden backdrop-blur-sm"
-                                style="box-shadow: 0 25px 50px -12px rgba(220, 38, 38, 0.25);"
+                                style="
+                                    box-shadow: 0 25px 50px -12px rgba(220, 38, 38, 0.25);
+                                "
                             >
                                 <!-- Header del perfil -->
-                                <div class="px-6 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white">
+                                <div
+                                    class="px-6 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white"
+                                >
                                     <div class="flex items-center space-x-4">
                                         <div class="relative">
                                             <img
@@ -205,23 +222,47 @@ function manageClientes() {
                                                 class="w-12 h-12 rounded-full border-3 border-white shadow-lg"
                                                 alt="avatar"
                                             />
-                                            <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
+                                            <div
+                                                class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"
+                                            ></div>
                                         </div>
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-sm font-bold text-white truncate">
+                                            <h3
+                                                class="text-sm font-bold text-white truncate"
+                                            >
                                                 {{ user.name }}
                                             </h3>
-                                            <p class="text-xs text-red-100 truncate opacity-90">
+                                            <p
+                                                class="text-xs text-red-100 truncate opacity-90"
+                                            >
                                                 {{ user.email }}
                                             </p>
                                         </div>
                                     </div>
-                                    <div class="mt-3 flex justify-between items-center">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white bg-opacity-20 text-white backdrop-blur-sm">
-                                            <div class="w-2 h-2 bg-white rounded-full mr-2 opacity-75"></div>
-                                            {{ user?.roles && user.roles.length > 0 ? user.roles[0].name.charAt(0).toUpperCase() + user.roles[0].name.slice(1) : "Invitado" }}
+                                    <div
+                                        class="mt-3 flex justify-between items-center"
+                                    >
+                                        <span
+                                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white bg-opacity-20 text-white backdrop-blur-sm"
+                                        >
+                                            <div
+                                                class="w-2 h-2 bg-white rounded-full mr-2 opacity-75"
+                                            ></div>
+                                            {{
+                                                user?.roles &&
+                                                user.roles.length > 0
+                                                    ? user.roles[0].name
+                                                          .charAt(0)
+                                                          .toUpperCase() +
+                                                      user.roles[0].name.slice(
+                                                          1
+                                                      )
+                                                    : "Invitado"
+                                            }}
                                         </span>
-                                        <div class="text-xs text-red-100 opacity-75">
+                                        <div
+                                            class="text-xs text-red-100 opacity-75"
+                                        >
                                             En línea
                                         </div>
                                     </div>
@@ -233,7 +274,9 @@ function manageClientes() {
                                         :href="route('profile.edit')"
                                         class="flex items-center px-6 py-3 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-700 transition-all duration-200 group"
                                     >
-                                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-600 mr-3 group-hover:bg-red-200 transition-colors duration-200">
+                                        <div
+                                            class="flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-600 mr-3 group-hover:bg-red-200 transition-colors duration-200"
+                                        >
                                             <FontAwesomeIcon
                                                 :icon="faUserPen"
                                                 class="w-4 h-4"
@@ -241,17 +284,24 @@ function manageClientes() {
                                         </div>
                                         <div class="flex flex-col">
                                             <span>Editar Perfil</span>
-                                            <span class="text-xs text-gray-500">Actualizar información personal</span>
+                                            <span class="text-xs text-gray-500"
+                                                >Actualizar información
+                                                personal</span
+                                            >
                                         </div>
                                     </Link>
-                                    
-                                    <div class="border-t border-red-100 my-2 mx-4"></div>
-                                    
+
+                                    <div
+                                        class="border-t border-red-100 my-2 mx-4"
+                                    ></div>
+
                                     <button
                                         class="flex items-center w-full px-6 py-3 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-700 transition-all duration-200 group"
                                         @click="logout"
                                     >
-                                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-600 mr-3 group-hover:bg-red-200 group-hover:text-red-600 transition-colors duration-200">
+                                        <div
+                                            class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-600 mr-3 group-hover:bg-red-200 group-hover:text-red-600 transition-colors duration-200"
+                                        >
                                             <FontAwesomeIcon
                                                 :icon="faDoorOpen"
                                                 class="w-4 h-4"
@@ -259,7 +309,9 @@ function manageClientes() {
                                         </div>
                                         <div class="flex flex-col">
                                             <span>Cerrar Sesión</span>
-                                            <span class="text-xs text-gray-500">Salir de forma segura</span>
+                                            <span class="text-xs text-gray-500"
+                                                >Salir de forma segura</span
+                                            >
                                         </div>
                                     </button>
                                 </div>
@@ -436,64 +488,93 @@ function manageClientes() {
                                             >Aerolineas</span
                                         >
                                     </Link>
-                                </div>
-                                    <ul
-                                        v-else-if="isOpen"
-                                        class="w-full rounded-md shadow-lg overflow-hidden bg-white text-red-700"
+                                    <Link
+                                        :href="route('gestionPaquetes')"
+                                        title="Gestionar Paquetes"
+                                        class="bg-white text-red-700 rounded-full shadow-lg flex items-center justify-center hover:bg-red-600 hover:text-white transition"
+                                        style="
+                                            min-width: 110px;
+                                            min-height: 48px;
+                                            padding: 0 18px;
+                                        "
+                                    >>
+                                        <FontAwesomeIcon
+                                            :icon="faPlaneDeparture"
+                                            class="drop-shadow-md"
+                                        />
+                                        <span class="ml-3">Paquetes</span></Link
                                     >
-                                        <li>
-                                            <Link
-                                                :href="route('productos')"
-                                                class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer w-full"
-                                                title="Productos"
-                                            >
-                                                <FontAwesomeIcon
-                                                    :icon="faBox"
-                                                    class="drop-shadow-md"
-                                                />
-                                                <span class="ml-3">Productos</span>
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                :href="route('tours')"
-                                                class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer w-full"
-                                                title="Tours"
-                                            >
-                                                <FontAwesomeIcon
-                                                    :icon="faRoute"
-                                                    class="drop-shadow-md"
-                                                />
-                                                <span class="ml-3">Tours</span>
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                :href="route('hoteles')"
-                                                class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer w-full"
-                                                title="Hoteles"
-                                            >
-                                                <FontAwesomeIcon
-                                                    :icon="faHotel"
-                                                    class="drop-shadow-md"
-                                                />
-                                                <span class="ml-3">Hoteles</span>
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                :href="route('aerolineas')"
-                                                class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer w-full"
-                                                title="Aerolineas"
-                                            >
-                                                <FontAwesomeIcon
-                                                    :icon="faPlaneDeparture"
-                                                    class="drop-shadow-md"
-                                                />
-                                                <span class="ml-3">Aerolineas</span>
-                                            </Link>
-                                        </li>
-                                    </ul>
+                                </div>
+                                <ul
+                                    v-else-if="isOpen"
+                                    class="w-full rounded-md shadow-lg overflow-hidden bg-white text-red-700"
+                                >
+                                    <li>
+                                        <Link
+                                            :href="route('productos')"
+                                            class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer w-full"
+                                            title="Productos"
+                                        >
+                                            <FontAwesomeIcon
+                                                :icon="faBox"
+                                                class="drop-shadow-md"
+                                            />
+                                            <span class="ml-3">Productos</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            :href="route('tours')"
+                                            class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer w-full"
+                                            title="Tours"
+                                        >
+                                            <FontAwesomeIcon
+                                                :icon="faRoute"
+                                                class="drop-shadow-md"
+                                            />
+                                            <span class="ml-3">Tours</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            :href="route('hoteles')"
+                                            class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer w-full"
+                                            title="Hoteles"
+                                        >
+                                            <FontAwesomeIcon
+                                                :icon="faHotel"
+                                                class="drop-shadow-md"
+                                            />
+                                            <span class="ml-3">Hoteles</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            :href="route('aerolineas')"
+                                            class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer w-full"
+                                            title="Aerolineas"
+                                        >
+                                            <FontAwesomeIcon
+                                                :icon="faPlaneDeparture"
+                                                class="drop-shadow-md"
+                                            />
+                                            <span class="ml-3">Aerolineas</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            :href="route('gestionPaquetes')"
+                                            class="flex items-center px-5 py-2 hover:bg-red-600 hover:text-white justify-start cursor-pointer w-full"
+                                            title="Gestionar Paquetes"
+                                        >
+                                            <FontAwesomeIcon
+                                                :icon="faPlaneDeparture"
+                                                class="drop-shadow-md"
+                                            />
+                                            <span class="ml-3">Paquetes</span>
+                                        </Link>
+                                    </li>
+                                </ul>
                             </transition>
                         </li>
                         <Link
@@ -578,7 +659,12 @@ function manageClientes() {
                             >
                                 <div class="py-2">
                                     <button
-                                        v-if="user?.roles && user.roles.some(role => role.name === 'admin')"
+                                        v-if="
+                                            user?.roles &&
+                                            user.roles.some(
+                                                (role) => role.name === 'admin'
+                                            )
+                                        "
                                         @click.stop="assignRoles"
                                         class="w-full flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors duration-200 text-left"
                                     >
@@ -625,16 +711,16 @@ function manageClientes() {
                 class="fixed inset-0 bg-black bg-opacity-40 z-30 md:hidden"
                 @click="isSidebarOpen = false"
             ></div>
-            <div 
+            <div
                 :class="[
                     'flex-1 flex flex-col transition-all duration-300',
-                    isSidebarCollapsed ? 'md:ml-16' : 'md:ml-56'
+                    isSidebarCollapsed ? 'md:ml-16' : 'md:ml-56',
                 ]"
             >
                 <header
                     :class="[
                         'bg-gradient-to-r from-red-700 via-red-600 to-red-400 shadow px-4 py-2 flex items-center z-30 relative md:fixed top-16 md:right-0 md:px-8 transition-all duration-300',
-                        isSidebarCollapsed ? 'md:left-16' : 'md:left-56'
+                        isSidebarCollapsed ? 'md:left-16' : 'md:left-56',
                     ]"
                 >
                     <h2 class="text-lg font-semibold text-white">Dashboard</h2>
@@ -649,4 +735,3 @@ function manageClientes() {
         </div>
     </div>
 </template>
-
