@@ -89,46 +89,57 @@ const slides = computed(() =>
 
 <template>
   <Catalogo>
-    <div class="bg-gray-50 min-h-screen">
+    <div class="bg-gradient-to-br from-gray-50 via-blue-50/30 to-red-50/30 min-h-screen">
       <template v-if="loading">
         <div class="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto">
           <div class="animate-pulse space-y-8">
             <!-- Hero loading -->
-            <div class="h-96 bg-gradient-to-r from-red-100 to-red-200 rounded-xl"></div>
+            <div class="h-96 bg-gradient-to-r from-red-100 via-red-50 to-red-100 rounded-2xl shadow-lg"></div>
             <!-- Stats loading -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div v-for="i in 4" :key="i" class="h-24 bg-white rounded-lg"></div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div v-for="i in 4" :key="i" class="h-28 bg-white/80 backdrop-blur-sm rounded-xl shadow-md border border-white/20"></div>
             </div>
             <!-- Content loading -->
-            <div class="h-64 bg-white rounded-xl"></div>
+            <div class="h-72 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20"></div>
           </div>
         </div>
       </template>
       
       <template v-else>
         <!-- Hero Section -->
-        <section class="relative bg-gradient-to-br from-red-600 via-red-500 to-red-400 text-white py-16">
-          <div class="absolute inset-0 bg-black opacity-20"></div>
-          <div class="relative max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="text-center mb-12">
-              <h1 class="text-4xl md:text-6xl font-bold mb-4 leading-tight">
-                ¡Bienvenido a <span class="text-yellow-300">VASIR</span>!
+        <section class="relative bg-gradient-to-br from-red-600 via-red-500 to-blue-600 text-white py-12 sm:py-16 md:py-20 lg:py-24 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30"></div>
+          <div class="absolute top-0 left-0 w-full h-full">
+            <div class="absolute top-5 sm:top-10 left-5 sm:left-10 w-20 h-20 sm:w-32 sm:h-32 bg-white/10 rounded-full blur-xl"></div>
+            <div class="absolute top-20 sm:top-40 right-10 sm:right-20 w-32 h-32 sm:w-48 sm:h-48 bg-yellow-400/20 rounded-full blur-2xl"></div>
+            <div class="absolute bottom-10 sm:bottom-20 left-1/4 sm:left-1/3 w-40 h-40 sm:w-64 sm:h-64 bg-blue-400/15 rounded-full blur-2xl"></div>
+          </div>
+          <div class="relative max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div class="text-center mb-8 sm:mb-12 md:mb-16">
+              <div class="inline-block mb-4 sm:mb-6">
+                <div class="bg-gradient-to-r from-yellow-400 to-yellow-300 text-red-900 px-3 py-1.5 sm:px-6 sm:py-2 rounded-full font-bold text-xs sm:text-sm shadow-lg">
+                  ✨ Experiencias Únicas en El Salvador
+                </div>
+              </div>
+              <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight">
+                ¡Bienvenido a <span class="bg-gradient-to-r from-yellow-300 to-yellow-400 bg-clip-text text-transparent">VASIR</span>!
               </h1>
-              <p class="text-xl md:text-2xl mb-8 opacity-90 max-w-3xl mx-auto">
-                Tu puerta de entrada a las experiencias más increíbles de El Salvador
+              <p class="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 md:mb-10 opacity-90 max-w-sm sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto leading-relaxed px-4 sm:px-0">
+                Tu puerta de entrada a las experiencias más increíbles de El Salvador. 
+                Descubre paisajes únicos, cultura vibrante y aventuras inolvidables.
               </p>
-              <div class="flex flex-col sm:flex-row gap-4 justify-center">
+              <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center px-4 sm:px-0">
                 <Link :href="route('paquetes')">
                   <Button
                     label="🎒 Explorar Paquetes"
-                    class="!bg-yellow-500 !border-none !px-6 !py-3 !text-black font-bold rounded-lg hover:!bg-yellow-400 transform hover:scale-105 transition-all duration-300 shadow-lg"
+                    class="w-full sm:w-auto !bg-gradient-to-r !from-yellow-500 !to-yellow-400 !border-none !px-6 sm:!px-8 !py-3 sm:!py-4 !text-black font-bold rounded-xl hover:!from-yellow-400 hover:!to-yellow-300 transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl text-sm sm:text-base"
                   />
                 </Link>
                 <Link :href="route('tours-nacionales')">
                   <Button
                     label="🌋 Ver Tours"
                     outlined
-                    class="!border-2 !border-white !text-white !px-6 !py-3 font-bold rounded-lg hover:!bg-white hover:!text-red-600 transform hover:scale-105 transition-all duration-300"
+                    class="w-full sm:w-auto !border-2 !border-white/80 !text-white !px-6 sm:!px-8 !py-3 sm:!py-4 font-bold rounded-xl hover:!bg-white/20 hover:!border-white backdrop-blur-sm transform hover:scale-105 transition-all duration-300 shadow-lg text-sm sm:text-base"
                   />
                 </Link>
               </div>
@@ -137,70 +148,86 @@ const slides = computed(() =>
         </section>
 
         <!-- Carousel de Productos -->
-        <section class="py-16 bg-white">
-          <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="text-center mb-12">
-              <h2 class="text-3xl md:text-4xl font-bold text-red-700 mb-4">
+        <section class="py-12 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-br from-white via-blue-50/50 to-red-50/50 relative">
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <div class="relative max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div class="text-center mb-8 sm:mb-12 md:mb-16">
+              <div class="inline-block mb-3 sm:mb-4">
+                <span class="bg-gradient-to-r from-red-600 to-red-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-semibold text-xs sm:text-sm shadow-lg">
+                  Destacados
+                </span>
+              </div>
+              <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-red-700 to-red-600 bg-clip-text text-transparent mb-4 sm:mb-6">
                 ✨ Experiencias Destacadas
               </h2>
-              <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                Descubre nuestras experiencias más populares diseñadas para crear recuerdos inolvidables
+              <p class="text-sm sm:text-base md:text-lg text-gray-600 max-w-sm sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto leading-relaxed px-4 sm:px-0">
+                Descubre nuestras experiencias más populares, cuidadosamente diseñadas para crear 
+                recuerdos inolvidables que atesorarás para siempre.
               </p>
             </div>
             
-            <div class="w-full">
+            <div class="w-full px-2 sm:px-0">
               <Carousel
                 :value="slides"
                 :numVisible="1"
                 :numScroll="1"
                 circular
-                :autoplayInterval="5000"
-                class="mb-8 w-full"
+                :autoplayInterval="6000"
+                class="mb-6 sm:mb-8 w-full"
                 :responsiveOptions="[
+                  { breakpoint: '1400px', numVisible: 1, numScroll: 1 },
                   { breakpoint: '1024px', numVisible: 1, numScroll: 1 },
-                  { breakpoint: '768px', numVisible: 1, numScroll: 1 }
+                  { breakpoint: '768px', numVisible: 1, numScroll: 1 },
+                  { breakpoint: '640px', numVisible: 1, numScroll: 1 }
                 ]"
               >
                 <template #item="{ data }">
-                  <Card class="bg-white shadow-xl border border-gray-200 w-full mx-4 rounded-xl overflow-hidden transform hover:scale-105 transition-all duration-300">
+                  <Card class="bg-white/80 backdrop-blur-sm shadow-lg sm:shadow-xl md:shadow-2xl border border-white/40 w-full mx-1 sm:mx-2 md:mx-4 rounded-xl sm:rounded-2xl overflow-hidden transform hover:scale-105 transition-all duration-500 hover:shadow-3xl">
                     <template #header>
-                      <div class="relative w-full h-64 sm:h-80 md:h-96 bg-gradient-to-br from-red-100 to-red-200 overflow-hidden">
+                      <div class="relative w-full h-48 sm:h-64 md:h-72 lg:h-80 xl:h-96 overflow-hidden">
                         <div
                           v-if="data.imagen"
-                          class="object-cover h-full w-full hover:scale-110 transition-transform duration-500 bg-center bg-cover"
+                          class="object-cover h-full w-full hover:scale-110 transition-transform duration-700 bg-center bg-cover"
                           :style="{ backgroundImage: `url(/images/productos/${data.imagen})` }"
                         ></div>
                         <div 
                           v-else
-                          class="h-full w-full flex items-center justify-center bg-gradient-to-br from-red-200 to-red-300"
+                          class="h-full w-full flex items-center justify-center bg-gradient-to-br from-red-200 via-red-100 to-blue-100"
                         >
                           <div class="text-center text-red-600">
-                            <i class="fas fa-map-marked-alt text-6xl mb-4"></i>
-                            <p class="text-lg font-bold">VASIR</p>
-                            <p class="text-sm">Experiencia Premium</p>
+                            <i class="fas fa-map-marked-alt text-4xl sm:text-6xl md:text-8xl mb-3 sm:mb-4 md:mb-6 opacity-80"></i>
+                            <p class="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">VASIR</p>
+                            <p class="text-sm sm:text-base md:text-lg bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent font-semibold">Experiencia Premium</p>
                           </div>
                         </div>
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                        <div class="absolute bottom-4 left-4 right-4">
-                          <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold">Experiencia Premium</span>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                        <div class="absolute bottom-3 sm:bottom-4 md:bottom-6 left-3 sm:left-4 md:left-6 right-3 sm:right-4 md:right-6">
+                          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                            <span class="bg-gradient-to-r from-red-600 to-red-500 text-white px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-lg backdrop-blur-sm inline-block">
+                              ⭐ Experiencia Premium
+                            </span>
+                            <div class="bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5 sm:px-3 sm:py-1 self-start sm:self-auto">
+                              <span class="text-white text-xs font-medium">Populares</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </template>
                     <template #title>
-                      <h3 class="text-2xl sm:text-3xl font-bold text-red-700 mb-3 text-center px-4">
+                      <h3 class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-red-700 to-red-600 bg-clip-text text-transparent mb-3 sm:mb-4 text-center px-3 sm:px-4 md:px-6 leading-tight">
                         {{ data.titulo }}
                       </h3>
                     </template>
                     <template #content>
-                      <div class="px-4 pb-4">
-                        <p class="text-gray-700 text-center text-base sm:text-lg leading-relaxed mb-6">
+                      <div class="px-3 sm:px-4 md:px-6 pb-4 sm:pb-6">
+                        <p class="text-gray-700 text-center text-sm sm:text-base md:text-lg leading-relaxed mb-4 sm:mb-6 md:mb-8 opacity-90">
                           {{ data.descripcion }}
                         </p>
                         <div class="text-center">
                           <Link :href="route('paquetes')">
                             <Button
-                              label="Más Información"
-                              class="!bg-red-600 !border-none !px-6 !py-2 !text-white font-semibold rounded-lg hover:!bg-red-700 transition-colors shadow-md"
+                              label="Descubrir Más →"
+                              class="w-full sm:w-auto !bg-gradient-to-r !from-red-600 !to-red-500 !border-none !px-4 sm:!px-6 md:!px-8 !py-2.5 sm:!py-3 !text-white font-semibold rounded-lg sm:rounded-xl hover:!from-red-700 hover:!to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
                             />
                           </Link>
                         </div>
@@ -214,53 +241,76 @@ const slides = computed(() =>
         </section>
 
         <!-- Estadísticas -->
-        <section class="py-16 bg-red-600 text-white">
-          <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="text-center mb-12">
-              <h2 class="text-3xl md:text-4xl font-bold mb-4">🌟 Nuestra Trayectoria</h2>
-              <p class="text-xl opacity-90">Números que respaldan nuestra excelencia</p>
+        <section class="py-12 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-br from-red-600 via-red-500 to-blue-600 text-white relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20"></div>
+          <div class="absolute top-0 left-0 w-full h-full">
+            <div class="absolute top-5 sm:top-10 right-5 sm:right-10 w-24 h-24 sm:w-40 sm:h-40 bg-white/10 rounded-full blur-2xl"></div>
+            <div class="absolute bottom-10 sm:bottom-20 left-10 sm:left-20 w-32 h-32 sm:w-56 sm:h-56 bg-yellow-400/15 rounded-full blur-3xl"></div>
+          </div>
+          <div class="relative max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div class="text-center mb-8 sm:mb-12 md:mb-16">
+              <div class="inline-block mb-3 sm:mb-4">
+                <span class="bg-white/20 backdrop-blur-sm text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-semibold text-xs sm:text-sm shadow-lg">
+                  Nuestra Experiencia
+                </span>
+              </div>
+              <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
+                🌟 Nuestra Trayectoria
+              </h2>
+              <p class="text-sm sm:text-base md:text-lg lg:text-xl opacity-90 max-w-sm sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto leading-relaxed px-4 sm:px-0">
+                Números que respaldan nuestra excelencia y compromiso con experiencias inolvidables
+              </p>
             </div>
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
               <div 
                 v-for="stat in estadisticas" 
                 :key="stat.descripcion"
-                class="text-center p-6 bg-white/10 rounded-xl backdrop-blur-sm hover:bg-white/20 transition-all duration-300 transform hover:-translate-y-1"
+                class="text-center p-4 sm:p-6 md:p-8 bg-white/15 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/20 hover:bg-white/25 transition-all duration-300 transform hover:-translate-y-1 sm:hover:-translate-y-2 hover:scale-105 group shadow-lg sm:shadow-xl"
               >
-                <div class="text-4xl mb-3">{{ stat.icono }}</div>
-                <div class="text-3xl md:text-4xl font-bold mb-2">{{ stat.numero }}</div>
-                <div class="text-sm md:text-base opacity-90">{{ stat.descripcion }}</div>
+                <div class="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3 md:mb-4 group-hover:scale-110 transition-transform duration-300">{{ stat.icono }}</div>
+                <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3 bg-gradient-to-r from-yellow-300 to-yellow-400 bg-clip-text text-transparent">{{ stat.numero }}</div>
+                <div class="text-xs sm:text-sm md:text-base opacity-90 font-medium px-1">{{ stat.descripcion }}</div>
               </div>
             </div>
           </div>
         </section>
 
         <!-- Servicios -->
-        <section class="py-16 bg-gray-50">
-          <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-            <div class="text-center mb-12">
-              <h2 class="text-3xl md:text-4xl font-bold text-red-700 mb-4">🎯 Nuestros Servicios</h2>
-              <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                Ofrecemos una gama completa de servicios turísticos para hacer realidad tus sueños de viaje
+        <section class="py-12 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-br from-gray-50 via-blue-50/40 to-red-50/40 relative">
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+          <div class="relative max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div class="text-center mb-8 sm:mb-12 md:mb-16">
+              <div class="inline-block mb-3 sm:mb-4">
+                <span class="bg-gradient-to-r from-red-600 to-red-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-semibold text-xs sm:text-sm shadow-lg">
+                  Servicios Premium
+                </span>
+              </div>
+              <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-red-700 to-red-600 bg-clip-text text-transparent mb-4 sm:mb-6">
+                🎯 Nuestros Servicios
+              </h2>
+              <p class="text-sm sm:text-base md:text-lg text-gray-600 max-w-sm sm:max-w-xl md:max-w-2xl lg:max-w-3xl mx-auto leading-relaxed px-4 sm:px-0">
+                Ofrecemos una gama completa de servicios turísticos profesionales para hacer realidad 
+                tus sueños de viaje con la más alta calidad y atención personalizada.
               </p>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
               <div 
                 v-for="servicio in servicios" 
                 :key="servicio.titulo"
-                class="bg-white rounded-xl p-6 shadow-md border border-gray-200 text-center hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 group"
+                class="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 shadow-lg sm:shadow-xl border border-white/40 text-center hover:shadow-2xl transform hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-300 group hover:bg-white/90"
               >
-                <div class="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div class="text-3xl sm:text-4xl md:text-5xl mb-3 sm:mb-4 md:mb-6 group-hover:scale-110 transition-transform duration-300 group-hover:animate-bounce">
                   {{ servicio.icono }}
                 </div>
-                <h3 class="text-xl font-bold text-red-700 mb-3">{{ servicio.titulo }}</h3>
-                <p class="text-gray-600 mb-4 text-sm leading-relaxed">{{ servicio.descripcion }}</p>
+                <h3 class="text-base sm:text-lg md:text-xl font-bold bg-gradient-to-r from-red-700 to-red-600 bg-clip-text text-transparent mb-2 sm:mb-3 md:mb-4 leading-tight">{{ servicio.titulo }}</h3>
+                <p class="text-gray-600 mb-4 sm:mb-5 md:mb-6 text-xs sm:text-sm leading-relaxed opacity-90">{{ servicio.descripcion }}</p>
                 <Link :href="servicio.enlace">
                   <Button
-                    label="Saber Más"
+                    label="Descubrir →"
                     outlined
-                    class="!border-red-600 !text-red-600 !px-4 !py-2 !text-sm font-semibold rounded-lg hover:!bg-red-600 hover:!text-white transition-all"
+                    class="w-full sm:w-auto !border-2 !border-red-600 !text-red-600 !px-4 sm:!px-6 !py-1.5 sm:!py-2 !text-xs sm:!text-sm font-semibold rounded-lg sm:rounded-xl hover:!bg-red-600 hover:!text-white transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
                     size="small"
                   />
                 </Link>
@@ -270,41 +320,39 @@ const slides = computed(() =>
         </section>
 
         <!-- CTA Final -->
-        <section class="py-16 bg-gradient-to-r from-red-600 to-red-500 text-white">
-          <div class="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 text-center">
-            <h2 class="text-3xl md:text-4xl font-bold mb-4">🚀 ¿Listo para tu próxima aventura?</h2>
-            <p class="text-xl mb-8 opacity-90">
+        <section class="py-12 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-br from-red-600 via-red-500 to-blue-600 text-white relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20"></div>
+          <div class="absolute top-0 left-0 w-full h-full">
+            <div class="absolute top-10 sm:top-20 left-5 sm:left-10 w-20 h-20 sm:w-32 sm:h-32 bg-yellow-400/20 rounded-full blur-2xl"></div>
+            <div class="absolute bottom-5 sm:bottom-10 right-10 sm:right-20 w-32 h-32 sm:w-48 sm:h-48 bg-white/10 rounded-full blur-3xl"></div>
+          </div>
+          <div class="relative max-w-3xl sm:max-w-4xl lg:max-w-5xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 text-center">
+            <div class="mb-6 sm:mb-8">
+              <span class="bg-white/20 backdrop-blur-sm text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-semibold text-xs sm:text-sm shadow-lg">
+                ¡Comienza Tu Aventura!
+              </span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
+              🚀 ¿Listo para tu próxima aventura?
+            </h2>
+            <p class="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl mb-8 sm:mb-10 md:mb-12 opacity-90 max-w-xs sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto leading-relaxed px-4 sm:px-0">
               Permítenos ser parte de tus mejores recuerdos. Contáctanos hoy mismo y comienza a planificar 
-              la experiencia de viaje que siempre has soñado.
+              la experiencia de viaje que siempre has soñado. Tu próxima gran aventura te está esperando.
             </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center px-4 sm:px-0">
               <Link :href="route('contactos')">
                 <Button
                   label="📞 Contactar Ahora"
-                  class="!bg-yellow-500 !border-none !px-8 !py-3 !text-black font-bold rounded-lg hover:!bg-yellow-400 transform hover:scale-105 transition-all duration-300 shadow-lg"
+                  class="w-full sm:w-auto !bg-gradient-to-r !from-yellow-500 !to-yellow-400 !border-none !px-6 sm:!px-8 md:!px-10 !py-3 sm:!py-4 !text-black font-bold rounded-xl hover:!from-yellow-400 hover:!to-yellow-300 transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl text-sm sm:text-base"
                 />
               </Link>
               <Link :href="route('paquetes')">
                 <Button
                   label="🎯 Ver Todos los Paquetes"
                   outlined
-                  class="!border-2 !border-white !text-white !px-8 !py-3 font-bold rounded-lg hover:!bg-white hover:!text-red-600 transform hover:scale-105 transition-all duration-300"
+                  class="w-full sm:w-auto !border-2 !border-white/80 !text-white !px-6 sm:!px-8 md:!px-10 !py-3 sm:!py-4 font-bold rounded-xl hover:!bg-white/20 hover:!border-white backdrop-blur-sm transform hover:scale-105 transition-all duration-300 shadow-lg text-sm sm:text-base"
                 />
               </Link>
-            </div>
-          </div>
-        </section>
-
-        <!-- Nota informativa -->
-        <section class="py-8 bg-blue-50 border-t-4 border-blue-400">
-          <div class="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 text-center">
-            <div class="bg-white rounded-lg p-6 shadow-md border border-blue-200">
-              <div class="text-2xl mb-2">ℹ️</div>
-              <p class="text-gray-700 text-sm md:text-base">
-                <strong>Nota:</strong> Los elementos que contiene estas vistas son de ejemplo y se actualizan dinámicamente. 
-                Puedes ver nuestros productos reales en la sección de 
-                <Link :href="route('tienda')" class="text-red-600 hover:underline font-semibold">Tienda</Link>.
-              </p>
             </div>
           </div>
         </section>
