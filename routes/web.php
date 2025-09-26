@@ -32,7 +32,7 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
     Route::get('clientes', fn() => Inertia::render('Configuracion/Clientes'))->name('clientes');
     Route::get('categorias-productos', fn() => Inertia::render('Catalogos/CategoriaProductos'))->name('catProductos');
     Route::get('categorias-hoteles', fn() => Inertia::render('Catalogos/CategoriaHoteles'))->name('catHoteles');
-
+    Route::get('gestion-paquetes', fn() => Inertia::render('Catalogos/GestionPaquetes'))->name('gestionPaquetes');
 
     //Rutas para informes
     Route::get('/descargar-informe', [InformePDFController::class, 'descargarInforme']);
