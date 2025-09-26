@@ -8,6 +8,8 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import Register from './Register.vue';
 import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 defineProps({
     canResetPassword: {
@@ -98,7 +100,7 @@ const toggleForm = () => {
             </div>
             <div class="flex justify-center mb-6">
                 <Link href="/">
-                    <img src="../../../../imagenes/logo.png" alt="Logo" class="h-10 w-auto cursor-pointer" title="Ir a catálogo"/>
+                    <img src="../../../../imagenes/logo.png" alt="Logo" class="h-10 w-auto cursor-pointer" title="Ir al Catálogo"/>
                 </Link>
             </div>
 

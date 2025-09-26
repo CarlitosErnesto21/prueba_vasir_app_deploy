@@ -486,51 +486,30 @@ const verMasInfo = (tour) => {
               <div class="max-w-4xl mx-auto">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <!-- Stat 1: Tours Disponibles -->
-                  <div class="relative bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-red-200">
-                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg border-4 border-white">
-                        <span class="text-2xl">🎯</span>
-                      </div>
-                    </div>
-                    <div class="mt-4">
+                  <div class="relative bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-4 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-red-200">
                       <h3 class="text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent mb-2">
                         {{ estadisticas.totalDestinos }}
                       </h3>
                       <p class="text-gray-700 font-semibold text-sm uppercase tracking-wide">Tours Disponibles</p>
                       <p class="text-gray-500 text-xs mt-1">Experiencias únicas</p>
-                    </div>
                   </div>
 
                   <!-- Stat 2: Precios -->
                   <div class="relative bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-green-200">
-                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-lg border-4 border-white">
-                        <span class="text-2xl">💰</span>
-                      </div>
-                    </div>
-                    <div class="mt-4">
                       <h3 class="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent mb-2">
                         {{ estadisticas.precioMinimo > 0 ? `Desde $${estadisticas.precioMinimo.toFixed(2)}` : 'Consultar' }}
                       </h3>
                       <p class="text-gray-700 font-semibold text-sm uppercase tracking-wide">Precios Accesibles</p>
                       <p class="text-gray-500 text-xs mt-1">Para todos los presupuestos</p>
-                    </div>
                   </div>
 
                   <!-- Stat 3: Ubicaciones -->
                   <div class="relative bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-blue-200">
-                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg border-4 border-white">
-                        <span class="text-2xl">📍</span>
-                      </div>
-                    </div>
-                    <div class="mt-4">
                       <h3 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">
                         {{ estadisticas.totalPaises }}
                       </h3>
                       <p class="text-gray-700 font-semibold text-sm uppercase tracking-wide">Ubicaciones</p>
                       <p class="text-gray-500 text-xs mt-1">Destinos únicos</p>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -569,7 +548,7 @@ const verMasInfo = (tour) => {
         <!-- Tours Disponibles -->
         <div v-if="toursDisponibles.length > 0" class="mb-8">
           <div class="bg-gradient-to-r from-red-600 via-red-500 to-blue-600 text-white text-center py-4 px-6 rounded-t-xl mb-6">
-            <h2 class="text-xl md:text-2xl font-bold">🇸🇻 Tours Nacionales Disponibles</h2>
+            <h2 class="text-xl md:text-2xl font-bold">Tours Nacionales Disponibles</h2>
             <p class="text-red-100 text-sm mt-1">{{ toursDisponibles.length }} destino{{ toursDisponibles.length !== 1 ? 's' : '' }} con cupos disponibles</p>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
