@@ -8,8 +8,9 @@
         :draggable="false"
         :closable="true"
         :dismissableMask="true"
-        class="mx-4"
-        :style="{ width: '90vw', maxWidth: '36rem' }"
+        class="mx-2 sm:mx-4"
+        :style="{ width: '98vw', maxWidth: '36rem', maxHeight: 'calc(100vh - 20px)', padding: '0' }"
+        :baseZIndex="10000"
         @update:visible="$emit('close-reservas-modal')"
     >
         <template #header>
@@ -19,16 +20,16 @@
             </div>
         </template>
         
-        <div class="space-y-3">
+        <div class="space-y-3 overflow-y-auto max-h-[60vh] sm:max-h-[70vh] px-2 sm:px-0">
             <div v-if="dashboardData.reservas && dashboardData.reservas.filter(r => r.estado && r.estado.toLowerCase() === 'pendiente').length > 0"
                 class="space-y-3">
                 <div v-for="reserva in dashboardData.reservas.filter(r => r.estado && r.estado.toLowerCase() === 'pendiente')" 
                     :key="reserva.id"
-                    class="bg-amber-50 rounded-lg border border-amber-200 hover:bg-amber-100 transition-colors p-4">
+                    class="bg-red-50 rounded-lg border border-red-200 hover:bg-red-100 transition-colors p-3 sm:p-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-3 flex-1 min-w-0">
-                            <div class="p-2 bg-amber-100 rounded-full flex-shrink-0">
-                                <i class="pi pi-calendar text-amber-600 text-sm"></i>
+                            <div class="p-2 bg-red-100 rounded-full flex-shrink-0">
+                                <i class="pi pi-calendar text-red-600 text-sm"></i>
                             </div>
                             <div class="flex-1 min-w-0">
                                 <h4 class="font-medium text-gray-900 text-sm truncate">{{ reserva.entidad_nombre || 'Tour no especificado' }}</h4>
@@ -55,15 +56,7 @@
         </div>
         
         <template #footer>
-            <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
-                <button 
-                    type="button" 
-                    class="bg-white hover:bg-green-100 text-green-600 border border-green-600 px-6 py-2 rounded-md transition-all duration-200 ease-in-out flex items-center gap-2" 
-                    @click="$emit('close-reservas-modal')"
-                >
-                    <FontAwesomeIcon :icon="faTimes" class="h-5 text-green-600" />
-                    Cancelar
-                </button>
+            <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-200">
                 <Link 
                     href="/gestion-reserva-tours"
                     class="bg-red-500 hover:bg-red-700 text-white border-none px-6 py-2 rounded-md transition-all duration-200 ease-in-out flex items-center gap-2"
@@ -82,8 +75,9 @@
         :draggable="false"
         :closable="true"
         :dismissableMask="true"
-        class="mx-4"
-        :style="{ width: '90vw', maxWidth: '36rem' }"
+        class="mx-2 sm:mx-4"
+        :style="{ width: '98vw', maxWidth: '36rem', maxHeight: 'calc(100vh - 20px)', padding: '0' }"
+        :baseZIndex="10000"
         @update:visible="$emit('close-stock-modal')"
     >
         <template #header>
@@ -96,12 +90,12 @@
             </div>
         </template>
         
-        <div class="space-y-3">
+        <div class="space-y-3 overflow-y-auto max-h-[60vh] sm:max-h-[70vh] px-2 sm:px-0">
             <div v-if="dashboardData.stockBajo && dashboardData.stockBajo.length > 0"
                 class="space-y-3">
                 <div v-for="producto in dashboardData.stockBajo" 
                     :key="producto.id"
-                    class="bg-red-50 rounded-lg border border-red-200 hover:bg-red-100 transition-colors p-4">
+                    class="bg-red-50 rounded-lg border border-red-200 hover:bg-red-100 transition-colors p-3 sm:p-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-3 flex-1 min-w-0">
                             <div class="p-2 bg-red-100 rounded-full flex-shrink-0">
@@ -136,15 +130,7 @@
         </div>
         
         <template #footer>
-            <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
-                <button 
-                    type="button" 
-                    class="bg-white hover:bg-green-100 text-green-600 border border-green-600 px-6 py-2 rounded-md transition-all duration-200 ease-in-out flex items-center gap-2" 
-                    @click="$emit('close-stock-modal')"
-                >
-                    <FontAwesomeIcon :icon="faTimes" class="h-5 text-green-600" />
-                    Cancelar
-                </button>
+            <div class="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-200">
                 <Link 
                     href="/productos"
                     class="bg-red-500 hover:bg-red-700 text-white border-none px-6 py-2 rounded-md transition-all duration-200 ease-in-out flex items-center gap-2"

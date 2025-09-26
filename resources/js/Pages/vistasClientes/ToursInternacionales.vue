@@ -471,50 +471,43 @@ const verMasInfo = (tour) => {
     <div class="bg-gradient-to-br from-gray-50 via-white to-gray-100 min-h-screen">
       <div class="w-full px-4 sm:px-6 lg:px-8">
         <!-- Header Profesional con Stats Integradas -->
-        <div class="mb-8 sm:mb-12">
+        <div class="mb-3 sm:mb-4">
           <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl overflow-hidden border border-gray-200">
             <!-- Header con gradiente -->
-            <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 text-white text-center py-8 sm:py-12">
-              <div class="flex items-center justify-center gap-3 mb-4">
-                <img src="/images/world.png" alt="Tours Internacionales" class="w-10 h-10 sm:w-12 sm:h-12 shadow-lg rounded-full border-2 border-white/30" />
-                <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+            <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 text-white text-center py-4 sm:py-6">
+              <div class="flex items-center justify-center gap-3 mb-1">
+                <img src="/images/world.png" alt="Tours Internacionales" class="w-8 h-8 sm:w-12 sm:h-12 shadow-lg rounded-full border-2 border-white/30" />
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
                   Tours Internacionales
                 </h1>
               </div>
-              <p class="text-lg sm:text-xl text-blue-100 px-4 max-w-2xl mx-auto">Explora destinos increíbles alrededor del mundo</p>
+              <p class="text-base sm:text-lg text-red-100 px-4">Explora destinos increíbles alrededor del mundo</p>
             </div>
 
             <!-- Stats integradas en el header -->
-            <div v-if="tours.length > 0" class="bg-white py-8 px-6">
+            <div v-if="tours.length > 0" class="bg-white py-3 px-3">
               <div class="max-w-4xl mx-auto">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 text-center border border-blue-200 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                    <div class="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">
+                <div class="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-6">
+                  <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl py-8 px-2 md:p-6 text-center border border-blue-200 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="text-sm md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">
                       {{ estadisticas.totalDestinos }}
                     </div>
                     <div class="text-blue-700 font-semibold text-sm sm:text-base">Tours Disponibles</div>
                     <div class="text-blue-600 text-xs mt-1">Destinos únicos</div>
                   </div>
-                  <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 text-center border border-green-200 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                    <div class="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent mb-2">
-                      {{ estadisticas.totalPaises }}
-                    </div>
-                    <div class="text-green-700 font-semibold text-sm sm:text-base">Ubicaciones</div>
-                    <div class="text-green-600 text-xs mt-1">Países diferentes</div>
-                  </div>
-                  <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 text-center border border-purple-200 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                    <div class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent mb-2">
+                  <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl py-8 px-2 md:p-6 text-center border border-green-200 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="text-sm md:text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent mb-2">
                       {{ estadisticas.precioMinimo > 0 ? `Desde $${estadisticas.precioMinimo}` : 'Consultar' }}
                     </div>
-                    <div class="text-purple-700 font-semibold text-sm sm:text-base">Precios</div>
-                    <div class="text-purple-600 text-xs mt-1">Todo incluido</div>
+                    <div class="text-green-700 font-semibold text-sm sm:text-base">Precios</div>
+                    <div class="text-green-600 text-xs mt-1">Todo incluido</div>
                   </div>
-                  <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-6 text-center border border-amber-200 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                    <div class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-amber-600 to-amber-700 bg-clip-text text-transparent mb-2">
-                      ✈️
+                  <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl py-8 px-2 md:p-6 text-center border border-purple-200 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="text-sm md:text-2xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent mb-2">
+                      {{ estadisticas.totalPaises }}
                     </div>
-                    <div class="text-amber-700 font-semibold text-sm sm:text-base">Vuelos Incluidos</div>
-                    <div class="text-amber-600 text-xs mt-1">En la mayoría</div>
+                    <div class="text-purple-700 font-semibold text-sm sm:text-base">Ubicaciones</div>
+                    <div class="text-purple-600 text-xs mt-1">Países diferentes</div>
                   </div>
                 </div>
               </div>

@@ -468,48 +468,48 @@ const verMasInfo = (tour) => {
     <div class="bg-gradient-to-br from-gray-50 via-white to-gray-100 min-h-screen">
       <div class="w-full px-4 sm:px-6 lg:px-8">
         <!-- Header Profesional con Stats Integradas -->
-        <div class="mb-8 sm:mb-12">
+        <div class="mb-3 sm:mb-4">
           <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl overflow-hidden border border-gray-200">
             <!-- Header con gradiente -->
-            <div class="bg-gradient-to-r from-red-600 via-red-500 to-blue-600 text-white text-center py-8 sm:py-12">
-              <div class="flex items-center justify-center gap-3 mb-4">
-                <img src="/images/sv.png" alt="Bandera El Salvador" class="w-10 h-10 sm:w-12 sm:h-12 shadow-lg rounded-full border-2 border-white/30" />
-                <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-red-100 bg-clip-text text-transparent">
+            <div class="bg-gradient-to-r from-red-600 via-purple-600 to-blue-600 text-white text-center py-4 sm:py-6">
+              <div class="flex items-center justify-center gap-3 mb-1">
+                <img src="/images/sv.png" alt="Bandera El Salvador" class="w-8 h-8 sm:w-12 sm:h-12 shadow-lg rounded-full border-2 border-white/30" />
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
                   Tours Nacionales
                 </h1>
               </div>
-              <p class="text-lg sm:text-xl text-red-100 px-4 max-w-2xl mx-auto">Descubre las maravillas de El Salvador</p>
+              <p class="text-base sm:text-lg text-red-100 px-4">Descubre las maravillas de El Salvador</p>
             </div>
 
             <!-- Stats integradas en el header -->
-            <div v-if="tours.length > 0" class="bg-white py-8 px-6">
+            <div v-if="tours.length > 0" class="bg-white py-3 px-3">
               <div class="max-w-4xl mx-auto">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-6">
                   <!-- Stat 1: Tours Disponibles -->
-                  <div class="relative bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-4 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-red-200">
-                      <h3 class="text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent mb-2">
+                  <div class="relative bg-gradient-to-br from-red-50 to-red-100 rounded-2xl py-8 px-2 md:p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-red-200">
+                      <h3 class="text-sm md:text-2xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent mb-2">
                         {{ estadisticas.totalDestinos }}
                       </h3>
-                      <p class="text-gray-700 font-semibold text-sm uppercase tracking-wide">Tours Disponibles</p>
-                      <p class="text-gray-500 text-xs mt-1">Experiencias únicas</p>
+                      <p class="text-gray-700 font-semibold text-xs md:text-sm md:uppercase tracking-wide">Tours Disponibles</p>
+                      <p class="hidden md:block text-gray-500 text-xs mt-1">Experiencias únicas</p>
                   </div>
 
                   <!-- Stat 2: Precios -->
-                  <div class="relative bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-green-200">
-                      <h3 class="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent mb-2">
+                  <div class="relative bg-gradient-to-br from-green-50 to-green-100 rounded-2xl py-8 px-2 md:p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-green-200">
+                      <h3 class="text-sm md:text-2xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent mb-2">
                         {{ estadisticas.precioMinimo > 0 ? `Desde $${estadisticas.precioMinimo.toFixed(2)}` : 'Consultar' }}
                       </h3>
-                      <p class="text-gray-700 font-semibold text-sm uppercase tracking-wide">Precios Accesibles</p>
-                      <p class="text-gray-500 text-xs mt-1">Para todos los presupuestos</p>
+                      <p class="text-gray-700 font-semibold text-xs md:text-sm md:uppercase tracking-wide">Precios Accesibles</p>
+                      <p class="hidden md:block text-gray-500 text-xs mt-1">Para todos los presupuestos</p>
                   </div>
 
                   <!-- Stat 3: Ubicaciones -->
-                  <div class="relative bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-blue-200">
-                      <h3 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">
+                  <div class="relative bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl py-8 px-2 md:p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-blue-200">
+                      <h3 class="text-sm md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">
                         {{ estadisticas.totalPaises }}
                       </h3>
-                      <p class="text-gray-700 font-semibold text-sm uppercase tracking-wide">Ubicaciones</p>
-                      <p class="text-gray-500 text-xs mt-1">Destinos únicos</p>
+                      <p class="text-gray-700 font-semibold text-xs md:text-sm md:uppercase tracking-wide">Ubicaciones</p>
+                      <p class="hidden md:block text-gray-500 text-xs mt-1">Destinos únicos</p>
                   </div>
                 </div>
               </div>
@@ -547,7 +547,7 @@ const verMasInfo = (tour) => {
 
         <!-- Tours Disponibles -->
         <div v-if="toursDisponibles.length > 0" class="mb-8">
-          <div class="bg-gradient-to-r from-red-600 via-red-500 to-blue-600 text-white text-center py-4 px-6 rounded-t-xl mb-6">
+          <div class="bg-gradient-to-r from-red-400 via-red-400 to-red-400 text-white text-center py-4 px-6 rounded-t-xl mb-6">
             <h2 class="text-xl md:text-2xl font-bold">Tours Nacionales Disponibles</h2>
             <p class="text-red-100 text-sm mt-1">{{ toursDisponibles.length }} destino{{ toursDisponibles.length !== 1 ? 's' : '' }} con cupos disponibles</p>
           </div>
@@ -742,29 +742,29 @@ const verMasInfo = (tour) => {
           <div class="bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
           <!-- Header con gradiente -->
             <div class="bg-gradient-to-r from-blue-600 to-red-600 text-white text-center py-6">
-              <h2 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent mb-2">
+              <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
                 ¿Por qué elegir nuestros tours nacionales?
               </h2>
-              <p class="text-blue-100 text-lg">Descubre El Salvador como nunca antes</p>
+              <p class="text-base sm:text-lg text-red-100 px-4">Descubre El Salvador como nunca antes</p>
             </div>
           
             <!-- Contenido -->
-            <div class="p-8">
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="text-center bg-gradient-to-br from-white to-red-50 hover:from-red-50 hover:to-red-100 rounded-xl p-6 shadow-md hover:shadow-xl border-2 border-transparent hover:border-red-200 transform hover:-translate-y-2 hover:scale-105 transition-all duration-300">
-                  <div class="text-5xl mb-4">🏛️</div>
-                  <h3 class="text-xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent mb-3">Historia y Cultura</h3>
-                  <p class="text-gray-700 leading-relaxed">Descubre la rica historia y tradiciones de El Salvador con guías locales expertos</p>
+            <div class="p-2 md:p-8">
+              <div class="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-8">
+                <div class="text-center bg-gradient-to-br from-white to-red-50 hover:from-red-50 hover:to-red-100 rounded-xl p-1 md:p-6  shadow-md hover:shadow-xl border-2 border-transparent hover:border-red-200 transform hover:-translate-y-2 hover:scale-105 transition-all duration-300">
+                  <div class="text-lg md:text-5xl mb-4">🏛️</div>
+                  <h3 class="text-sm md:text-xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent mb-3">Historia y Cultura</h3>
+                  <p class="text-gray-700 leading-relaxed text-xs md:text-sm">Descubre la rica historia y tradiciones de El Salvador con guías locales expertos</p>
                 </div>
-                <div class="text-center bg-gradient-to-br from-white to-green-50 hover:from-green-50 hover:to-green-100 rounded-xl p-6 shadow-md hover:shadow-xl border-2 border-transparent hover:border-green-200 transform hover:-translate-y-2 hover:scale-105 transition-all duration-300">
-                  <div class="text-5xl mb-4">🌋</div>
-                  <h3 class="text-xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent mb-3">Naturaleza Única</h3>
-                  <p class="text-gray-700 leading-relaxed">Explora volcanes, lagos, playas y bosques en paisajes únicos de Centroamérica</p>
+                <div class="text-center bg-gradient-to-br from-white to-green-50 hover:from-green-50 hover:to-green-100 rounded-xl p-1 md:p-6  shadow-md hover:shadow-xl border-2 border-transparent hover:border-green-200 transform hover:-translate-y-2 hover:scale-105 transition-all duration-300">
+                  <div class="text-lg md:text-5xl mb-4">🌋</div>
+                  <h3 class="text-sm md:text-xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent mb-3">Naturaleza Única</h3>
+                  <p class="text-gray-700 leading-relaxed text-xs md:text-sm">Explora volcanes, lagos, playas y bosques en paisajes únicos de Centroamérica</p>
                 </div>
-                <div class="text-center bg-gradient-to-br from-white to-blue-50 hover:from-blue-50 hover:to-blue-100 rounded-xl p-6 shadow-md hover:shadow-xl border-2 border-transparent hover:border-blue-200 transform hover:-translate-y-2 hover:scale-105 transition-all duration-300">
-                  <div class="text-5xl mb-4">🤝</div>
-                  <h3 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-3">Apoyo Local</h3>
-                  <p class="text-gray-700 leading-relaxed">Contribuye al desarrollo de las comunidades locales con turismo responsable</p>
+                <div class="text-center bg-gradient-to-br from-white to-blue-50 hover:from-blue-50 hover:to-blue-100 rounded-xl p-1 md:p-6 shadow-md hover:shadow-xl border-2 border-transparent hover:border-blue-200 transform hover:-translate-y-2 hover:scale-105 transition-all duration-300">
+                  <div class="text-lg md:text-5xl mb-4">🤝</div>
+                  <h3 class="text-sm md:text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-3">Apoyo Local</h3>
+                  <p class="text-gray-700 leading-relaxed text-xs md:text-sm">Contribuye al desarrollo de las comunidades locales con turismo responsable</p>
                 </div>
               </div>
             </div>

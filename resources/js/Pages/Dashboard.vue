@@ -11,29 +11,27 @@ import axios from 'axios';
 import LoadingState from '@/Components/DashboardViews/LoadingState.vue';
 import MetricasCard from '@/Components/DashboardViews/MetricasCard.vue';
 import WidgetsSecundarios from '@/Components/DashboardViews/WidgetsSecundarios.vue';
-import GraficosSection from '@/Components/DashboardViews/GraficosSection.vue';
 import ActividadReciente from '@/Components/DashboardViews/ActividadReciente.vue';
 import ModalesInteractivos from '@/Components/DashboardViews/ModalesInteractivos.vue';
+import GraficosSection from '@/Components/DashboardViews/GraficosSection.vue';
 
 const chartDataPie = ref();
 const chartDataBar = ref();
-const chartDataDoughnut = ref();
 const chartOptionsPie = ref();
 const chartOptionsBar = ref();
-const chartOptionsDoughnut = ref();
 
 // ✅ DATOS REALES de tu sistema
 const loading = ref(true);
 const dashboardData = ref({});
 
-// 📊 Métricas DINÁMICAS con datos reales - Layout más compacto
+// 📊 Métricas DINÁMICAS con colores FUERTES y vibrantes, estilo VASIR
 const metrics = ref([
     { 
         label: 'Ventas Hoy', 
         value: '0', 
         icon: 'pi pi-shopping-cart', 
-        color: 'from-emerald-500 to-emerald-400', 
-        text: 'text-emerald-900',
+        color: 'from-[#ef233c] to-[#d90429]',   // Rojo vibrante degradado
+        text: 'text-[#7b1f26]',                 // Rojo profundo
         key: 'ventas_hoy',
         category: 'ventas',
         description: 'Ventas del día'
@@ -42,8 +40,8 @@ const metrics = ref([
         label: 'Ingresos Hoy', 
         value: '$0', 
         icon: 'pi pi-dollar', 
-        color: 'from-blue-500 to-blue-400', 
-        text: 'text-blue-900',
+        color: 'from-[#ffd600] to-[#ffb700]',   // Amarillo vibrante degradado
+        text: 'text-[#a68700]',                 // Amarillo oscuro
         key: 'ingresos_hoy',
         category: 'ventas',
         description: 'Ingresos del día'
@@ -52,8 +50,8 @@ const metrics = ref([
         label: 'Reservas del Mes', 
         value: '0', 
         icon: 'pi pi-calendar-plus', 
-        color: 'from-purple-500 to-purple-400', 
-        text: 'text-purple-900',
+        color: 'from-[#6c00f9] to-[#480ca8]',  // Púrpura intenso degradado
+        text: 'text-[#240046]',                // Púrpura profundo
         key: 'reservas_mes',
         category: 'reservas',
         description: 'Reservas este mes'
@@ -62,46 +60,46 @@ const metrics = ref([
         label: 'Tours Activos', 
         value: '0', 
         icon: 'pi pi-map-marker', 
-        color: 'from-orange-500 to-orange-400', 
-        text: 'text-orange-900',
+        color: 'from-[#0077b6] to-[#023e8a]',  // Azul fuerte degradado
+        text: 'text-[#03045e]',                // Azul profundo
         key: 'tours_activos',
         category: 'reservas',
         description: 'Tours disponibles'
     }
 ]);
 
-// 📈 Widgets adicionales para el dashboard
+// 📈 Widgets adicionales con colores sólidos y contrastantes
 const widgets = ref([
     {
         title: 'Reservas Pendientes',
         value: '0',
         icon: 'pi pi-clock',
-        color: 'bg-amber-50 border-amber-200',
-        iconColor: 'text-amber-600',
+        color: 'bg-[#fff3b0] border-[#ffd600]',     // Fondo amarillo pálido, borde amarillo vibrante
+        iconColor: 'text-[#ffd600]',                // Amarillo fuerte
         key: 'reservas_pendientes'
     },
     {
         title: 'Productos Stock Bajo',
         value: '0',
         icon: 'pi pi-exclamation-triangle',
-        color: 'bg-red-50 border-red-200',
-        iconColor: 'text-red-600',
+        color: 'bg-[#ffe5e5] border-[#ef233c]',     // Fondo rosado pálido, borde rojo vibrante
+        iconColor: 'text-[#d90429]',                // Rojo fuerte
         key: 'productos_stock_bajo'
     },
     {
         title: 'Valor Inventario',
         value: '$0',
         icon: 'pi pi-wallet',
-        color: 'bg-green-50 border-green-200',
-        iconColor: 'text-green-600',
+        color: 'bg-[#e5daff] border-[#6c00f9]',     // Fondo lavanda, borde púrpura intenso
+        iconColor: 'text-[#480ca8]',                // Púrpura fuerte
         key: 'valor_total_inventario'
     },
     {
         title: 'Clientes Activos',
         value: '0',
         icon: 'pi pi-users',
-        color: 'bg-indigo-50 border-indigo-200',
-        iconColor: 'text-indigo-600',
+        color: 'bg-[#d0f1ff] border-[#0077b6]',     // Fondo azul claro, borde azul vibrante
+        iconColor: 'text-[#023e8a]',                // Azul fuerte
         key: 'clientes_activos'
     }
 ]);
@@ -309,52 +307,7 @@ const updateCharts = (inventarioData, ventasData, stockBajoData, reservasData, r
     };
     
     // 🍩 Gráfico DOUGHNUT: Tours más reservados
-    const toursReservados = {};
-    
-    // Usar resumenReservasData como fuente principal para tours
-    if (resumenReservasData && resumenReservasData.length > 0) {
-        resumenReservasData.forEach(resumen => {
-            if (resumen.tipo === 'tours' && resumen.nombre) {
-                const total = (resumen.total_pendientes || 0) + (resumen.total_confirmadas || 0);
-                if (total > 0) {
-                    // Truncar nombres muy largos para mejor visualización
-                    const nombreCorto = resumen.nombre.length > 30 
-                        ? resumen.nombre.substring(0, 27) + '...' 
-                        : resumen.nombre;
-                    toursReservados[nombreCorto] = total;
-                }
-            }
-        });
-    }
-    
-    // Si no hay datos en resumen, usar reservasData como fallback
-    if (Object.keys(toursReservados).length === 0 && reservasData && reservasData.length > 0) {
-        reservasData.forEach(reserva => {
-            if (reserva.entidad_nombre) {
-                const nombreCorto = reserva.entidad_nombre.length > 30 
-                    ? reserva.entidad_nombre.substring(0, 27) + '...' 
-                    : reserva.entidad_nombre;
-                toursReservados[nombreCorto] = (toursReservados[nombreCorto] || 0) + 1;
-            }
-        });
-    }
-    
-    let topTours = Object.entries(toursReservados)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 5);
-    
-    if (topTours.length === 0) {
-        topTours = [['Sin reservas', 0]];
-    }
-    
-    chartDataDoughnut.value = {
-        labels: topTours.map(([nombre]) => nombre),
-        datasets: [{
-            label: 'Tours Más Reservados',
-            data: topTours.map(([, cantidad]) => cantidad),
-            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
-        }]
-    };
+        // Eliminar la lógica del doughnut chart
 };
 
 // Opciones de gráficos
@@ -416,36 +369,10 @@ const setChartOptionsBar = () => ({
     }
 });
 
-const setChartOptionsDoughnut = () => ({
-    maintainAspectRatio: false,
-    plugins: {
-        title: {
-            display: true,
-            text: 'Tours Más Reservados',
-            font: { size: 18 }
-        },
-        legend: {
-            display: true,
-            position: 'bottom',
-            labels: {
-                usePointStyle: true,
-                color: '#374151'
-            }
-        },
-        tooltip: {
-            callbacks: {
-                label: function(context) {
-                    return `${context.label}: ${context.parsed} reservas`;
-                }
-            }
-        }
-    }
-});
 
 onMounted(() => {
     chartOptionsPie.value = setChartOptionsPie();
     chartOptionsBar.value = setChartOptionsBar();
-    chartOptionsDoughnut.value = setChartOptionsDoughnut();
     fetchDashboardData();
 });
 </script>
@@ -457,7 +384,7 @@ onMounted(() => {
         <LoadingState v-if="loading" />
 
         <!-- Contenido principal -->
-        <div v-else class="px-2 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+        <div v-else class="px-2 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 mt-1 sm:mt-1">
             <!-- Métricas principales -->
             <MetricasCard 
                 :metrics="metrics" 
@@ -512,23 +439,10 @@ onMounted(() => {
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
                 
                 <!-- Top 5 Tours Más Reservados -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6">
-                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
-                        <i class="pi pi-star text-yellow-500 mr-2"></i>
-                        <span class="hidden sm:inline">Top 5 Tours Más Reservados</span>
-                        <span class="sm:hidden">Top Tours</span>
-                    </h3>
-                    <div class="h-48 sm:h-64">
-                        <Chart v-if="chartDataDoughnut" 
-                            type="doughnut" 
-                            :data="chartDataDoughnut" 
-                            :options="chartOptionsDoughnut" 
-                            class="w-full h-full" />
-                        <div v-else class="flex items-center justify-center h-full">
-                            <p class="text-gray-500 text-xs sm:text-sm">No hay reservas registradas</p>
-                        </div>
-                    </div>
-                </div>
+                <GraficosSection
+                    :resumen-reservas-data="dashboardData.resumenReservas"
+                    :reservas-data="dashboardData.reservas"
+                />
 
                 <!-- Actividad Reciente -->
                 <ActividadReciente 

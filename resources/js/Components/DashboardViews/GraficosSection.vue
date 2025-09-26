@@ -1,38 +1,6 @@
 <template>
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-        <!-- Gráfico PIE: Estado del inventario -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6">
-            <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Inventario por Estado</h3>
-            <div class="h-48 sm:h-64">
-                <Chart v-if="chartDataPie" 
-                    type="pie" 
-                    :data="chartDataPie" 
-                    :options="chartOptionsPie" 
-                    class="w-full h-full" />
-                <div v-else class="flex items-center justify-center h-full">
-                    <p class="text-gray-500 text-xs sm:text-sm">No hay datos de inventario</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Gráfico BAR: Reservas por estado -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6">
-            <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Reservas por Estado</h3>
-            <div class="h-48 sm:h-64">
-                <Chart v-if="chartDataBar" 
-                    type="bar" 
-                    :data="chartDataBar" 
-                    :options="chartOptionsBar" 
-                    class="w-full h-full" />
-                <div v-else class="flex items-center justify-center h-full">
-                    <p class="text-gray-500 text-xs sm:text-sm">No hay datos de reservas</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Top 5 Tours Más Reservados -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4 sm:p-6 mt-4 sm:mt-6">
+    <div class="bg-gray-50 rounded-lg shadow-xl border border-[#fbeee6] p-4 sm:p-6 mt-4 sm:mt-6">
         <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
             <i class="pi pi-star text-yellow-500 mr-2"></i>
             <span class="hidden sm:inline">Top 5 Tours Más Reservados</span>
@@ -52,32 +20,87 @@
 </template>
 
 <script setup>
+import { ref, computed } from 'vue';
 import Chart from 'primevue/chart';
 
-defineProps({
-    chartDataPie: {
-        type: Object,
-        required: true
+const props = defineProps({
+    // ...solo props para el doughnut
+    resumenReservasData: {
+        type: Array,
+        required: false,
+        default: () => []
     },
-    chartDataBar: {
-        type: Object,
-        required: true
-    },
-    chartDataDoughnut: {
-        type: Object,
-        required: true
-    },
-    chartOptionsPie: {
-        type: Object,
-        required: true
-    },
-    chartOptionsBar: {
-        type: Object,
-        required: true
-    },
-    chartOptionsDoughnut: {
-        type: Object,
-        required: true
+    reservasData: {
+        type: Array,
+        required: false,
+        default: () => []
     }
+});
+
+const chartOptionsDoughnut = {
+    maintainAspectRatio: false,
+    plugins: {
+        title: {
+            display: true,
+            text: 'Tours Más Reservados',
+            font: { size: 18 }
+        },
+        legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+                usePointStyle: true,
+                color: '#374151'
+            }
+        },
+        tooltip: {
+            callbacks: {
+                label: function(context) {
+                    return `${context.label}: ${context.parsed} reservas`;
+                }
+            }
+        }
+    }
+};
+
+const chartDataDoughnut = computed(() => {
+    // Lógica igual que en Dashboard.vue
+    const toursReservados = {};
+    const resumen = props.resumenReservasData;
+    const reservas = props.reservasData;
+
+    if (resumen && resumen.length > 0) {
+        resumen.forEach(res => {
+            if (res.tipo === 'tours' && res.nombre) {
+                const total = (res.total_pendientes || 0) + (res.total_confirmadas || 0);
+                if (total > 0) {
+                    const nombreCorto = res.nombre.length > 30 ? res.nombre.substring(0, 27) + '...' : res.nombre;
+                    toursReservados[nombreCorto] = total;
+                }
+            }
+        });
+    }
+    if (Object.keys(toursReservados).length === 0 && reservas && reservas.length > 0) {
+        reservas.forEach(reserva => {
+            if (reserva.entidad_nombre) {
+                const nombreCorto = reserva.entidad_nombre.length > 30 ? reserva.entidad_nombre.substring(0, 27) + '...' : reserva.entidad_nombre;
+                toursReservados[nombreCorto] = (toursReservados[nombreCorto] || 0) + 1;
+            }
+        });
+    }
+    let topTours = Object.entries(toursReservados)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 5);
+    if (topTours.length === 0) {
+        topTours = [['Sin reservas', 0]];
+    }
+    return {
+        labels: topTours.map(([nombre]) => nombre),
+        datasets: [{
+            label: 'Tours Más Reservados',
+            data: topTours.map(([, cantidad]) => cantidad),
+            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+        }]
+    };
 });
 </script>

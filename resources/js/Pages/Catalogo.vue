@@ -337,62 +337,92 @@ watch(isAuthenticated, (newValue, oldValue) => {
                     </Link>
                 </template>
                 <template v-else>
-                    <div class="relative user-menu-dropdown">
-                        <button @click="toggleUserMenu"
-                            class="flex items-center space-x-2 sm:space-x-3 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white/95 hover:bg-red-50 border-2 border-red-200 hover:border-red-300 shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2 transform hover:scale-105"
-                            :title="user?.email"
-                        >
-                            <span class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-r from-red-600 to-red-500 flex items-center justify-center text-white font-bold text-sm sm:text-base shadow-lg">
-                                {{ (user?.name || user?.email)?.charAt(0).toUpperCase() }}
-                            </span>
-                            <span class="text-sm sm:text-base text-gray-800 font-semibold max-w-[80px] sm:max-w-[100px] md:max-w-[120px] truncate hidden xs:block">
-                                {{ user?.name || user?.email }}
-                            </span>
-                            <FontAwesomeIcon :icon="faChevronDown" class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 transition-transform duration-200" :class="{ 'rotate-180': userMenuOpen }" />
-                        </button>
-                        
-                        <div v-show="userMenuOpen"
-                            class="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 transition-all duration-200 transform origin-top-right"
-                            :class="userMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'"
-                        >
-                            <!-- Header del usuario -->
-                            <div class="px-4 py-3 border-b border-gray-100 bg-gray-50 rounded-t-lg">
-                                <div class="flex items-center space-x-3">
-                                    <span class="w-10 h-10 rounded-full bg-gradient-to-r from-red-600 to-red-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                                        {{ (user?.name || user?.email)?.charAt(0).toUpperCase() }}
-                                    </span>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="font-semibold text-gray-900 truncate">{{ user?.name || 'Usuario' }}</div>
-                                        <div class="text-xs text-gray-500 truncate">{{ user?.email }}</div>
-                                    </div>
-                                </div>
+                  <div class="relative user-menu-dropdown">
+                    <button @click="toggleUserMenu"
+                      class="flex items-center px-3 py-2 rounded-xl bg-white/80 backdrop-blur-sm hover:bg-gradient-to-r hover:from-red-600 hover:to-red-500 hover:text-white transition-all duration-200 shadow-lg border border-red-100/50 group focus:outline-none focus:ring-2 focus:ring-red-300/50"
+                      :title="user?.email"
+                    >
+                      <span class="font-semibold text-sm sm:text-base text-gray-700 mr-2 group-hover:text-white transition-colors duration-200">
+                        Mi perfil
+                      </span>
+                      <FontAwesomeIcon
+                        :icon="faUser"
+                        class="w-4 h-4 sm:w-5 sm:h-5 text-red-600 group-hover:text-white transition-colors duration-200 drop-shadow-sm"
+                      />
+                      <FontAwesomeIcon :icon="faChevronDown" class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 transition-transform duration-200 ml-2" :class="{ 'rotate-180': userMenuOpen }" />
+                    </button>
+                    <transition 
+                      enter-active-class="transition-all duration-200"
+                      leave-active-class="transition-all duration-150"
+                      enter-from-class="opacity-0 scale-95 -translate-y-1"
+                      leave-to-class="opacity-0 scale-95 -translate-y-1"
+                    >
+                      <div
+                        v-show="userMenuOpen"
+                        class="absolute right-0 mt-3 w-80 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-red-100/50 z-[9999] overflow-hidden"
+                        style="box-shadow: 0 25px 50px -12px rgba(220, 38, 38, 0.25);"
+                        :class="userMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'"
+                      >
+                        <!-- Elementos decorativos -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-red-100/30 via-transparent to-red-100/30"></div>
+                        <!-- Header del perfil profesional -->
+                        <div class="relative px-6 py-5 bg-gradient-to-b from-red-600 via-red-500 to-red-400 text-white">
+                          <div class="flex items-center space-x-4">
+                            <div class="relative">
+                              <img
+                                :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || user?.email)}&background=dc2626&color=fff&size=96&bold=true`"
+                                class="w-14 h-14 rounded-full border-3 border-white shadow-xl"
+                                alt="Avatar del usuario"
+                              />
+                              <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-gradient-to-br from-red-400 to-red-600 border-2 border-white rounded-full shadow"></div>
                             </div>
-
-                            <!-- Opciones del menú -->
-                            <div class="py-2">
-                                <Link 
-                                    :href="route('profile.edit')"
-                                    class="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
-                                    @click="userMenuOpen = false"
-                                >
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                    </svg>
-                                    <span class="font-medium">Mi Perfil</span>
-                                </Link>
-
-                                <div class="border-t border-gray-100 mt-2 pt-2">
-                                    <button
-                                        @click="logout"
-                                        class="w-full flex items-center gap-3 px-4 py-2.5 text-red-700 hover:bg-red-50 transition-colors duration-200 font-medium"
-                                    >
-                                        <FontAwesomeIcon :icon="faDoorOpen" class="w-5 h-5" />
-                                        <span>Cerrar Sesión</span>
-                                    </button>
-                                </div>
+                            <div class="flex-1 min-w-0">
+                              <h3 class="text-base font-bold text-white truncate">
+                                {{ user?.name || 'Usuario' }}
+                              </h3>
+                              <p class="text-sm text-red-100 truncate opacity-90">
+                                {{ user?.email }}
+                              </p>
                             </div>
+                          </div>
+                          <!-- Sin rol -->
                         </div>
-                    </div>
+                        <!-- Opciones del menú profesional -->
+                        <div class="relative py-3 bg-white/95 backdrop-blur-sm">
+                          <Link
+                            :href="route('profile.edit')"
+                            class="flex items-center px-6 py-3.5 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-700 transition-all duration-200 group hover:scale-[1.02] transform"
+                            @click="userMenuOpen = false"
+                          >
+                            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-red-100 to-red-50 text-red-600 mr-4 group-hover:from-red-200 group-hover:to-red-100 group-hover:scale-110 transition-all duration-200 shadow-sm">
+                              <FontAwesomeIcon :icon="faUser" class="w-4 h-4" />
+                            </div>
+                            <div class="flex flex-col">
+                              <span class="font-semibold">Editar Perfil</span>
+                              <span class="text-xs text-gray-500 mt-0.5">Actualizar información personal</span>
+                            </div>
+                          </Link>
+                          <div class="relative my-3 mx-6">
+                            <div class="absolute inset-0 flex items-center">
+                              <div class="w-full border-t border-red-100"></div>
+                            </div>
+                          </div>
+                          <button
+                            class="flex items-center w-full px-6 py-3.5 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-700 transition-all duration-200 group hover:scale-[1.02] transform"
+                            @click="logout"
+                          >
+                            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 text-gray-600 mr-4 group-hover:from-red-200 group-hover:to-red-100 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200 shadow-sm">
+                              <FontAwesomeIcon :icon="faDoorOpen" class="w-4 h-4" />
+                            </div>
+                            <div class="flex flex-col">
+                              <span class="font-semibold">Cerrar Sesión</span>
+                              <span class="text-xs text-gray-500 mt-0.5">Salir de forma segura</span>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    </transition>
+                  </div>
                 </template>
             </div>
         </div>
