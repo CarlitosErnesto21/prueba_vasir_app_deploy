@@ -14,6 +14,9 @@ class InformePDFController extends Controller
 {
     public function descargarInforme(Request $request)
     {
+        // Establecer el locale de Carbon a español ANTES de cualquier uso de translatedFormat
+        Carbon::setLocale('es');
+
         $meses = $request->input('meses', []);
         if (empty($meses)) {
             $meses = [date('Y-m')];
@@ -117,9 +120,6 @@ class InformePDFController extends Controller
             'fecha_emision' => $fecha_emision,
             'direccion' => 'Chalatenango, El Salvador',
         ];
-
-        // Establecer el locale de Carbon a español
-        Carbon::setLocale('es');
 
         $nombreArchivo = "informe_{$fecha_hora}.pdf";
 

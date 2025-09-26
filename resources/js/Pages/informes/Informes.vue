@@ -4,24 +4,6 @@ import { Head } from '@inertiajs/vue3'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
 
-// Locale español para PrimeVue DatePicker
-const esLocale = {
-  firstDayOfWeek: 1,
-  dayNames: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
-  dayNamesShort: ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'],
-  dayNamesMin: ['D', 'L', 'M', 'X', 'J', 'V', 'S'],
-  monthNames: [
-    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
-  ],
-  monthNamesShort: [
-    'ene', 'feb', 'mar', 'abr', 'may', 'jun',
-    'jul', 'ago', 'sep', 'oct', 'nov', 'dic'
-  ],
-  today: 'Hoy',
-  clear: 'Limpiar'
-}
-
 // Reactive window size for responsive iframe
 const windowWidth = ref(window.innerWidth)
 
@@ -116,35 +98,41 @@ async function descargarPDF() {
     meses = mesesFiltrados.value
   }
   meses.forEach(mes => params.append('meses[]', mes))
-    
+
   try {
     showToast('info', 'Generando informe...', '', 2000)
-    
     const response = await fetch(`/descargar-informe?${params.toString()}`)
-    
-    // Check if response is JSON (error) or PDF (success)
     const contentType = response.headers.get('content-type')
-    
     if (contentType && contentType.includes('application/json')) {
-      // Handle JSON error response
       const errorData = await response.json()
       showToast('warn', 'Sin datos', errorData.message || 'No se encontraron datos para el periodo seleccionado', 5000)
       return
     }
-    
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-
-    // Handle PDF response - create blob URL for iframe
-    const blob = await response.blob()
-    const url = window.URL.createObjectURL(blob)
-    pdfUrl.value = url
-    
-    showToast('success', 'Vista previa lista', 'Informe generado correctamente', 2500)
+    // Detectar si es móvil o tablet
+    const isMobileOrTablet = window.innerWidth < 1024
+    if (isMobileOrTablet) {
+      // Descargar el PDF directamente
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'informe_cupos_vendidos_vasir.pdf'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+      showToast('success', 'Descarga iniciada', 'El informe PDF se está descargando.', 2500)
+    } else {
+      // Abrir en nueva ventana (solo escritorio)
+      window.open(`/descargar-informe?${params.toString()}`, '_blank')
+      showToast('success', 'Informe abierto', 'El informe se abrió en una nueva ventana.', 2500)
+    }
   } catch (error) {
-    console.error('Error al generar el informe:', error)
-    showToast('error', 'Error', 'Error al generar el informe. Por favor, inténtelo de nuevo.', 5000)
+    console.error('Error al abrir el informe:', error)
+    showToast('error', 'Error', 'Error al abrir el informe. Por favor, inténtelo de nuevo.', 5000)
   }
 }
 
@@ -160,45 +148,50 @@ function limpiarFechas() {
   <Head title="Informe de Tours" />
   <AuthenticatedLayout>
     <Toast />
-    <div class="min-h-[70vh] flex flex-col lg:flex-row items-start justify-start lg:justify-center py-10 bg-gray-50 gap-8">
-      <!-- Formulario centrado en móviles, izquierda en desktop -->
-      <div class="bg-white rounded-xl shadow-2xl border border-blue-100 px-8 py-10 max-w-lg w-full flex flex-col items-center lg:sticky lg:top-8 lg:self-start">
-        <img
-          src="../../../../imagenes/logo.png"
-          alt="Logo VASIR"
-          class="w-32 h-auto mb-6 drop-shadow-lg"
-          loading="lazy"
-        />
-        <div class="flex items-center gap-3 mb-3">
-          <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <div class="min-h-[70vh] flex flex-col items-center justify-center py-4 px-2 sm:px-4 md:px-8 bg-gray-50">
+      <!-- Formulario responsive -->
+      <div class="bg-white rounded-xl shadow-2xl border border-blue-100 px-3 py-4 sm:px-8 sm:py-10 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl flex flex-col items-center gap-3">
+        <div class="flex items-center gap-2 sm:gap-3 mb-3">
+          <svg class="w-7 h-7 sm:w-8 sm:h-8 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a4 4 0 014-4h6M9 17v2a4 4 0 004 4h6M9 17H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4"></path>
           </svg>
-          <h1 class="text-xl lg:text-2xl font-extrabold text-gray-800 tracking-tight">Informe de Cupos Vendidos Mensuales por Tour</h1>
+          <h1 class="text-lg sm:text-xl md:text-2xl font-extrabold text-gray-800 tracking-tight text-center">Informe de Cupos Vendidos Mensuales por Tour</h1>
         </div>
-        <p class="text-gray-600 mb-5 text-center text-base">
+        <p class="text-gray-600 mb-3 sm:mb-5 text-center text-sm sm:text-base">
           Seleccione el rango de meses o un solo mes para generar el informe PDF.
         </p>
-        <!-- Radio para activar el calendario de mes único y botón limpiar fechas en la misma fila -->
-        <div class="w-full flex items-center mb-3 gap-3">
-          <input
-            id="radio-mes-unico"
-            type="radio"
-            v-model="modoSeleccion"
-            value="unico"
-            class="mr-2 accent-blue-600"
-          />
-          <label for="radio-mes-unico" class="font-semibold text-gray-700 cursor-pointer select-none mr-2">
-            Seleccionar un solo mes
+        <!-- Radios para selección de tipo de informe en una sola fila -->
+        <div class="w-full flex flex-row items-center justify-between mb-2 gap-2">
+          <label class="flex items-center gap-2 flex-1">
+            <input
+              id="radio-mes-unico"
+              type="radio"
+              v-model="modoSeleccion"
+              value="unico"
+              class="accent-blue-600"
+            />
+            <span class="font-semibold text-gray-700 cursor-pointer select-none text-sm">Por mes</span>
+          </label>
+          <label class="flex items-center gap-2 flex-1">
+            <input
+              id="radio-activar-fechas"
+              type="radio"
+              v-model="modoSeleccion"
+              value="rango"
+              class="accent-blue-600"
+            />
+            <span class="font-semibold text-gray-700 cursor-pointer select-none text-sm">Varios meses</span>
           </label>
           <button
             @click="limpiarFechas"
-            class="px-4 py-1 bg-gray-200 text-gray-700 rounded-lg shadow hover:bg-gray-300 transition font-semibold text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg shadow hover:bg-gray-300 transition font-semibold text-xs border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
           >
-            Limpiar fechas
+            <span class="block sm:hidden">Limpiar</span>
+            <span class="hidden sm:block">Limpiar fechas</span>
           </button>
         </div>
         <!-- Calendario para seleccionar solo un mes -->
-        <div class="w-full mb-5">
+        <div class="w-full mb-3 sm:mb-5">
           <label for="mes-unico-picker" class="block mb-2 font-semibold text-gray-700">Mes único:</label>
           <DatePicker
             id="mes-unico-picker"
@@ -206,28 +199,15 @@ function limpiarFechas() {
             view="month"
             dateFormat="MM yy"
             showIcon
-            class="w-full"
+            class="w-full text-xs sm:text-sm"
             placeholder="Seleccione un mes"
             :manualInput="false"
             :maxDate="today"
             :minDate="minMesUnico"
-            :locale="esLocale"
             :disabled="modoSeleccion !== 'unico'"
           />
         </div>
-        <div class="w-full flex items-center mb-5 gap-3">
-          <input
-            id="radio-activar-fechas"
-            type="radio"
-            v-model="modoSeleccion"
-            value="rango"
-            class="mr-2 accent-blue-600"
-          />
-          <label for="radio-activar-fechas" class="font-semibold text-gray-700 cursor-pointer select-none mr-2">
-            Activar selección de meses
-          </label>
-        </div>
-        <div class="w-full mb-4 flex flex-col sm:flex-row gap-4">
+        <div class="w-full mb-2 flex flex-col sm:flex-row gap-2 sm:gap-4">
           <div class="flex-1">
             <label for="desde-picker" class="block mb-2 font-semibold text-gray-700">Desde:</label>
             <DatePicker
@@ -236,11 +216,10 @@ function limpiarFechas() {
               view="month"
               dateFormat="MM yy"
               showIcon
-              class="w-full"
+              class="w-full text-xs sm:text-sm"
               placeholder="Seleccione mes"
               :manualInput="false"
               :maxDate="today"
-              :locale="esLocale"
               :disabled="modoSeleccion !== 'rango'"
             />
           </div>
@@ -252,51 +231,28 @@ function limpiarFechas() {
               view="month"
               dateFormat="MM yy"
               showIcon
-              class="w-full"
+              class="w-full text-xs sm:text-sm"
               placeholder="Seleccione mes"
               :manualInput="false"
               :maxDate="today"
               :minDate="desde"
-              :locale="esLocale"
               :disabled="modoSeleccion !== 'rango'"
             />
           </div>
         </div>
         <!-- Botones en línea centrados -->
-                <div class="w-full flex flex-row gap-3 mb-4 justify-center">
+        <div class="w-full flex flex-col sm:flex-row gap-2 sm:gap-3 mb-2 justify-center items-center">
           <button
             @click="descargarPDF"
-            class="bg-gradient-to-r from-red-800 to-red-500 flex items-center gap-2 px-7 py-2 text-white rounded-lg shadow-lg hover:from-red-900 hover:to-red-600 transition font-semibold text-base border border-red-800 focus:outline-none focus:ring-2 focus:ring-red-400"
+            class="bg-gradient-to-r from-red-800 to-red-500 flex items-center gap-2 px-5 py-2 text-white rounded-lg shadow-lg hover:from-red-900 hover:to-red-600 transition font-semibold text-xs sm:text-base border border-red-800 focus:outline-none focus:ring-2 focus:ring-red-400"
             :disabled="!puedeGenerar"
             :class="{ 'opacity-60 cursor-not-allowed': !puedeGenerar }"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
             </svg>
-            Vista previa PDF
+            Descargar PDF
           </button>
-        </div>
-      </div>
-      
-      <!-- Vista previa PDF - Responsive para todas las pantallas -->
-      <div class="w-full lg:flex-1 lg:max-w-4xl flex flex-col items-center">
-        <div v-if="pdfUrl" class="w-full flex flex-col items-center">
-          <iframe
-            :src="pdfUrl"
-            width="100%"
-            :height="iframeHeight"
-            class="border rounded shadow w-full max-w-full"
-            style="min-height:400px;"
-          ></iframe>
-        </div>
-        <div v-else class="w-full h-96 lg:h-[600px] flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg bg-white">
-          <div class="text-center px-6">
-            <svg class="mx-auto mb-4 w-16 h-16 text-gray-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
-            </svg>
-            <div class="text-lg font-semibold text-gray-500 mb-2">Aquí se mostrará la vista previa del PDF</div>
-            <div class="text-sm text-gray-400">Seleccione las fechas y genere el informe</div>
-          </div>
         </div>
       </div>
     </div>

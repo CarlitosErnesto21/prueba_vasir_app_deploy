@@ -231,7 +231,7 @@ onBeforeUnmount(() => {
                                 <div class="absolute inset-0 bg-gradient-to-br from-red-100/30 via-transparent to-red-100/30"></div>
                                 
                                 <!-- Header del perfil profesional -->
-                                <div class="relative px-6 py-5 bg-gradient-to-r from-red-600 via-red-700 to-red-600 text-white">
+                                <div class="relative px-6 py-5 bg-gradient-to-b from-red-600 via-red-500 to-red-400 text-white">
                                     <div class="flex items-center space-x-4">
                                         <div class="relative">
                                             <img
@@ -241,7 +241,8 @@ onBeforeUnmount(() => {
                                                 class="w-14 h-14 rounded-full border-3 border-white shadow-xl"
                                                 alt="Avatar del usuario"
                                             />
-                                            <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full animate-pulse"></div>
+                                            <!-- Decoración de avatar -->
+                                            <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-gradient-to-br from-red-400 to-red-600 border-2 border-white rounded-full shadow"></div>
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <h3 class="text-base font-bold text-white truncate">
@@ -252,18 +253,14 @@ onBeforeUnmount(() => {
                                             </p>
                                         </div>
                                     </div>
-                                    <div class="mt-4 flex justify-between items-center">
-                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-white/20 text-white backdrop-blur-sm border border-white/20">
-                                            <div class="w-2 h-2 bg-white rounded-full mr-2 opacity-90 animate-pulse"></div>
+                                    <div class="mt-4 flex items-center">
+                                        <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-white/20 text-white backdrop-blur-sm border border-white/20 shadow">
+                                            <svg class="w-2 h-2 mr-2 opacity-90" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"/></svg>
                                             {{ user?.roles && user.roles.length > 0
                                                 ? user.roles[0].name.charAt(0).toUpperCase() + user.roles[0].name.slice(1)
                                                 : "Invitado"
                                             }}
                                         </span>
-                                        <div class="text-xs text-red-100 opacity-90 flex items-center">
-                                            <div class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
-                                            En línea
-                                        </div>
                                     </div>
                                 </div>
 
