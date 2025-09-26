@@ -114,20 +114,28 @@ async function descargarPDF() {
     // Detectar si es móvil o tablet
     const isMobileOrTablet = window.innerWidth < 1024
     if (isMobileOrTablet) {
-      // Descargar el PDF directamente
+      // Descargar el PDF directamente y usar el nombre del backend
       const blob = await response.blob()
+      let filename = 'informe.pdf'
+      const disposition = response.headers.get('Content-Disposition') || response.headers.get('content-disposition')
+      if (disposition) {
+        const match = disposition.match(/filename="?([^";]+)"?/i)
+        if (match && match[1]) {
+          filename = match[1]
+        }
+      }
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'informe_cupos_vendidos_vasir.pdf'
+      a.download = filename
       document.body.appendChild(a)
       a.click()
       a.remove()
       window.URL.revokeObjectURL(url)
-      showToast('success', 'Descarga iniciada', 'El informe PDF se está descargando.', 2500)
+      showToast('success', 'Descarga iniciada', `El informe PDF (${filename}) se está descargando.`, 2500)
     } else {
-      // Abrir en nueva ventana (solo escritorio)
-      window.open(`/descargar-informe?${params.toString()}`, '_blank')
+      // Abrir en nueva ventana (solo escritorio) y permitir vista previa
+      window.open(`/descargar-informe?${params.toString()}&preview=1`, '_blank')
       showToast('success', 'Informe abierto', 'El informe se abrió en una nueva ventana.', 2500)
     }
   } catch (error) {

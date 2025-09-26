@@ -1,9 +1,9 @@
 <template>
-  <div class="h-screen flex items-center justify-center bg-gray-100 p-4">
+  <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4 overflow-hidden" style="touch-action:none; overscroll-behavior:contain; padding-top:0;">
     <!-- Contenedor principal responsive -->
     <div class="relative w-full max-w-xs sm:max-w-sm md:max-w-2xl lg:max-w-4xl xl:max-w-5xl 
                 h-auto md:h-[500px]
-                bg-gray-100 rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row">
+                bg-transparent rounded-xl shadow-lg overflow-hidden flex flex-col md:flex-row">
       
       <!-- Panel lateral animado - solo visible en desktop -->
       <div

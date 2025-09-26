@@ -7,6 +7,7 @@ import { FilterMatchMode } from "@primevue/core/api";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faCheck, faExclamationTriangle, faFilter, faImages, faPencil, faPlus, faSignOut, faTrashCan, faXmark, faTags } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
+axios.defaults.withCredentials = true;
 
 const toast = useToast();
 

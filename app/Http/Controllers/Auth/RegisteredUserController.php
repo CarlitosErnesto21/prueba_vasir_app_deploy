@@ -31,11 +31,29 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|lowercase|email:rfc,dns|max:255|unique:users,email',
+                'password' => [
+                    'required',
+                    'confirmed',
+                    'min:8',
+                    'regex:/[A-Z]/', // al menos una mayúscula
+                    'regex:/[0-9]/', // al menos un número
+                ],
+            ], [
+                'email.required' => 'El correo electrónico es obligatorio.',
+                'email.email' => 'El formato del correo electrónico no es válido.',
+                'email.unique' => 'Este correo ya está registrado.',
+                'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+                'password.regex' => 'La contraseña debe incluir al menos una letra mayúscula y un número.',
+                'password.confirmed' => 'Las contraseñas no coinciden.'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Enviar los mensajes personalizados al frontend
+            throw $e;
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -85,7 +103,36 @@ class RegisteredUserController extends Controller
         if ($user->hasRole('admin') || $user->hasRole('empleado')) {
             return redirect()->route('dashboard');
         }
-        
         return redirect()->route('inicio');
+    }
+
+    /**
+     * Endpoint para validar si el nombre de usuario ya existe
+     */
+    public function checkName(Request $request)
+    {
+        $name = $request->input('name');
+        $exists = User::where('name', $name)->exists();
+        return response()->json(['exists' => $exists]);
+    }
+
+    /**
+     * Endpoint para validar si el correo ya existe
+     */
+    public function checkEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email:rfc,dns'
+        ], [
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.email' => 'El formato del correo electrónico no es válido.'
+        ]);
+
+        $exists = User::where('email', $request->email)->exists();
+        $response = ['exists' => $exists];
+        if ($exists) {
+            $response['message'] = 'Este correo ya está registrado.';
+        }
+        return response()->json($response);
     }
 }

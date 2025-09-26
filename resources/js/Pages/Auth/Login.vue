@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue' // <-- AGREGA computed aquí
+import { ref, computed, watch } from 'vue'
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';

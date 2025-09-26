@@ -1,10 +1,101 @@
 <script setup>
+// Validación de campos obligatorios
+const isFormIncomplete = computed(() => {
+    return !form.name || !form.email || !form.password || !form.password_confirmation;
+});
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
+// Estado y validación para nombre de usuario existente
+const nameExists = ref(false);
+const nameCheckLoading = ref(false);
+const nameCheckError = ref('');
+
+// Estado y validación para correo existente
+const emailExists = ref(false);
+const emailCheckLoading = ref(false);
+const emailCheckError = ref('');
+
+onMounted(() => {
+    watch(
+        () => form.name,
+        async (newName) => {
+            nameCheckError.value = '';
+            nameExists.value = false;
+            if (!newName || newName.length < 3) return;
+            nameCheckLoading.value = true;
+            try {
+                const response = await fetch('/api/auth/check-name', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ name: newName })
+                });
+                const data = await response.json();
+                nameExists.value = !!data.exists;
+                if (nameExists.value) {
+                    nameCheckError.value = 'Este nombre ya está registrado.';
+                }
+            } catch (e) {
+                nameCheckError.value = 'No se pudo validar el nombre.';
+            } finally {
+                nameCheckLoading.value = false;
+            }
+        }
+    );
+
+    watch(
+        () => form.email,
+        async (newEmail) => {
+            emailCheckError.value = '';
+            emailExists.value = false;
+            if (!newEmail || newEmail.length < 5) return;
+            // Validación de formato de correo en frontend (más estricta)
+            if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(newEmail)) {
+                emailCheckError.value = 'El correo electrónico no tiene un formato válido.';
+                emailExists.value = false;
+                return;
+            }
+            emailCheckLoading.value = true;
+            try {
+                const response = await fetch('/api/auth/check-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ email: newEmail })
+                });
+                if (response.status === 422) {
+                    response.json().then(errorData => {
+                        if (errorData.errors && errorData.errors.email && errorData.errors.email.length) {
+                            emailCheckError.value = errorData.errors.email[0];
+                        } else {
+                            emailCheckError.value = 'El formato del correo electrónico no es válido.';
+                        }
+                        emailExists.value = false;
+                    });
+                    return;
+                }
+                const data = await response.json();
+                emailExists.value = !!data.exists;
+                if (emailExists.value) {
+                    emailCheckError.value = data.message || 'Este correo ya está registrado.';
+                }
+            } catch (e) {
+                // No mostrar el error en consola, solo mostrar mensaje al usuario
+                emailCheckError.value = 'No se pudo validar el correo.';
+            } finally {
+                emailCheckLoading.value = false;
+            }
+        }
+    );
+});
 
 const props = defineProps({
     isRegister: Boolean
@@ -14,11 +105,39 @@ const props = defineProps({
 const showPassword = ref(false);
 const showPasswordConfirmation = ref(false);
 
+
 const form = useForm({
     name: '',
     email: '',
     password: '',
     password_confirmation: '',
+});
+
+// Validaciones reactivas de contraseña
+const passwordErrors = computed(() => {
+    const errors = [];
+    const value = form.password || '';
+    if (value.length > 0 && value.length < 8) {
+        errors.push('La contraseña debe tener al menos 8 caracteres.');
+    }
+    if (value.length > 0 && !/[A-Z]/.test(value)) {
+        errors.push('La contraseña debe incluir al menos una letra mayúscula.');
+    }
+    if (value.length > 0 && !/[0-9]/.test(value)) {
+        errors.push('La contraseña debe incluir al menos un número.');
+    }
+    return errors;
+});
+
+// Validación reactiva para confirmar contraseña
+const passwordConfirmationError = computed(() => {
+    if (
+        form.password_confirmation.length > 0 &&
+        form.password !== form.password_confirmation
+    ) {
+        return 'Las contraseñas no coinciden.';
+    }
+    return '';
 });
 
 const submit = () => {
@@ -81,7 +200,7 @@ const submit = () => {
         <h1 class="text-xl font-bold text-gray-800">Crear Cuenta</h1>
     </div>
 
-    <form @submit.prevent="submit" class="w-full max-w-sm mx-auto space-y-3">
+    <form @submit.prevent="submit" class="w-full max-w-sm mx-auto space-y-3" novalidate>
             <!-- Campo Nombre -->
             <div class="space-y-1">
                 <InputLabel for="register-name" value="Nombre Completo:" 
@@ -97,6 +216,8 @@ const submit = () => {
                     placeholder="Tu nombre completo"
                 />
                 <InputError class="mt-1 text-xs" :message="form.errors.name" />
+                <!-- <div v-if="nameCheckLoading" class="mt-1 text-xs text-gray-400">Verificando nombre...</div> -->
+                <div v-if="nameCheckError" class="mt-1 text-xs text-red-500">{{ nameCheckError }}</div>
             </div>
 
             <!-- Campo Email -->
@@ -105,14 +226,20 @@ const submit = () => {
                            class="text-sm font-semibold text-gray-700"/>
                 <TextInput
                     id="register-email"
-                    type="email"
-                    class="mt-1 block w-full text-sm sm:text-base rounded-lg border border-gray-300 focus:border-red-500 focus:ring-red-500 transition-colors"
+                    type="text"
                     v-model="form.email"
+                    class="mt-1 block w-full text-sm sm:text-base rounded-lg border transition-colors"
+                    :class="{
+                        'border-red-500 focus:border-red-500 focus:ring-red-500': emailCheckError,
+                        'border-green-500 focus:border-green-500 focus:ring-green-500': !emailCheckError && form.email.length > 5 && !emailExists
+                    }"
                     required
                     autocomplete="username"
                     placeholder="correo@ejemplo.com"
                 />
                 <InputError class="mt-1 text-xs" :message="form.errors.email" />
+                <!-- <div v-if="emailCheckLoading" class="mt-1 text-xs text-gray-400">Verificando correo...</div> -->
+                <div v-if="emailCheckError" class="mt-1 text-xs text-red-500">{{ emailCheckError }}</div>
             </div>
 
             <!-- Campo Contraseña -->
@@ -145,9 +272,8 @@ const submit = () => {
                     </button>
                 </div>
                 <InputError class="mt-1 text-xs" :message="form.errors.password" />
-                <!-- Indicador de fortaleza de contraseña -->
-                <div class="mt-1 text-xs text-gray-500">
-                    Mínimo 8 caracteres, incluye mayúsculas y números
+                <div v-if="passwordErrors.length" class="mt-1 text-xs text-red-500 space-y-1">
+                    <div v-for="(err, i) in passwordErrors" :key="i">{{ err }}</div>
                 </div>
             </div>
 
@@ -187,14 +313,17 @@ const submit = () => {
                     class="mt-1 text-xs"
                     :message="form.errors.password_confirmation"
                 />
+                <div v-if="passwordConfirmationError" class="mt-1 text-xs text-red-500">
+                    {{ passwordConfirmationError }}
+                </div>
             </div>
 
             <!-- Botón de envío -->
             <div class="pt-2 flex justify-center">
                 <PrimaryButton
                     class="px-8 sm:px-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 focus:ring-red-500 text-white font-semibold py-2.5 sm:py-3 text-sm sm:text-base rounded-lg transition-all duration-300 transform hover:scale-[1.02] focus:scale-[1.02] shadow-lg hover:shadow-xl"
-                    :class="{ 'opacity-50 cursor-not-allowed': form.processing }"
-                    :disabled="form.processing"
+                    :class="{ 'opacity-50 cursor-not-allowed': form.processing || passwordErrors.length || passwordConfirmationError || isFormIncomplete || nameExists || emailExists }"
+                    :disabled="form.processing || passwordErrors.length || passwordConfirmationError || isFormIncomplete || nameExists || emailExists"
                 >
                     <span v-if="form.processing" class="flex items-center justify-center">
                         <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

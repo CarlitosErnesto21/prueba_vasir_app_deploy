@@ -709,11 +709,10 @@ watch(isAuthenticated, (newValue, oldValue) => {
       
       <div class="relative max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div class="space-y-4">
-          <div class="flex items-center space-x-3 mb-4">
-            <div class="w-10 h-10 bg-gradient-to-br from-white to-red-100 rounded-full flex items-center justify-center shadow-lg">
-              <span class="text-red-700 font-bold text-lg">V</span>
-            </div>
-            <h3 class="font-bold text-2xl bg-gradient-to-r from-white to-red-100 bg-clip-text text-transparent">Vasir</h3>
+          <div class="flex items-center space-x-1 mb-4">
+            <span class="font-bold text-2xl bg-gradient-to-r from-white to-red-100 bg-clip-text text-transparent">VAS</span>
+            <img src="/images/vasir.ico" alt="Pin Vasir" class="w-5 h-6 mx-1" style="vertical-align: middle;" />
+            <span class="font-bold text-2xl bg-gradient-to-r from-white to-red-100 bg-clip-text text-transparent">R</span>
           </div>
           <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
             <p class="text-sm leading-relaxed text-red-50">
@@ -724,7 +723,7 @@ watch(isAuthenticated, (newValue, oldValue) => {
                 - Paquetes vacacionales<br>
                 - Boletos aéreos y traslados<br>
                 - Estadías en hoteles<br>
-                - 🇺� Trámite de visas
+                - Trámite de visas
               </span><br><br>
               <span class="font-bold text-yellow-300 text-lg">¡Viajá con propósito!</span>
             </p>

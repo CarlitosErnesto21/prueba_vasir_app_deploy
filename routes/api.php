@@ -18,6 +18,7 @@ use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\TransporteController;
 use App\Http\Controllers\TipoDocumentoController;
 use App\Http\Controllers\PaqueteController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 // Eliminamos el import del controlador de API y usamos solo el principal
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -71,6 +72,12 @@ Route::prefix('clientes')->group(function () {
     Route::patch('/{cliente}/toggle-status', [ClienteController::class, 'toggleStatus']);
     Route::get('/tipos-documento-options', [ClienteController::class, 'getTiposDocumento']);
 });
+
+// Endpoint para validación de nombre de usuario en registro
+Route::post('/auth/check-name', [RegisteredUserController::class, 'checkName']);
+
+// Endpoint para validación de correo en registro
+Route::post('/auth/check-email', [RegisteredUserController::class, 'checkEmail']);
 
 // Rutas de Categorías de Productos
 Route::prefix('categorias-productos')->name('categorias-productos.')->group(function () {

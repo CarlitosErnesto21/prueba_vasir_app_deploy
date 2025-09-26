@@ -27,17 +27,23 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request)
     {
-        $request->authenticate();
-        $request->session()->regenerate();
+        try {
+            $request->authenticate();
+            $request->session()->regenerate();
 
-        $user = Auth::user();
+            $user = Auth::user();
 
-        if ($user && $user->hasRole('admin') || $user->hasRole('empleado')) {
-            return redirect()->route('dashboard');
-        } else {
-            return redirect()->route('inicio');
+            if ($user && $user->hasRole('admin') || $user->hasRole('empleado')) {
+                return redirect()->route('dashboard');
+            } else {
+                return redirect()->route('inicio');
+            }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors([
+                'email' => 'Estas credenciales no coinciden con nuestros registros.',
+            ])->withInput($request->only('email'));
         }
     }
 

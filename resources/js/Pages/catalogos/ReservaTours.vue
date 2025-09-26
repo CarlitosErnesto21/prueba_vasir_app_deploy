@@ -4,6 +4,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import axios from 'axios'
+axios.defaults.withCredentials = true
 
 // Configuración de Toast
 const toast = useToast()

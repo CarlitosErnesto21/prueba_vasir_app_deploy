@@ -124,6 +124,10 @@ class InformePDFController extends Controller
         $nombreArchivo = "informe_{$fecha_hora}.pdf";
 
         $pdf = Pdf::loadView('informes.informe', $data);
-        return $pdf->stream($nombreArchivo);
+        // Si se recibe el parámetro preview=1, mostrar en navegador (inline), si no, descargar (attachment)
+        $dispositionType = $request->input('preview') == '1' ? 'inline' : 'attachment';
+        return response($pdf->output(), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', $dispositionType . '; filename="' . $nombreArchivo . '"');
     }
 }
