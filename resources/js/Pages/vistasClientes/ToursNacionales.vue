@@ -5,6 +5,8 @@ import ModalAuthRequerido from './Modales/ModalAuthRequerido.vue'
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { router, usePage } from '@inertiajs/vue3'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { faCalendarAlt, faChevronLeft, faChevronRight, faImage, faMapMarkerAlt, faPause, faPlay, faXmark } from '@fortawesome/free-solid-svg-icons'
 
 // Recibir los props del controlador (opcional, como fallback)
 const props = defineProps({
@@ -478,25 +480,26 @@ const verMasInfo = (tour) => {
                   Tours Nacionales
                 </h1>
               </div>
-              <p class="text-base sm:text-lg text-red-100 px-4">Descubre las maravillas de El Salvador</p>
+              <p class="text-base sm:text-lg text-red-100 px-4">Descubre las maravillas de El Salvador.</p>
             </div>
 
             <!-- Stats integradas en el header -->
             <div v-if="tours.length > 0" class="bg-white py-3 px-3">
               <div class="max-w-4xl mx-auto">
                 <div class="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-6">
+
                   <!-- Stat 1: Tours Disponibles -->
-                  <div class="relative bg-gradient-to-br from-red-50 to-red-100 rounded-2xl py-8 px-2 md:p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-red-200">
+                  <div class="relative bg-gradient-to-br from-red-50 to-red-100 rounded-2xl py-8 px-2 md:p-6 text-center shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-red-200">
                       <h3 class="text-sm md:text-2xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent mb-2">
                         {{ estadisticas.totalDestinos }}
                       </h3>
-                      <p class="text-gray-700 font-semibold text-xs md:text-sm md:uppercase tracking-wide">Tours Disponibles</p>
+                      <p class="text-gray-700 font-semibold text-sm md:text-sm md:uppercase tracking-wide">Tours Disponibles</p>
                       <p class="hidden md:block text-gray-500 text-xs mt-1">Experiencias únicas</p>
                   </div>
 
                   <!-- Stat 2: Precios -->
-                  <div class="relative bg-gradient-to-br from-green-50 to-green-100 rounded-2xl py-8 px-2 md:p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-green-200">
-                      <h3 class="text-sm md:text-2xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent mb-2">
+                  <div class="relative bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl py-8 px-2 md:p-6 text-center shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-blue-200">
+                      <h3 class="text-sm md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">
                         {{ estadisticas.precioMinimo > 0 ? `Desde $${estadisticas.precioMinimo.toFixed(2)}` : 'Consultar' }}
                       </h3>
                       <p class="text-gray-700 font-semibold text-xs md:text-sm md:uppercase tracking-wide">Precios Accesibles</p>
@@ -504,13 +507,15 @@ const verMasInfo = (tour) => {
                   </div>
 
                   <!-- Stat 3: Ubicaciones -->
-                  <div class="relative bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl py-8 px-2 md:p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-blue-200">
-                      <h3 class="text-sm md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-2">
+                  <div class="relative bg-gradient-to-br from-red-50 to-red-100 rounded-2xl py-8 px-2 md:p-6 text-center shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-red-200">
+                      <h3 class="text-sm md:text-2xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent mb-2">
                         {{ estadisticas.totalPaises }}
                       </h3>
                       <p class="text-gray-700 font-semibold text-xs md:text-sm md:uppercase tracking-wide">Ubicaciones</p>
                       <p class="hidden md:block text-gray-500 text-xs mt-1">Destinos únicos</p>
                   </div>
+
+
                 </div>
               </div>
             </div>
@@ -537,9 +542,9 @@ const verMasInfo = (tour) => {
 
         <!-- Estado vacío -->
         <div v-else-if="!loading && tours.length === 0" class="text-center py-12">
-          <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl shadow-lg p-8 max-w-lg mx-auto">
+          <div class="bg-gradient-to-br from-red-50 to-indigo-50 border-2 border-red-200 rounded-xl shadow-lg p-8 max-w-lg mx-auto">
             <div class="text-6xl mb-4">🏔️</div>
-            <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">No hay tours nacionales disponibles</h3>
+            <h3 class="text-2xl font-bold bg-gradient-to-r from-red-600 to-indigo-600 bg-clip-text text-transparent mb-3">No hay tours nacionales disponibles</h3>
             <p class="text-gray-600 mb-4 leading-relaxed">Próximamente tendremos nuevos destinos nacionales.</p>
             <p class="text-sm text-gray-500">Mientras tanto, puedes explorar nuestros tours internacionales.</p>
           </div>
@@ -547,7 +552,7 @@ const verMasInfo = (tour) => {
 
         <!-- Tours Disponibles -->
         <div v-if="toursDisponibles.length > 0" class="mb-8">
-          <div class="bg-gradient-to-r from-red-400 via-red-400 to-red-400 text-white text-center py-4 px-6 rounded-t-xl mb-6">
+          <div class="bg-gradient-to-r from-red-500 via-red-500 to-red-500 text-white text-center py-4 px-6 rounded-t-sm mb-6">
             <h2 class="text-xl md:text-2xl font-bold">Tours Nacionales Disponibles</h2>
             <p class="text-red-100 text-sm mt-1">{{ toursDisponibles.length }} destino{{ toursDisponibles.length !== 1 ? 's' : '' }} con cupos disponibles</p>
           </div>
@@ -575,9 +580,7 @@ const verMasInfo = (tour) => {
                   <!-- Indicador de múltiples imágenes -->
                   <div v-if="tour.imagenes && tour.imagenes.length > 1" 
                       class="absolute top-2 left-2 bg-gradient-to-r from-black/80 to-gray-800/80 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs flex items-center border border-white/20">
-                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
-                    </svg>
+                    <FontAwesomeIcon :icon="faImage" class="w-3 h-3 mr-1" />
                     {{ tour.imagenes.length }}
                   </div>
                   <!-- Indicador de carrusel activo -->
@@ -604,30 +607,34 @@ const verMasInfo = (tour) => {
               
               <template #content>
                 <div class="flex-1 flex flex-col px-4 pb-4 min-h-0">
-                  <div class="flex-1 space-y-2 cursor-pointer hover:bg-gradient-to-br hover:from-gray-50 hover:to-red-50 transition-all duration-300 rounded-lg p-2 -m-2 border border-transparent hover:border-red-100"
-                      @click="verMasInfo(tour)">
-                    <div class="flex items-center text-xs text-gray-600 mb-2 bg-gray-50 rounded-lg p-2">
-                      <svg class="w-3 h-3 mr-2 flex-shrink-0 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
-                      </svg>
+                  <div class="flex-1 space-y-2 sm:space-y-3 cursor-pointer hover:bg-gradient-to-br hover:from-gray-50 hover:to-blue-50 transition-all duration-300 rounded-lg p-2 -m-2"
+                       @click="verMasInfo(tour)">
+                    <div class="flex items-center text-xs text-gray-500 mb-2 bg-gray-50 rounded-lg p-2 border border-gray-100 shadow-sm">
+                      <FontAwesomeIcon :icon="faMapMarkerAlt" class="w-4 h-4 mr-2 flex-shrink-0 text-red-500" />
                       <span class="truncate font-medium">{{ tour.punto_salida }}</span>
                     </div>
-                    <div class="space-y-2">
-                      <div class="bg-blue-50 rounded-lg p-2 border border-blue-100">
-                        <p class="text-xs font-bold text-blue-700 mb-1">📅 Fecha de Salida:</p>
-                        <p class="text-xs text-blue-600 font-medium">{{ formatearFecha(tour.fecha_salida) }}</p>
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-100">
+                      <div class="flex items-center gap-2 mb-2">
+                        <FontAwesomeIcon :icon="faCalendarAlt" class="w-4 h-4 text-red-500 flex-shrink-0" />
+                        <p class="text-xs font-bold bg-gradient-to-r from-red-600 to-red-600 bg-clip-text text-transparent">Fecha de Salida</p>
                       </div>
-                      <div class="bg-green-50 rounded-lg p-2 border border-green-100">
-                        <p class="text-xs font-bold text-green-700 mb-1">👥 Disponibles:</p>
-                        <p class="text-xs font-bold" :class="obtenerClaseCupos(tour)">
-                          {{ tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0 }} cupos
-                        </p>
+                      <p class="text-sm text-gray-700 font-semibold">{{ formatearFecha(tour.fecha_salida) }}</p>
+                    </div>
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border border-green-100">
+                      <div class="flex items-center gap-2 mb-2">
+                        <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <p class="text-xs font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">Cupos Disponibles</p>
                       </div>
+                      <p class="text-sm font-bold" :class="obtenerClaseCupos(tour)">
+                        {{ tour.cupos_disponibles !== null && tour.cupos_disponibles !== undefined ? tour.cupos_disponibles : 0 }} cupos
+                      </p>
                     </div>
                   </div>
                   
                   <!-- Botones profesionales - SIEMPRE VISIBLES -->
-                  <div class="flex gap-2 mt-2 pt-3 border-t border-gray-100 flex-shrink-0">
+                  <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100 flex-shrink-0">
                     <button
                       @click="reservarTour(tour)"
                       class="px-3 py-2 text-xs font-bold rounded-lg transition-all duration-300 flex-1 shadow-md hover:shadow-lg bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white transform hover:scale-105"
@@ -636,7 +643,7 @@ const verMasInfo = (tour) => {
                     </button>
                     <button
                         @click="verMasInfo(tour)"
-                        class="border-2 border-blue-500 text-blue-600 hover:text-blue-700 px-3 py-2 text-xs font-bold rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg bg-white"
+                        class="border-2 border-red-500 text-red-600 hover:red-blue-700 px-3 py-2 text-xs font-bold rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg bg-white"
                       >
                         Info
                     </button>
@@ -777,48 +784,44 @@ const verMasInfo = (tour) => {
         v-model:visible="showImageDialog" 
         modal 
         :closable="false"
-        class="max-w-4xl w-full mx-4"
+        class="max-w-3xl w-full md:w-full mx-4 z-[99999] mt-16 sm:mt-24 md:mt-24 lg:mt-24 xl:mt-24 2xl:mt-24"
         :draggable="false"
         :pt="{
-          content: { class: 'p-0 overflow-hidden rounded-lg' },
-          header: { class: 'p-0 border-none' }
+          root: { class: 'z-[99999]' },
+          mask: { class: 'z-[99999]' },
+          content: { class: 'p-0 overflow-hidden rounded-lg z-[99999]' },
+          header: { class: 'p-0 border-none z-[99999]' }
         }"
       >
         <template #header>
-          <div class="w-full bg-gradient-to-r from-red-600 to-blue-600 text-white p-6 flex items-center justify-between">
-            <h3 class="text-xl font-bold bg-gradient-to-r from-white to-red-100 bg-clip-text text-transparent">🖼️ Galería de Imágenes</h3>
+          <div class="w-full bg-gradient-to-r from-red-600 to-blue-600 text-white p-4 rounded-lg flex items-center justify-between">
+            <h3 class="text-md md:text-xl font-bold bg-gradient-to-r from-white to-red-100 bg-clip-text text-transparent">Imágenes del tour</h3>
             <div class="flex items-center gap-3">
               <button 
                 v-if="selectedTourImages.length > 1"
                 @click="toggleGalleryAutoPlay"
-                class="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-lg transition-all text-sm font-medium border border-white/30 hover:border-white/50 transform hover:scale-105"
+                class="flex items-center gap-2 px-2 py-2 bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-sm hover:from-white/30 hover:to-white/20 text-white rounded-xl transition-all text-sm font-medium border border-white/20 shadow-lg"
                 :title="isGalleryAutoPlaying ? 'Pausar carrusel automático' : 'Reanudar carrusel automático'"
               >
-                <svg v-if="isGalleryAutoPlaying" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                </svg>
-                <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
-                </svg>
+                <FontAwesomeIcon :icon="faPlay" class="w-4 h-4" v-if="isGalleryAutoPlaying"/>
+                <FontAwesomeIcon :icon="faPause" class="w-4 h-4" v-else/>
                 <span>{{ isGalleryAutoPlaying ? 'Pausar' : 'Reproducir' }}</span>
               </button>
               <!-- Botón de cerrar personalizado y visible -->
               <button 
                 @click="showImageDialog = false"
-                class="flex items-center justify-center w-10 h-10 bg-red-500/80 hover:bg-red-600 backdrop-blur-sm text-white rounded-full transition-all border-2 border-white/30 hover:border-white/50 transform hover:scale-110 shadow-lg"
+                class="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-red-500/80 to-red-600/80 backdrop-blur-sm hover:from-red-600/90 hover:to-red-700/90 text-white rounded-full transition-all border border-red-300/30 shadow-lg transform hover:scale-110"
                 title="Cerrar galería"
               >
-                <svg class="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
+                <FontAwesomeIcon :icon="faXmark" class="w-4 h-4" />
               </button>
             </div>
           </div>
         </template>
         
-        <div class="bg-gradient-to-br from-gray-50 to-white p-6">
+        <div class="bg-gradient-to-br from-gray-50 to-white p-0">
           <!-- Imagen principal -->
-          <div class="relative h-96 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl overflow-hidden mb-6 flex items-center justify-center shadow-lg border-2 border-gray-200">
+          <div class="relative h-72 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl overflow-hidden mb-6 flex items-center justify-center shadow-lg border-2 border-gray-200">
             <img 
               :src="selectedTourImages[currentImageIndex]" 
               alt="Tour imagen"
@@ -826,22 +829,18 @@ const verMasInfo = (tour) => {
             />
             
             <!-- Botones de navegación profesionales -->
-            <div v-if="selectedTourImages.length > 1" class="absolute inset-0 flex items-center justify-between p-6">
+            <div v-if="selectedTourImages.length > 1" class="absolute inset-0 flex items-center justify-between p-0 md:p-12">
               <button 
                 @click="imagenAnterior"
                 class="bg-gradient-to-r from-black/60 to-gray-800/60 backdrop-blur-sm text-white p-3 rounded-full hover:from-black/80 hover:to-gray-800/80 transition-all z-10 border border-white/20 shadow-lg transform hover:scale-110"
               >
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
+                <FontAwesomeIcon :icon="faChevronLeft" class="w-6 h-4"/>
               </button>
               <button 
                 @click="siguienteImagen"
                 class="bg-gradient-to-r from-black/60 to-gray-800/60 backdrop-blur-sm text-white p-3 rounded-full hover:from-black/80 hover:to-gray-800/80 transition-all z-10 border border-white/20 shadow-lg transform hover:scale-110"
               >
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
+                <FontAwesomeIcon :icon="faChevronRight" class="w-6 h-4"/>
               </button>
             </div>
             
@@ -853,7 +852,7 @@ const verMasInfo = (tour) => {
             
             <!-- Indicador de autoplay profesional -->
             <div v-if="selectedTourImages.length > 1 && isGalleryAutoPlaying" 
-                class="absolute top-4 right-4 bg-gradient-to-r from-green-500/90 to-green-600/90 backdrop-blur-sm text-white px-3 py-2 rounded-full text-xs font-medium z-10 flex items-center gap-2 border border-green-300/30 shadow-lg">
+                class="absolute top-4 right-4 bg-gradient-to-r from-red-500/90 to-red-600/90 backdrop-blur-sm text-white px-3 py-2 rounded-full text-xs font-medium z-10 flex items-center gap-2 border border-green-300/30 shadow-lg">
               <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
               <span>Auto</span>
             </div>
