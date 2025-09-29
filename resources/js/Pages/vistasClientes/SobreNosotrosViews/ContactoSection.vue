@@ -1,6 +1,5 @@
 <template>
   <!-- Información de contacto y ubicación -->
-  <div class="mb-8 sm:mb-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="bg-gradient-to-br from-white via-blue-50 to-red-50 rounded-xl p-6 sm:p-8 md:p-10 shadow-xl border border-gray-200">
         <div class="bg-gradient-to-r from-red-600 to-blue-600 text-white text-center py-4 sm:py-6 rounded-xl mb-6 sm:mb-8">
@@ -99,5 +98,4 @@
         </div>
       </div>
     </div>
-  </div>
 </template>

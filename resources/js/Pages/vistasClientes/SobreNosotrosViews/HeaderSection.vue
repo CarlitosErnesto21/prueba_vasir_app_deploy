@@ -1,4 +1,6 @@
 <script setup>
+import { faPencil } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { ref } from 'vue';
 
 const props = defineProps({
@@ -20,7 +22,7 @@ const estadisticas = ref([
 <template>
   <!-- Header con Estadísticas, Misión y Visión -->
   <div class="mb-8 sm:mb-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="min-h-screen px-1 sm:px-1 lg:px-2 pt-20 sm:pt-20 md:pt-28 lg:pt-32 xl:pt-28">
       <div class="bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-lg overflow-hidden">
       <!-- Header -->
       <div class="bg-gradient-to-r from-red-600 via-red-500 to-blue-600 text-white text-center py-6 sm:py-8 md:py-10">
@@ -32,7 +34,7 @@ const estadisticas = ref([
         <div v-else class="max-w-3xl mx-auto px-4">
           <div class="bg-blue-500/20 backdrop-blur-sm border border-blue-300/30 rounded-lg p-3 sm:p-4 text-sm">
             <p class="text-blue-100">
-              <strong>📝 Nota para administradores:</strong> Esta descripción puede personalizarse desde la sección "Configuración" del panel de administración.
+              <strong><FontAwesomeIcon :icon="faPencil" /> La información de VASIR se encuentra en desarrollo... ¡Sigue disfrutando de nuestros servicios!</strong>
             </p>
           </div>
         </div>

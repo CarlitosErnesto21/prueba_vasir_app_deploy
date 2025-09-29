@@ -208,7 +208,7 @@ const submit = () => {
                 <TextInput
                     id="register-name"
                     type="text"
-                    class="mt-1 block w-full text-sm sm:text-base rounded-lg border border-gray-300 focus:border-red-500 focus:ring-red-500 transition-colors"
+                    class="mt-1 block w-full text-sm sm:text-base rounded-lg bg-white text-black border border-gray-300 focus:border-red-500 focus:ring-red-500 transition-colors"
                     v-model="form.name"
                     required
                     :autofocus="isRegister"
@@ -228,7 +228,7 @@ const submit = () => {
                     id="register-email"
                     type="text"
                     v-model="form.email"
-                    class="mt-1 block w-full text-sm sm:text-base rounded-lg border transition-colors"
+                    class="mt-1 block w-full text-sm sm:text-base rounded-lg bg-white text-black border transition-colors"
                     :class="{
                         'border-red-500 focus:border-red-500 focus:ring-red-500': emailCheckError,
                         'border-green-500 focus:border-green-500 focus:ring-green-500': !emailCheckError && form.email.length > 5 && !emailExists
@@ -250,7 +250,7 @@ const submit = () => {
                     <TextInput
                         id="register-password"
                         :type="showPassword ? 'text' : 'password'"
-                        class="mt-1 block w-full text-sm sm:text-base pr-10 rounded-lg border border-gray-300 focus:border-red-500 focus:ring-red-500 transition-colors"
+                        class="mt-1 block w-full text-sm sm:text-base pr-10 rounded-lg bg-white text-black border border-gray-300 focus:border-red-500 focus:ring-red-500 transition-colors"
                         v-model="form.password"
                         required
                         autocomplete="new-password"
@@ -288,7 +288,7 @@ const submit = () => {
                     <TextInput
                         id="register-password_confirmation"
                         :type="showPasswordConfirmation ? 'text' : 'password'"
-                        class="mt-1 block w-full text-sm sm:text-base pr-10 rounded-lg border border-gray-300 focus:border-red-500 focus:ring-red-500 transition-colors"
+                        class="mt-1 block w-full text-sm sm:text-base pr-10 rounded-lg bg-white text-black border border-gray-300 focus:border-red-500 focus:ring-red-500 transition-colors"
                         v-model="form.password_confirmation"
                         required
                         autocomplete="new-password"

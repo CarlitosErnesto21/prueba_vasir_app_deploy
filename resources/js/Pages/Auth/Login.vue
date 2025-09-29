@@ -121,7 +121,7 @@ const toggleForm = () => {
                     <TextInput
                         id="login-email"
                         type="email"
-                        class="mt-1 block w-full text-sm sm:text-base rounded-lg border border-gray-300 focus:border-red-500 focus:ring-red-500 transition-colors"
+                        class="mt-1 block w-full text-sm sm:text-base rounded-lg bg-white text-black border border-gray-300 focus:border-red-500 focus:ring-red-500 transition-colors"
                         v-model="form.email"
                         required
                         :autofocus="!isRegister" 
@@ -139,7 +139,7 @@ const toggleForm = () => {
                         <TextInput
                             id="login-password"
                             :type="showPassword ? 'text' : 'password'"
-                            class="mt-1 block w-full text-sm sm:text-base pr-10 rounded-lg border border-gray-300 focus:border-red-500 focus:ring-red-500 transition-colors"
+                            class="mt-1 block w-full text-sm sm:text-base pr-10 rounded-lg bg-white text-black border border-gray-300 focus:border-red-500 focus:ring-red-500 transition-colors"
                             v-model="form.password"
                             required
                             autocomplete="current-password"

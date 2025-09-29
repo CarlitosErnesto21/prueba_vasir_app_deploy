@@ -140,7 +140,7 @@ const reservarPaquete = (paquete) => {
 <template>
   <Catalogo>
     <Toast />
-    <div class="p-4 bg-gray-50 min-h-screen">
+    <div class="p-4 bg-gray-50 min-h-screen pt-16 sm:pt-20 md:pt-28 lg:pt-32 xl:pt-28">
       <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="text-center mb-8">

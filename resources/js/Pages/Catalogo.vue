@@ -111,7 +111,6 @@ watch(isAuthenticated, (newValue, oldValue) => {
         <!-- Elementos decorativos de fondo -->
         <div class="absolute inset-0 bg-gradient-to-r from-blue-100/30 via-transparent to-red-100/30"></div>
         <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-blue-500 to-red-500 opacity-70"></div>
-        
         <div class="relative px-4 sm:px-6 md:px-6 lg:px-8 py-3 sm:py-4 md:py-4 lg:py-5 flex justify-between items-center">
             <!-- Contenedor izquierdo: Menú + Logo -->
             <div class="flex items-center space-x-3 sm:space-x-4">
@@ -727,12 +726,12 @@ watch(isAuthenticated, (newValue, oldValue) => {
     </transition>
 
     <!-- AQUÍ VA EL CONTENIDO DINÁMICO -->
-    <main class="mt-20 sm:mt-24 md:mt-28 bg-gradient-to-br from-gray-50 via-blue-50/30 to-red-50/30 min-h-screen">
+    <main class="bg-gradient-to-br from-gray-50 via-gray-50 to-gray-50 min-h-screen">
       <slot />
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gradient-to-br from-red-700 via-red-600 to-red-800 text-white mt-16 relative overflow-hidden">
+    <footer class="bg-gradient-to-br from-red-700 via-red-600 to-red-800 text-white relative overflow-hidden">
       <!-- Elementos decorativos de fondo -->
       <div class="absolute inset-0 bg-gradient-to-r from-red-900/20 via-transparent to-red-900/20"></div>
       <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-400 via-red-300 to-red-400"></div>

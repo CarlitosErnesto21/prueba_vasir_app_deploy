@@ -470,8 +470,8 @@ const verMasInfo = (tour) => {
 <template>
   <Catalogo>
     <Toast />
-    <div class="bg-gradient-to-br from-gray-50 via-white to-gray-100 min-h-screen">
-      <div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="bg-gradient-to-br from-gray-50 via-white to-gray-100 min-h-screen pt-20 sm:pt-20 md:pt-28 lg:pt-32 xl:pt-28">
+      <div class="w-full px-1 sm:px-1 lg:px-2">
         <!-- Header Profesional con Stats Integradas -->
         <div class="mb-3 sm:mb-4">
           <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl overflow-hidden border border-gray-200">
