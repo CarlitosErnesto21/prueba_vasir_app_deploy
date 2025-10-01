@@ -3,7 +3,7 @@ import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import { usePage, Link, router } from "@inertiajs/vue3";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faRoute, faDoorOpen, faUserCircle, faChevronDown, faUser, faHotel, faPlaneDeparture, faGear, faBoxesStacked,
-            faClipboardList, faBox, faHouseChimneyUser, faBars, faListCheck, faFileInvoice, faUserPen,
+            faClipboardList, faBox, faHouseChimneyUser, faBars, faFileInvoice, faUserPen,
             faTimes, faUsers, faCog } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { route } from "ziggy-js";
@@ -11,12 +11,9 @@ import { route } from "ziggy-js";
 const page = usePage();
 const user = page.props.auth?.user;
 const isSidebarOpen = ref(false);
-// El sidebar ya no se puede colapsar en escritorio
 const isOpen = ref(false);
 const showProfileMenu = ref(false);
 const isConfigDropdownOpen = ref(false);
-const configDropdownTrigger = ref(null);
-const configDropdownMenu = ref(null);
 
 // Funciones para bloquear/desbloquear scroll del body
 const lockBodyScroll = () => {
@@ -161,7 +158,7 @@ onBeforeUnmount(() => {
 <template>
     <div class="min-h-screen flex flex-col bg-white">
         <!-- Header principal profesional -->
-        <header class="bg-gradient-to-r from-white/98 via-red-50/95 to-white/98 backdrop-blur-xl text-black shadow-2xl fixed top-0 left-0 w-full z-[9999] border-b border-red-100/50 overflow-visible">
+        <header class="bg-gradient-to-r from-white/98 via-red-50/95 to-white/98 backdrop-blur-xl text-black shadow-2xl fixed top-0 left-0 w-full z-50 border-b border-red-100/50 overflow-visible">
             <!-- Elementos decorativos de fondo -->
             <div class="absolute inset-0 bg-gradient-to-r from-red-100/20 via-transparent to-red-100/20"></div>
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-red-600 to-red-500 opacity-80"></div>
