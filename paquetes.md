@@ -179,7 +179,7 @@
 
 
 const showLogoTooltip = ref(false)
-// Watcher para mostrar/ocultar tooltip del logo con retraso
+//// Watcher para mostrar/ocultar tooltip del logo con retraso
 let logoTooltipTimeout = null
 let logoTooltipHideTimeout = null
 watch(isSidebarOpen, (open) => {
