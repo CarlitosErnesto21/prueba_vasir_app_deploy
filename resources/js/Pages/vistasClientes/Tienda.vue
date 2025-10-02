@@ -347,7 +347,7 @@ const recargarDatos = async () => {
     <!-- Toast para notificaciones -->
     <Toast class="z-[9999]" />
     
-    <div class="bg-gradient-to-br from-gray-50 via-blue-50/30 to-red-50/30 min-h-screen pt-20 sm:pt-20 md:pt-28 lg:pt-32 xl:pt-28">
+    <div class="bg-gradient-to-br from-gray-50 via-blue-50/30 to-red-50/30 min-h-screen pt-20 sm:pt-20 md:pt-28 lg:pt-32 xl:pt-32">
       <div class="w-full px-1 sm:px-2 lg:px-2 pb-4 sm:pb-4 lg:pb-4">
         <!-- Header Professional -->
         <div class="mb-3 sm:mb-4">
