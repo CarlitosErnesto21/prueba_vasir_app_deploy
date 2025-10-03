@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth; // ✅ AGREGADO
+use Illuminate\Support\Facades\Auth;
 use Exception;
 
 class ProductoController extends Controller
@@ -45,7 +45,7 @@ class ProductoController extends Controller
     {
         try {
             Log::info('=== CREANDO PRODUCTO CON INVENTARIO ===');
-            
+
             $validatedData = $request->validate([
                 'nombre' => 'required|string|min:3|max:100',
                 'descripcion' => 'required|string|min:10|max:255',
@@ -133,7 +133,7 @@ class ProductoController extends Controller
     {
         try {
             $producto = Producto::with(['imagenes', 'categoria'])->findOrFail($id);
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $producto
@@ -200,7 +200,7 @@ class ProductoController extends Controller
             if ($request->has('removed_images')) {
                 foreach ($request->removed_images as $removedImage) {
                     $imagen = $producto->imagenes()->where('nombre', $removedImage)->first();
-                    
+
                     if ($imagen) {
                         $imagePath = public_path('images/productos/' . $imagen->nombre);
                         if (file_exists($imagePath)) {
@@ -265,10 +265,10 @@ class ProductoController extends Controller
     {
         try {
             $producto = Producto::findOrFail($id);
-            
+
             // 🔍 Verificar si el producto está siendo usado
             $verificacion = $this->verificarProductoEnUso($producto);
-            
+
             if ($verificacion['usado']) {
                 return response()->json([
                     'message' => 'No se puede eliminar el producto',
@@ -344,7 +344,7 @@ class ProductoController extends Controller
             $ventasCount = DB::table('detalle_ventas')
                 ->where('producto_id', $producto->id)
                 ->count();
-            
+
             if ($ventasCount > 0) {
                 $restricciones[] = "Ha sido vendido {$ventasCount} vez(es)";
             }
@@ -358,7 +358,7 @@ class ProductoController extends Controller
                 ->where('producto_id', $producto->id)
                 ->where('motivo', '!=', 'eliminacion_producto')
                 ->count();
-            
+
             if ($movimientosCount > 0) {
                 $restricciones[] = "Tiene {$movimientosCount} movimiento(s) de inventario";
             }

@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,11 +37,24 @@ class AuthenticatedSessionController extends Controller
             $user = Auth::user();
 
             if ($user && ($user->hasRole('Administrador') || $user->hasRole('Empleado'))) {
-                return redirect()->route('dashboard');
+                // ✅ CORREGIDO: Crear token
+                $token = $user->createToken('web-admin-token')->plainTextToken;
+
+                    // // 🔍 DEBUGGING - Verificar token
+                    // dd([
+                    //     'usuario' => $user->name,
+                    //     'roles' => $user->roles->pluck('name'),
+                    //     'token' => $token
+                    // ]);
+
+                // ✅ CORREGIDO: Cookie con sintaxis correcta
+                $cookie = cookie('api_token', $token, 60 * 24 * 7, null, null, true, true);
+                return redirect()->route('dashboard')->withCookie($cookie);
+
             } else {
                 return redirect()->route('inicio');
             }
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return back()->withErrors([
                 'email' => 'Estas credenciales no coinciden con nuestros registros.',
             ])->withInput($request->only('email'));
@@ -52,12 +66,17 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // ✅ CORREGIDO: Eliminar tokens
+        if ($request->user()) {
+            $request->user()->tokens()->delete();
+        }
+
         Auth::guard('web')->logout();
-
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        // ✅ CORREGIDO: Limpiar cookie
+        $cookie = cookie()->forget('api_token');
+        return redirect('/')->withCookie($cookie);
     }
 }

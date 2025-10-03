@@ -49,6 +49,8 @@ const reservasPorEstado = computed(() => {
 const cargarReservas = async () => {
   loading.value = true
   try {
+        // 🔍 DEBUGGING - Ver todas las cookies
+    console.log('🍪 Cookies:', document.cookie)
     const params = {
       tipo: filtros.value.tipo,
       busqueda: filtros.value.busqueda || undefined,
@@ -56,9 +58,15 @@ const cargarReservas = async () => {
       fecha_fin: filtros.value.fechaHasta || undefined
     }
 
-    const response = await axios.get('/api/reservas', { params })
+    // 🔍 DEBUGGING - Ver configuración de axios
+    console.log('⚙️ Axios config:', {
+      withCredentials: axios.defaults.withCredentials,
+      params: params
+    })
+
+    const response = await axios.get('/api/reservas', { params, withCredentials: true })
     reservas.value = response.data.data || []
-    
+
   } catch (error) {
     console.error('Error al cargar reservas:', error)
     toast.add({
@@ -77,20 +85,20 @@ const cargarReservas = async () => {
 const confirmarReserva = async (reserva) => {
   try {
     await axios.put(`/api/reservas/${reserva.id}/confirmar`)
-    
+
     // Actualizar estado local
     const index = reservas.value.findIndex(r => r.id === reserva.id)
     if (index !== -1) {
       reservas.value[index].estado = 'CONFIRMADA'
     }
-    
+
     toast.add({
       severity: 'success',
       summary: 'Éxito',
       detail: 'Reserva confirmada correctamente',
       life: 3000
     })
-    
+
   } catch (error) {
     console.error('Error al confirmar reserva:', error)
     toast.add({
@@ -125,13 +133,13 @@ const rechazarReserva = async () => {
     await axios.put(`/api/reservas/${reservaSeleccionada.value.id}/rechazar`, {
       motivo: motivoRechazo.value
     })
-    
+
     // Actualizar estado local
     const index = reservas.value.findIndex(r => r.id === reservaSeleccionada.value.id)
     if (index !== -1) {
       reservas.value[index].estado = 'RECHAZADA'
     }
-    
+
     modalRechazar.value = false
     toast.add({
       severity: 'success',
@@ -139,7 +147,7 @@ const rechazarReserva = async () => {
       detail: 'Reserva rechazada correctamente',
       life: 3000
     })
-    
+
   } catch (error) {
     console.error('Error al rechazar reserva:', error)
     toast.add({
@@ -176,14 +184,14 @@ const reprogramarReserva = async () => {
       fecha_nueva: fechaNuevaReprogramacion.value,
       motivo: motivoReprogramacion.value
     })
-    
+
     // Actualizar estado local
     const index = reservas.value.findIndex(r => r.id === reservaSeleccionada.value.id)
     if (index !== -1) {
       reservas.value[index].estado = 'REPROGRAMADA'
       reservas.value[index].fecha_reserva = fechaNuevaReprogramacion.value
     }
-    
+
     modalReprogramar.value = false
     toast.add({
       severity: 'success',
@@ -191,7 +199,7 @@ const reprogramarReserva = async () => {
       detail: 'Reserva reprogramada correctamente',
       life: 3000
     })
-    
+
   } catch (error) {
     console.error('Error al reprogramar reserva:', error)
     toast.add({
@@ -207,20 +215,20 @@ const reprogramarReserva = async () => {
 const finalizarReserva = async (reserva) => {
   try {
     await axios.put(`/api/reservas/${reserva.id}/confirmar`)
-    
+
     // Actualizar estado local a "Finalizada" o mantener "Confirmada"
     const index = reservas.value.findIndex(r => r.id === reserva.id)
     if (index !== -1) {
       reservas.value[index].estado = 'FINALIZADA'
     }
-    
+
     toast.add({
       severity: 'success',
       summary: 'Éxito',
       detail: 'Reserva finalizada correctamente',
       life: 3000
     })
-    
+
   } catch (error) {
     console.error('Error al finalizar reserva:', error)
     toast.add({
@@ -283,10 +291,10 @@ onMounted(() => {
 
 <template>
   <Head title="Gestión de Reservas" />
-  
+
   <AuthenticatedLayout>
     <Toast class="z-[9999]" />
-    
+
     <div class="py-4 sm:py-6 px-4 sm:px-7 mt-6 sm:mt-10 mx-auto bg-red-50 shadow-md rounded-lg">
       <!-- Encabezado -->
       <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 gap-4">
@@ -368,7 +376,7 @@ onMounted(() => {
             {{ estado.label }} ({{ reservas.filter(r => r.estado === estado.value).length }})
           </Tab>
         </TabList>
-        
+
         <TabPanels>
           <TabPanel
             v-for="(estado, index) in estados"
@@ -458,8 +466,8 @@ onMounted(() => {
             <!-- Columna Estado -->
             <Column field="estado" header="Estado" class="min-w-[120px]">
               <template #body="slotProps">
-                <Tag 
-                  :value="slotProps.data.estado" 
+                <Tag
+                  :value="slotProps.data.estado"
                   :severity="getSeverityByEstado(slotProps.data.estado)"
                   class="text-sm"
                 />
