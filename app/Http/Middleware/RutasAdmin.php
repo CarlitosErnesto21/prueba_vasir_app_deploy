@@ -23,11 +23,11 @@ class RutasAdmin
         $user = Auth::user();
 
         // Si el usuario tiene rol admin, permite el acceso
-        if ($user->hasRole('admin') || $user->hasRole('empleado')) {
+        if ($user->hasRole('Administrador') || $user->hasRole('Empleado')) {
             return $next($request);
         }
-        // Si el usuario tiene rol cliente, redirige a la página de inicio
-        if ($user->hasRole('cliente')) {
+        // Si el usuario tiene rol Cliente, redirige a la página de inicio
+        if ($user->hasRole('Cliente')) {
             return redirect('/');   
         }
 

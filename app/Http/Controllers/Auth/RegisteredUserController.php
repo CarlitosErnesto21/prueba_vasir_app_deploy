@@ -4,13 +4,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\SiteSetting;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -74,36 +72,27 @@ class RegisteredUserController extends Controller
     }
 
     /**
-    * Asignar rol al usuario (primer usuario = admin, resto = cliente)
+    * Asignar rol al usuario recién registrado
+    * Los administradores se crean SOLO por seeder o comando artisan
     */
-    private function assignUserRole(User $user): void
-    {
-        // Verificar si es el primer usuario
-        $firstAdminCreated = SiteSetting::where('key', 'first_admin_created')->value('value') === 'true';
-        $autoAdminEnabled = SiteSetting::where('key', 'auto_admin_registration')->value('value') === 'true';
 
-        if (!$firstAdminCreated && $autoAdminEnabled) {
-            // Primer usuario = Admin automático
-            $user->assignRole('admin');
-                
-            // Marcar que ya se creó el primer admin
-            SiteSetting::where('key', 'first_admin_created')->update(['value' => 'true']);
-            SiteSetting::where('key', 'auto_admin_registration')->update(['value' => 'false']);
-        } else {
-            // Usuarios posteriores = Cliente
-            $user->assignRole('cliente');
-        }
-    }
+    private function assignUserRole(User $user): void { $user->assignRole('Cliente'); }
 
     /**
-    * Redirigir según el rol del usuario
+    * Redirigir al usuario según su rol
     */
-    private function redirectBasedOnUserRole(User $user): RedirectResponse
+    private function redirectBasedOnUserRole(User $user): RedirectResponse 
     {
-        if ($user->hasRole('admin') || $user->hasRole('empleado')) {
-            return redirect()->route('dashboard');
+        // Actualizar roles del usuario en la sesión
+        $user->load('roles');
+        
+        if ($user->hasRole('Administrador')) {
+            return redirect(route('dashboard')); // ← Dashboard admin
+        } elseif ($user->hasRole('Empleado')) {
+            return redirect(route('dashboard')); // ← Dashboard empleado  
+        } else {
+            return redirect(route('inicio')); // ← Página cliente
         }
-        return redirect()->route('inicio');
     }
 
     /**
@@ -112,7 +101,7 @@ class RegisteredUserController extends Controller
     public function checkName(Request $request)
     {
         $name = $request->input('name');
-        $exists = User::where('name', $name)->exists();
+        $exists = User::where('name', $name)->first() !== null;
         return response()->json(['exists' => $exists]);
     }
 
@@ -128,7 +117,7 @@ class RegisteredUserController extends Controller
             'email.email' => 'El formato del correo electrónico no es válido.'
         ]);
 
-        $exists = User::where('email', $request->email)->exists();
+        $exists = User::where('email', $request->email)->first() !== null;
         $response = ['exists' => $exists];
         if ($exists) {
             $response['message'] = 'Este correo ya está registrado.';

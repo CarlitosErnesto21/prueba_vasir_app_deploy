@@ -13,9 +13,9 @@ class ControlSeeder extends Seeder
      */
     public function run(): void
     {
-        $adminRole = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        $clienteRole = Role::firstOrCreate(['name' => 'cliente', 'guard_name' => 'web']);
-        $empleadoRole = Role::firstOrCreate(['name' => 'empleado', 'guard_name' => 'web']);
+        $adminRole = Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
+        $empleadoRole = Role::firstOrCreate(['name' => 'Empleado', 'guard_name' => 'web']);
+        $clienteRole = Role::firstOrCreate(['name' => 'Cliente', 'guard_name' => 'web']);
 
         $this->createPermissions();
         $this->assignPermissionsToRoles($adminRole, $empleadoRole, $clienteRole);

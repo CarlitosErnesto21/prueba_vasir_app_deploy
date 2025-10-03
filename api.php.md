@@ -1,3 +1,4 @@
+´´´´
 <?php
 
 use Illuminate\Http\Request;
@@ -97,3 +98,5 @@ Route::middleware(['auth:sanctum', 'role:cliente'])->group(function () {
 // Endpoints de validación de registro
 Route::post('auth/check-name', [RegisteredUserController::class, 'checkName']);
 Route::post('auth/check-email', [RegisteredUserController::class, 'checkEmail']);
+
+´´´´

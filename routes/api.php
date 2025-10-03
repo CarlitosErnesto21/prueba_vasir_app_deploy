@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AerolineaController;
+use App\Http\Controllers\Auth\ApiAuthController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ProductoController;
@@ -23,19 +24,35 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Rutas públicas de autenticación
+Route::post('/login', [ApiAuthController::class, 'login']);
 
-// Rutas API para gestión de reservas
-Route::prefix('reservas')->group(function () {
-    Route::get('/', [ReservaController::class, 'index']);
-    Route::get('/resumen', [ReservaController::class, 'resumen']);
-    Route::put('/{id}/confirmar', [ReservaController::class, 'confirmar']);
-    Route::put('/{id}/rechazar', [ReservaController::class, 'rechazar']);
-    Route::put('/{id}/reprogramar', [ReservaController::class, 'reprogramar']);
-    Route::get('/{id}/historial', [ReservaController::class, 'historial']);
+
+// Rutas protegidas
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [ApiAuthController::class, 'logout']);
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
 });
+
+// Otras Rutas Protegidas
+Route::middleware('auth:sanctum')->group(function () {
+
+
+
+    // Rutas API para gestión de reservas
+    Route::prefix('reservas')->group(function () {
+        Route::get('/', [ReservaController::class, 'index']);
+        Route::get('/resumen', [ReservaController::class, 'resumen']);
+        Route::put('/{id}/confirmar', [ReservaController::class, 'confirmar']);
+        Route::put('/{id}/rechazar', [ReservaController::class, 'rechazar']);
+        Route::put('/{id}/reprogramar', [ReservaController::class, 'reprogramar']);
+        Route::get('/{id}/historial', [ReservaController::class, 'historial']);
+    });
+});
+
+
 
 // Rutas de API
 Route::apiResource('productos', ProductoController::class);
