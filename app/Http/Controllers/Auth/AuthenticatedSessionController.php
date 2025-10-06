@@ -37,20 +37,11 @@ class AuthenticatedSessionController extends Controller
             $user = Auth::user();
 
             if ($user && ($user->hasRole('Administrador') || $user->hasRole('Empleado'))) {
-                // ✅ CORREGIDO: Crear token
+                //Crear token
                 $token = $user->createToken('web-admin-token')->plainTextToken;
 
-                    // // 🔍 DEBUGGING - Verificar token
-                    // dd([
-                    //     'usuario' => $user->name,
-                    //     'roles' => $user->roles->pluck('name'),
-                    //     'token' => $token
-                    // ]);
-
-                // ✅ CORREGIDO: Cookie con sintaxis correcta
                 $cookie = cookie('api_token', $token, 60 * 24 * 7, null, null, true, true);
                 return redirect()->route('dashboard')->withCookie($cookie);
-
             } else {
                 return redirect()->route('inicio');
             }

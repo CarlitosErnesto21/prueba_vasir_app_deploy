@@ -123,11 +123,11 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/agotados', [ProductoController::class, 'agotados']);
         });
 
-        // 🔧 Rutas adicionales específicas para ventas (sin conflicto)
-        Route::prefix('ventas')->group(function () {
-            Route::get('/estado/{estado}', [VentaController::class, 'porEstado']);
-            Route::post('/{venta}/procesar', [VentaController::class, 'procesar']);
-            Route::post('/{venta}/cancelar', [VentaController::class, 'cancelar']);
-        });
+        // // 🔧 Rutas adicionales específicas para ventas (sin conflicto)
+        // Route::prefix('ventas')->group(function () {
+        //     Route::get('/estado/{estado}', [VentaController::class, 'porEstado']);
+        //     Route::post('/{venta}/procesar', [VentaController::class, 'procesar']);
+        //     Route::post('/{venta}/cancelar', [VentaController::class, 'cancelar']);
+        // });
     });
 });

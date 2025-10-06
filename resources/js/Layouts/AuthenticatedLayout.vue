@@ -162,7 +162,7 @@ onBeforeUnmount(() => {
             <!-- Elementos decorativos de fondo -->
             <div class="absolute inset-0 bg-gradient-to-r from-red-100/20 via-transparent to-red-100/20"></div>
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-red-600 to-red-500 opacity-80"></div>
-            
+
             <div class="relative px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
                 <!-- Contenedor izquierdo: Menú + Logo -->
                 <div class="flex items-center space-x-3 sm:space-x-4">
@@ -174,22 +174,22 @@ onBeforeUnmount(() => {
                         aria-label="Abrir menú de navegación"
                     >
                         <span class="sr-only">Abrir menú</span>
-                        <FontAwesomeIcon 
-                            :icon="faBars" 
-                            class="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform duration-200" 
+                        <FontAwesomeIcon
+                            :icon="faBars"
+                            class="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform duration-200"
                         />
                     </button>
-                    
+
                     <!-- Logo con efecto profesional -->
-                    <Link 
-                        :href="route('dashboard')" 
-                        title="Ir al Dashboard" 
+                    <Link
+                        :href="route('dashboard')"
+                        title="Ir al Dashboard"
                         class="flex items-center cursor-pointer select-none group"
                     >
-                        <img 
-                            src="../../../imagenes/logo.png" 
-                            alt="Logo VASIR" 
-                            class="w-24 h-8 sm:w-28 sm:h-10 md:w-32 md:h-11 inline-block align-middle group-hover:scale-105 transition-transform duration-300 drop-shadow-sm" 
+                        <img
+                            src="../../../imagenes/logo.png"
+                            alt="Logo VASIR"
+                            class="w-24 h-8 sm:w-28 sm:h-10 md:w-32 md:h-11 inline-block align-middle group-hover:scale-105 transition-transform duration-300 drop-shadow-sm"
                         />
                     </Link>
                 </div>
@@ -210,9 +210,9 @@ onBeforeUnmount(() => {
                             />
                             <FontAwesomeIcon :icon="faChevronDown" class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 transition-transform duration-200 ml-2" :class="{ 'rotate-180': showProfileMenu }" />
                         </button>
-                        
+
                         <!-- Menú de perfil profesional -->
-                        <transition 
+                        <transition
                             enter-active-class="transition-all duration-200"
                             leave-active-class="transition-all duration-150"
                             enter-from-class="opacity-0 scale-95 -translate-y-1"
@@ -226,7 +226,7 @@ onBeforeUnmount(() => {
                             >
                                 <!-- Elementos decorativos -->
                                 <div class="absolute inset-0 bg-gradient-to-br from-red-100/30 via-transparent to-red-100/30"></div>
-                                
+
                                 <!-- Header del perfil profesional -->
                                 <div class="relative px-6 py-5 bg-gradient-to-b from-red-600 via-red-500 to-red-400 text-white">
                                     <div class="flex items-center space-x-4">
@@ -304,15 +304,15 @@ onBeforeUnmount(() => {
         </header>
 
         <!-- Overlay móvil profesional -->
-        <transition 
+        <transition
             enter-active-class="transition-opacity duration-300"
             leave-active-class="transition-opacity duration-300"
             enter-from-class="opacity-0"
             leave-to-class="opacity-0"
         >
             <div
-                v-if="isSidebarOpen" 
-                class="fixed inset-0 z-[9998] bg-gradient-to-br from-black/60 via-red-900/30 to-black/60 backdrop-blur-sm md:hidden" 
+                v-if="isSidebarOpen"
+                class="fixed inset-0 z-[9998] bg-gradient-to-br from-black/60 via-red-900/30 to-black/60 backdrop-blur-sm md:hidden"
                 @click="isSidebarOpen = false"
                 @touchmove.prevent
                 @scroll.prevent
@@ -327,26 +327,26 @@ onBeforeUnmount(() => {
                 enter-from-class="-translate-x-full opacity-0"
                 leave-to-class="-translate-x-full opacity-0"
             >
-                <aside 
-                    v-if="isSidebarOpen" 
+                <aside
+                    v-if="isSidebarOpen"
                     class="fixed top-0 left-0 h-full w-80 bg-white shadow-2xl z-[9999] flex flex-col md:hidden border-r border-red-200"
                     @touchmove.stop
                 >
                     <!-- Elementos decorativos -->
                     <div class="absolute inset-0 bg-gradient-to-br from-red-100/20 via-transparent to-red-100/20"></div>
                     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-400 via-red-500 to-red-400"></div>
-                    
+
                     <!-- Header del sidebar móvil con altura del header principal -->
                     <div class="relative flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-red-100/50 bg-white/80 backdrop-blur-sm" style="height: 64px;">
                         <Link :href="route('dashboard')" class="flex items-center group" @click="isSidebarOpen = false">
-                            <img 
-                                src="../../../imagenes/logo.png" 
-                                class="w-20 h-7 sm:w-24 sm:h-8 group-hover:scale-105 transition-transform duration-300" 
+                            <img
+                                src="../../../imagenes/logo.png"
+                                class="w-20 h-7 sm:w-24 sm:h-8 group-hover:scale-105 transition-transform duration-300"
                                 alt="Logo VASIR"
                             />
                         </Link>
-                        <button 
-                            @click="isSidebarOpen = false" 
+                        <button
+                            @click="isSidebarOpen = false"
                             class="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-600 text-white hover:bg-red-700 hover:scale-110 transition-all duration-200 shadow-lg focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2"
                             aria-label="Cerrar menú"
                         >
@@ -359,59 +359,59 @@ onBeforeUnmount(() => {
                         <div class="px-3 py-4 space-y-2">
                             <!-- Elementos decorativos internos -->
                             <div class="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-red-50/30 pointer-events-none"></div>
-                            
+
                             <!-- Inicio -->
                             <Link
                                 :href="route('dashboard')"
                                 :class="[
                                     'relative flex items-center py-3 px-3 rounded-xl transition-all duration-300 group',
-                                    route().current('dashboard') 
-                                        ? 'bg-gradient-to-r from-red-600 to-red-500 text-white font-bold shadow-lg' 
+                                    route().current('dashboard')
+                                        ? 'bg-gradient-to-r from-red-600 to-red-500 text-white font-bold shadow-lg'
                                         : 'text-gray-800 hover:bg-gradient-to-r hover:from-red-600 hover:to-red-500 hover:text-white hover:shadow-lg'
                                 ]"
                                 @click.prevent="navigateAndCloseSidebar('dashboard')"
                             >
-                                <FontAwesomeIcon 
-                                    :icon="faHouseChimneyUser" 
-                                    class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300" 
+                                <FontAwesomeIcon
+                                    :icon="faHouseChimneyUser"
+                                    class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300"
                                 />
                                 <span class="font-semibold">Dashboard</span>
                             </Link>
 
                             <!-- Separador visual -->
                             <div class="relative w-full h-px bg-gradient-to-r from-transparent via-red-200/50 to-transparent my-1"></div>
-                            
+
                             <!-- Desplegable de Catálogos -->
                             <div class="relative">
                                 <button
                                     @click="toggleDropdown"
                                     class="relative w-full flex items-center justify-between py-3 px-3 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-300/50 group"
-                                    :class="{ 
+                                    :class="{
                                         'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg font-bold': isOpen || ['productos', 'tours', 'hoteles', 'aerolineas', 'gestionPaquetes'].some(r => route().current(r)),
                                         'text-gray-800 hover:bg-gradient-to-r hover:from-red-600 hover:to-red-500 hover:text-white hover:shadow-lg': !(isOpen || ['productos', 'tours', 'hoteles', 'aerolineas', 'gestionPaquetes'].some(r => route().current(r)))
                                     }"
                                 >
                                     <div class="flex items-center">
-                                        <FontAwesomeIcon 
-                                            :icon="faBoxesStacked" 
-                                            class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300" 
+                                        <FontAwesomeIcon
+                                            :icon="faBoxesStacked"
+                                            class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300"
                                         />
                                         <span class="font-semibold">Catálogos</span>
                                     </div>
-                                    <FontAwesomeIcon 
-                                        :icon="faChevronDown" 
-                                        :class="['w-4 h-4 transition-all duration-300 group-hover:scale-110', isOpen ? 'rotate-180' : '']" 
+                                    <FontAwesomeIcon
+                                        :icon="faChevronDown"
+                                        :class="['w-4 h-4 transition-all duration-300 group-hover:scale-110', isOpen ? 'rotate-180' : '']"
                                     />
                                 </button>
-                                
+
                                 <!-- Submenu de Catálogos -->
                                 <div v-show="isOpen" class="ml-6 mr-2 mt-2 flex flex-col space-y-1 bg-gray-50 rounded-lg p-2 border border-gray-200">
                                     <Link
                                         :href="route('productos')"
                                         :class="[
                                             'flex items-center py-2.5 px-3 rounded-lg transition-all duration-300 group',
-                                            route().current('productos') 
-                                                ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg font-bold' 
+                                            route().current('productos')
+                                                ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg font-bold'
                                                 : 'text-gray-700 hover:bg-red-600 hover:text-white hover:shadow-md'
                                         ]"
                                         @click.prevent="navigateAndCloseSidebar('productos')"
@@ -423,8 +423,8 @@ onBeforeUnmount(() => {
                                         :href="route('tours')"
                                         :class="[
                                             'flex items-center py-2.5 px-3 rounded-lg transition-all duration-300 group',
-                                            route().current('tours') 
-                                                ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg font-bold' 
+                                            route().current('tours')
+                                                ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg font-bold'
                                                 : 'text-gray-700 hover:bg-red-600 hover:text-white hover:shadow-md'
                                         ]"
                                         @click.prevent="navigateAndCloseSidebar('tours')"
@@ -436,8 +436,8 @@ onBeforeUnmount(() => {
                                         :href="route('hoteles')"
                                         :class="[
                                             'flex items-center py-2.5 px-3 rounded-lg transition-all duration-300 group',
-                                            route().current('hoteles') 
-                                                ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg font-bold' 
+                                            route().current('hoteles')
+                                                ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg font-bold'
                                                 : 'text-gray-700 hover:bg-red-600 hover:text-white hover:shadow-md'
                                         ]"
                                         @click.prevent="navigateAndCloseSidebar('hoteles')"
@@ -449,8 +449,8 @@ onBeforeUnmount(() => {
                                         :href="route('aerolineas')"
                                         :class="[
                                             'flex items-center py-2.5 px-3 rounded-lg transition-all duration-300 group',
-                                            route().current('aerolineas') 
-                                                ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg font-bold' 
+                                            route().current('aerolineas')
+                                                ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg font-bold'
                                                 : 'text-gray-700 hover:bg-red-600 hover:text-white hover:shadow-md'
                                         ]"
                                         @click.prevent="navigateAndCloseSidebar('aerolineas')"
@@ -462,8 +462,8 @@ onBeforeUnmount(() => {
                                         :href="route('gestionPaquetes')"
                                         :class="[
                                             'flex items-center py-2.5 px-3 rounded-lg transition-all duration-300 group',
-                                            route().current('gestionPaquetes') 
-                                                ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg font-bold' 
+                                            route().current('gestionPaquetes')
+                                                ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg font-bold'
                                                 : 'text-gray-700 hover:bg-red-600 hover:text-white hover:shadow-md'
                                         ]"
                                         @click.prevent="navigateAndCloseSidebar('gestionPaquetes')"
@@ -476,21 +476,21 @@ onBeforeUnmount(() => {
 
                             <!-- Separador visual -->
                             <div class="relative w-full h-px bg-gradient-to-r from-transparent via-red-200/50 to-transparent my-1"></div>
-                            
+
                             <!-- Reservaciones -->
                             <Link
                                 :href="route('reservatours')"
                                 :class="[
                                     'relative flex items-center py-3 px-3 rounded-xl transition-all duration-300 group',
-                                    route().current('reservatours') 
-                                        ? 'bg-gradient-to-r from-red-600 to-red-500 text-white font-bold shadow-lg' 
+                                    route().current('reservatours')
+                                        ? 'bg-gradient-to-r from-red-600 to-red-500 text-white font-bold shadow-lg'
                                         : 'text-gray-800 hover:bg-gradient-to-r hover:from-red-600 hover:to-red-500 hover:text-white hover:shadow-lg'
                                 ]"
                                 @click.prevent="navigateAndCloseSidebar('reservatours')"
                             >
-                                <FontAwesomeIcon 
-                                    :icon="faClipboardList" 
-                                    class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300" 
+                                <FontAwesomeIcon
+                                    :icon="faClipboardList"
+                                    class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300"
                                 />
                                 <span class="font-semibold">Reservaciones</span>
                             </Link>
@@ -503,15 +503,15 @@ onBeforeUnmount(() => {
                                 :href="route('informes')"
                                 :class="[
                                     'relative flex items-center py-3 px-3 rounded-xl transition-all duration-300 group',
-                                    route().current('informes') 
-                                        ? 'bg-gradient-to-r from-red-600 to-red-500 text-white font-bold shadow-lg' 
+                                    route().current('informes')
+                                        ? 'bg-gradient-to-r from-red-600 to-red-500 text-white font-bold shadow-lg'
                                         : 'text-gray-800 hover:bg-gradient-to-r hover:from-red-600 hover:to-red-500 hover:text-white hover:shadow-lg'
                                 ]"
                                 @click.prevent="navigateAndCloseSidebar('informes')"
                             >
-                                <FontAwesomeIcon 
-                                    :icon="faFileInvoice" 
-                                    class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300" 
+                                <FontAwesomeIcon
+                                    :icon="faFileInvoice"
+                                    class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300"
                                 />
                                 <span class="font-semibold">Informes</span>
                             </Link>
@@ -524,27 +524,27 @@ onBeforeUnmount(() => {
                                 <button
                                     @click="toggleConfigDropdown"
                                     class="relative w-full flex items-center justify-between py-3 px-3 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-300/50 group"
-                                    :class="{ 
+                                    :class="{
                                         'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg font-bold': isConfigDropdownOpen,
                                         'text-gray-800 hover:bg-gradient-to-r hover:from-red-600 hover:to-red-500 hover:text-white hover:shadow-lg': !isConfigDropdownOpen
                                     }"
                                 >
                                     <div class="flex items-center">
-                                        <FontAwesomeIcon 
-                                            :icon="faGear" 
-                                            class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300" 
+                                        <FontAwesomeIcon
+                                            :icon="faGear"
+                                            class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300"
                                         />
                                         <span class="font-semibold">Configuración</span>
                                     </div>
-                                    <FontAwesomeIcon 
-                                        :icon="faChevronDown" 
-                                        :class="['w-4 h-4 transition-all duration-300 group-hover:scale-110', isConfigDropdownOpen ? 'rotate-180' : '']" 
+                                    <FontAwesomeIcon
+                                        :icon="faChevronDown"
+                                        :class="['w-4 h-4 transition-all duration-300 group-hover:scale-110', isConfigDropdownOpen ? 'rotate-180' : '']"
                                     />
                                 </button>
-                                
+
                                 <!-- Submenu de Configuración -->
                                 <div v-show="isConfigDropdownOpen" class="ml-6 mr-2 mt-2 flex flex-col space-y-1 bg-gray-50 rounded-lg p-2 border border-gray-200">
-                                    <template v-if="user?.roles && user.roles.some((role) => role.name === 'admin')">
+                                    <template v-if="user?.roles && user.roles.some((role) => role.name === 'Administrador')">
                                         <Link
                                             :href="route('roles')"
                                             @click="isSidebarOpen = false"
@@ -584,7 +584,7 @@ onBeforeUnmount(() => {
                 <!-- Elementos decorativos -->
                 <div class="absolute inset-0 bg-gradient-to-br from-red-100/20 via-transparent to-red-100/20 pointer-events-none"></div>
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-400 via-red-500 to-red-400"></div>
-                
+
 
 
                 <!-- Título del menú -->
@@ -646,7 +646,7 @@ onBeforeUnmount(() => {
 
 
                             <!-- Dropdown expandido con animación -->
-                            <transition 
+                            <transition
                                 enter-active-class="transition-all duration-300"
                                 leave-active-class="transition-all duration-200"
                                 enter-from-class="opacity-0 -translate-y-2"
@@ -657,8 +657,8 @@ onBeforeUnmount(() => {
                                         :href="route('productos')"
                                         :class="[
                                             'flex items-center px-3 py-2 rounded-lg transition-all duration-300 group',
-                                            route().current('productos') 
-                                                ? 'bg-gradient-to-r from-red-700 to-red-500 text-white shadow-md font-bold' 
+                                            route().current('productos')
+                                                ? 'bg-gradient-to-r from-red-700 to-red-500 text-white shadow-md font-bold'
                                                 : 'text-white hover:bg-red-700 hover:text-white hover:shadow-md'
                                         ]"
                                     >
@@ -669,8 +669,8 @@ onBeforeUnmount(() => {
                                         :href="route('tours')"
                                         :class="[
                                             'flex items-center px-3 py-2 rounded-lg transition-all duration-300 group',
-                                            route().current('tours') 
-                                                ? 'bg-gradient-to-r from-red-700 to-red-500 text-white shadow-md font-bold' 
+                                            route().current('tours')
+                                                ? 'bg-gradient-to-r from-red-700 to-red-500 text-white shadow-md font-bold'
                                                 : 'text-white hover:bg-red-700 hover:text-white hover:shadow-md'
                                         ]"
                                     >
@@ -681,8 +681,8 @@ onBeforeUnmount(() => {
                                         :href="route('hoteles')"
                                         :class="[
                                             'flex items-center px-3 py-2 rounded-lg transition-all duration-300 group',
-                                            route().current('hoteles') 
-                                                ? 'bg-gradient-to-r from-red-700 to-red-500 text-white shadow-md font-bold' 
+                                            route().current('hoteles')
+                                                ? 'bg-gradient-to-r from-red-700 to-red-500 text-white shadow-md font-bold'
                                                 : 'text-white hover:bg-red-700 hover:text-white hover:shadow-md'
                                         ]"
                                     >
@@ -693,8 +693,8 @@ onBeforeUnmount(() => {
                                         :href="route('aerolineas')"
                                         :class="[
                                             'flex items-center px-3 py-2 rounded-lg transition-all duration-300 group',
-                                            route().current('aerolineas') 
-                                                ? 'bg-gradient-to-r from-red-700 to-red-500 text-white shadow-md font-bold' 
+                                            route().current('aerolineas')
+                                                ? 'bg-gradient-to-r from-red-700 to-red-500 text-white shadow-md font-bold'
                                                 : 'text-white hover:bg-red-700 hover:text-white hover:shadow-md'
                                         ]"
                                     >
@@ -705,8 +705,8 @@ onBeforeUnmount(() => {
                                         :href="route('gestionPaquetes')"
                                         :class="[
                                             'flex items-center px-3 py-2 rounded-lg transition-all duration-300 group',
-                                            route().current('gestionPaquetes') 
-                                                ? 'bg-gradient-to-r from-red-700 to-red-500 text-white shadow-md font-bold' 
+                                            route().current('gestionPaquetes')
+                                                ? 'bg-gradient-to-r from-red-700 to-red-500 text-white shadow-md font-bold'
                                                 : 'text-white hover:bg-red-700 hover:text-white hover:shadow-md'
                                         ]"
                                     >
@@ -780,14 +780,14 @@ onBeforeUnmount(() => {
                             :class="isConfigDropdownOpen ? 'rotate-180' : ''"
                         />
                     </button>
-                    <transition 
+                    <transition
                         enter-active-class="transition-all duration-300"
                         leave-active-class="transition-all duration-200"
                         enter-from-class="opacity-0 -translate-y-2"
                         leave-to-class="opacity-0 -translate-y-2"
                     >
                         <div v-if="isConfigDropdownOpen" class="mt-2 ml-4 space-y-1 border-l-2 border-red-200/50 pl-4">
-                            <template v-if="user?.roles && user.roles.some((role) => role.name === 'admin')">
+                            <template v-if="user?.roles && user.roles.some((role) => role.name === 'Administrador')">
                                 <Link
                                     :href="route('roles')"
                                     :class="[

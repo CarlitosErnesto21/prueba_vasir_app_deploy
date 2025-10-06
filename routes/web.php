@@ -37,24 +37,24 @@ Route::middleware(['auth', 'verified', RutasAdmin::class])->group(function () {
     //Rutas para informes
     Route::get('/descargar-informe', [InformePDFController::class, 'descargarInforme']);
     Route::get('/configuracion/backup', [BackupController::class, 'showBackupPage'])->name('backups')->middleware('password.confirm');
-    Route::get('/configuracion/roles', [RoleController::class, 'index'])->name('roles')->middleware('role:admin');
+    Route::get('/configuracion/roles', [RoleController::class, 'index'])->name('roles')->middleware('role:Administrador');
 
     //Rutas para gestión de roles
-    Route::post('/roles/users/{user}/update-roles', [RoleController::class, 'updateUserRoles'])->middleware('role:admin');
-    Route::post('/roles/users/{user}/assign-role', [RoleController::class, 'assignRole'])->middleware('role:admin');
-    Route::post('/roles/users/{user}/remove-role', [RoleController::class, 'removeRole'])->middleware('role:admin');
-    Route::get('/roles/users/{user}/permissions', [RoleController::class, 'getUserPermissions'])->middleware('role:admin');
-    Route::post('/roles/users/{user}/assign-permission', [RoleController::class, 'assignPermission'])->middleware('role:admin');
-    Route::post('/roles/users/{user}/remove-permission', [RoleController::class, 'removePermission'])->middleware('role:admin');
-    Route::put('/roles/users/{user}/sync-permissions', [RoleController::class, 'syncPermissions'])->middleware('role:admin');
-    Route::post('/roles/create-user', [RoleController::class, 'createInternalUser'])->middleware('role:admin');
-    Route::get('/roles/users/{user}/employee', [RoleController::class, 'getEmployeeData'])->middleware('role:admin');
-    Route::put('/roles/users/{user}/employee', [RoleController::class, 'updateEmployeeData'])->middleware('role:admin');
-    
+    Route::post('/roles/users/{user}/update-roles', [RoleController::class, 'updateUserRoles'])->middleware('role:Administrador');
+    Route::post('/roles/users/{user}/assign-role', [RoleController::class, 'assignRole'])->middleware('role:Administrador');
+    Route::post('/roles/users/{user}/remove-role', [RoleController::class, 'removeRole'])->middleware('role:Administrador');
+    Route::get('/roles/users/{user}/permissions', [RoleController::class, 'getUserPermissions'])->middleware('role:Administrador');
+    Route::post('/roles/users/{user}/assign-permission', [RoleController::class, 'assignPermission'])->middleware('role:Administrador');
+    Route::post('/roles/users/{user}/remove-permission', [RoleController::class, 'removePermission'])->middleware('role:Administrador');
+    Route::put('/roles/users/{user}/sync-permissions', [RoleController::class, 'syncPermissions'])->middleware('role:Administrador');
+    Route::post('/roles/create-user', [RoleController::class, 'createInternalUser'])->middleware('role:Administrador');
+    Route::get('/roles/users/{user}/employee', [RoleController::class, 'getEmployeeData'])->middleware('role:Administrador');
+    Route::put('/roles/users/{user}/employee', [RoleController::class, 'updateEmployeeData'])->middleware('role:Administrador');
+
     // Configuración del Sistema - Solo para Administradores
     Route::get('/configuracion/settings', [SettingsController::class, 'index'])->name('settings')->middleware('role:admin');
     Route::post('/configuracion/settings', [SettingsController::class, 'update'])->name('settings.update')->middleware('role:admin');
-    
+
     // Valores Corporativos - Solo para Administradores
     Route::post('/configuracion/values', [SettingsController::class, 'storeValue'])->name('settings.values.store')->middleware('role:admin');
     Route::put('/configuracion/values/{id}', [SettingsController::class, 'updateValue'])->name('settings.values.update')->middleware('role:admin');
