@@ -49,8 +49,6 @@ const reservasPorEstado = computed(() => {
 const cargarReservas = async () => {
   loading.value = true
   try {
-        // 🔍 DEBUGGING - Ver todas las cookies
-    console.log('🍪 Cookies:', document.cookie)
     const params = {
       tipo: filtros.value.tipo,
       busqueda: filtros.value.busqueda || undefined,
@@ -58,17 +56,10 @@ const cargarReservas = async () => {
       fecha_fin: filtros.value.fechaHasta || undefined
     }
 
-    // 🔍 DEBUGGING - Ver configuración de axios
-    console.log('⚙️ Axios config:', {
-      withCredentials: axios.defaults.withCredentials,
-      params: params
-    })
-
     const response = await axios.get('/api/reservas', { params, withCredentials: true })
     reservas.value = response.data.data || []
 
   } catch (error) {
-    console.error('Error al cargar reservas:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
@@ -100,7 +91,6 @@ const confirmarReserva = async (reserva) => {
     })
 
   } catch (error) {
-    console.error('Error al confirmar reserva:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
@@ -149,7 +139,6 @@ const rechazarReserva = async () => {
     })
 
   } catch (error) {
-    console.error('Error al rechazar reserva:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
@@ -201,7 +190,6 @@ const reprogramarReserva = async () => {
     })
 
   } catch (error) {
-    console.error('Error al reprogramar reserva:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
@@ -230,7 +218,6 @@ const finalizarReserva = async (reserva) => {
     })
 
   } catch (error) {
-    console.error('Error al finalizar reserva:', error)
     toast.add({
       severity: 'error',
       summary: 'Error',
