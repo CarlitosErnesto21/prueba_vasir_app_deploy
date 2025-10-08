@@ -1,10 +1,11 @@
 [phases.setup]
 nixPkgs = ['php82', 'php82Packages.composer']
+aptPkgs = ['zip', 'unzip']
 
 [phases.install]
 dependsOn = ['setup']
 cmds = [
-    'composer install --no-dev --optimize-autoloader --ignore-platform-reqs'
+    'composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-zip'
 ]
 
 [phases.build]
