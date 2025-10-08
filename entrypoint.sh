@@ -15,6 +15,10 @@ chmod -R 775 storage bootstrap/cache
 echo "Ejecutando migraciones..."
 php artisan migrate --force
 
+# Ejecutar seeders para crear roles y admin inicial
+echo "Ejecutando seeders..."
+php artisan db:seed --force
+
 # NO USAR ARTISAN CACHE - puede causar conflictos
 echo "Limpiando solo caches problemáticos..."
 php artisan config:clear 2>/dev/null || true
