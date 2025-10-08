@@ -35,6 +35,35 @@ class ServerDebugController extends Controller
         }
     }
 
+    public function forceDebugPost(Request $request)
+    {
+        // Forzar mostrar errores detallados
+        config(['app.debug' => true]);
+
+        try {
+            Log::info('Force debug POST attempt', [
+                'input' => $request->all(),
+                'headers' => $request->headers->all()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Force debug POST successful',
+                'input' => $request->all(),
+                'debug_enabled' => config('app.debug')
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTrace()
+            ], 500);
+        }
+    }
+
     public function basicPost(Request $request)
     {
         // Log todo para debugging

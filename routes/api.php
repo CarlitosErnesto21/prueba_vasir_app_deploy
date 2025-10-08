@@ -38,6 +38,7 @@ Route::post('/auth/check-email', [RegisteredUserController::class, 'checkEmail']
 // RUTAS DE DEBUG TEMPORAL (SIN MIDDLEWARE)
 Route::get('/server-debug/env', [ServerDebugController::class, 'environmentInfo']);
 Route::post('/server-debug/basic-post', [ServerDebugController::class, 'basicPost']);
+Route::post('/server-debug/force-debug', [ServerDebugController::class, 'forceDebugPost']);
 
 Route::withoutMiddleware(['api'])->group(function () {
     Route::get('/debug/database', [DebugController::class, 'testDatabase']);

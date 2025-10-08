@@ -41,7 +41,7 @@ class DebugController extends Controller
         try {
             // Debug paso a paso
             $debugInfo = [];
-            
+
             // Paso 1: Verificar request
             $debugInfo['step1_request'] = [
                 'all_data' => $request->all(),
