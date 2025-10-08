@@ -20,6 +20,7 @@ use App\Http\Controllers\PaqueteController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\DebugController;
+use App\Http\Controllers\ServerDebugController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -34,7 +35,10 @@ Route::post('/login', [ApiAuthController::class, 'login']);
 Route::post('/auth/check-name', [RegisteredUserController::class, 'checkName']);
 Route::post('/auth/check-email', [RegisteredUserController::class, 'checkEmail']);
 
-// RUTAS DE DEBUG TEMPORAL (SIN SANCTUM)
+// RUTAS DE DEBUG TEMPORAL (SIN MIDDLEWARE)
+Route::get('/server-debug/env', [ServerDebugController::class, 'environmentInfo']);
+Route::post('/server-debug/basic-post', [ServerDebugController::class, 'basicPost']);
+
 Route::withoutMiddleware(['api'])->group(function () {
     Route::get('/debug/database', [DebugController::class, 'testDatabase']);
     Route::post('/debug/categoria', [DebugController::class, 'testCreateCategoria']);
