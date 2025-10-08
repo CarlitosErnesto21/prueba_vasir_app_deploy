@@ -3,7 +3,7 @@
 echo "Iniciando deploy..."
 
 # Instalar dependencias PHP
-composer install --no-dev --optimize-autoloader
+composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
 # Generar clave si no existe
 php artisan key:generate --force
