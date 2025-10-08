@@ -8,6 +8,9 @@ composer install --no-dev --optimize-autoloader
 # Generar clave si no existe
 php artisan key:generate --force
 
+# Ejecutar migraciones
+php artisan migrate --force
+
 # Compilar assets con límite de memoria
 export NODE_OPTIONS="--max-old-space-size=512"
 npm ci --production=false
