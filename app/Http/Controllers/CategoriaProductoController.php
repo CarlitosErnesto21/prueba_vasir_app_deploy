@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\CategoriaProducto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Exception;
 
 class CategoriaProductoController extends Controller
@@ -48,17 +47,10 @@ class CategoriaProductoController extends Controller
                 'errors' => $e->errors()
             ], 422);
         } catch (Exception $e) {
-            // Log detallado para debugging
-            Log::error('Error creating categoria producto: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all()
-            ]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'Error al crear la categoría',
-                'error' => $e->getMessage(),
-                'debug' => app()->environment('local') ? $e->getTraceAsString() : null
+                'error' => $e->getMessage()
             ], 500);
         }
     }

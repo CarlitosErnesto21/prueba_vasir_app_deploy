@@ -19,8 +19,6 @@ use App\Http\Controllers\TipoDocumentoController;
 use App\Http\Controllers\PaqueteController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\InventarioController;
-use App\Http\Controllers\DebugController;
-use App\Http\Controllers\ServerDebugController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -34,23 +32,6 @@ Route::post('/login', [ApiAuthController::class, 'login']);
 //Rutas de validación en tiempo real para el registro
 Route::post('/auth/check-name', [RegisteredUserController::class, 'checkName']);
 Route::post('/auth/check-email', [RegisteredUserController::class, 'checkEmail']);
-
-// RUTAS DE DEBUG TEMPORAL (SIN MIDDLEWARE)
-Route::get('/server-debug/env', [ServerDebugController::class, 'environmentInfo']);
-Route::post('/server-debug/basic-post', [ServerDebugController::class, 'basicPost']);
-Route::post('/server-debug/force-debug', [ServerDebugController::class, 'forceDebugPost']);
-
-Route::withoutMiddleware(['api'])->group(function () {
-    Route::get('/debug/database', [DebugController::class, 'testDatabase']);
-    Route::post('/debug/categoria', [DebugController::class, 'testCreateCategoria']);
-    Route::get('/debug/simple', function() {
-        return response()->json(['message' => 'Simple test works', 'timestamp' => now()]);
-    });
-    Route::post('/debug/simple-post', function() {
-        return response()->json(['message' => 'Simple POST works', 'timestamp' => now()]);
-    });
-    Route::post('/debug/categoria-no-sanctum', [CategoriaProductoController::class, 'store']);
-});
 
 // Rutas para la tienda
 Route::get('/productos', [ProductoController::class, 'index']);
