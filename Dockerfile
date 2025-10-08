@@ -34,12 +34,13 @@ RUN mkdir -p storage/framework/{sessions,views,cache,testing} storage/logs boots
 # Generar clave de aplicación
 RUN php artisan key:generate --force
 
-# Copiar script de inicio mejorado
+# Copiar scripts de inicio
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY railway-start.sh /railway-start.sh
+RUN chmod +x /entrypoint.sh /railway-start.sh
 
 # Exponer puerto
 EXPOSE 8000
 
-# Usar entrypoint robusto
-ENTRYPOINT ["/entrypoint.sh"]
+# Usar entrypoint robusto que no puede ser sobrescrito por Railway
+ENTRYPOINT ["/railway-start.sh"]
