@@ -33,5 +33,9 @@ cd /app
 echo "Directorio actual: $(pwd)"
 echo "Archivos en public: $(ls -la public/ | head -5)"
 
+# Verificar que la tabla existe
+echo "Verificando tablas de la base de datos..."
+php artisan tinker --execute="echo 'Tablas: ' . implode(', ', \Illuminate\Support\Facades\Schema::getTableListing());"
+
 # Comando final - Solo PHP server, sin Laravel artisan serve
 exec php -S "0.0.0.0:$PORT_NUM" -t public
