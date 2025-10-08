@@ -24,10 +24,10 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class
         ]);
 
-        // ✅ AGREGAR: Middleware de Sanctum para API (DESHABILITADO TEMPORALMENTE)
-        // $middleware->api(prepend: [
-        //     EnsureFrontendRequestsAreStateful::class,
-        // ]);
+        // ✅ AGREGAR: Middleware de Sanctum para API
+        $middleware->api(prepend: [
+            EnsureFrontendRequestsAreStateful::class,
+        ]);
 
         // Mueve tu alias aquí:
         $middleware->alias([
