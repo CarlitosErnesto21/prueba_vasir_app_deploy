@@ -34,11 +34,17 @@ Route::post('/login', [ApiAuthController::class, 'login']);
 Route::post('/auth/check-name', [RegisteredUserController::class, 'checkName']);
 Route::post('/auth/check-email', [RegisteredUserController::class, 'checkEmail']);
 
-// RUTAS DE DEBUG TEMPORAL
-Route::get('/debug/database', [DebugController::class, 'testDatabase']);
-Route::post('/debug/categoria', [DebugController::class, 'testCreateCategoria']);
-Route::get('/debug/simple', function() {
-    return response()->json(['message' => 'Simple test works', 'timestamp' => now()]);
+// RUTAS DE DEBUG TEMPORAL (SIN SANCTUM)
+Route::withoutMiddleware(['api'])->group(function () {
+    Route::get('/debug/database', [DebugController::class, 'testDatabase']);
+    Route::post('/debug/categoria', [DebugController::class, 'testCreateCategoria']);
+    Route::get('/debug/simple', function() {
+        return response()->json(['message' => 'Simple test works', 'timestamp' => now()]);
+    });
+    Route::post('/debug/simple-post', function() {
+        return response()->json(['message' => 'Simple POST works', 'timestamp' => now()]);
+    });
+    Route::post('/debug/categoria-no-sanctum', [CategoriaProductoController::class, 'store']);
 });
 
 // Rutas para la tienda
