@@ -1,27 +1,28 @@
 #!/bin/bash
+set -e
 
-# Script de inicio para Railway
+# Script de inicio optimizado para Railway
+echo "=== Iniciando aplicación Laravel ==="
 
-echo "Iniciando aplicación Laravel..."
+# Configurar el puerto correctamente
+SERVER_PORT=${PORT:-8000}
+echo "Puerto configurado: $SERVER_PORT"
 
-# Ejecutar migraciones si es necesario
-if [ "$RUN_MIGRATIONS" = "true" ]; then
-    echo "Ejecutando migraciones..."
-    php artisan migrate --force
-fi
+# Ejecutar migraciones
+echo "Ejecutando migraciones..."
+php artisan migrate --force
 
-# Crear directorios si no existen
+# Crear directorios necesarios
+echo "Creando directorios de storage..."
 mkdir -p storage/framework/{sessions,views,cache,testing} storage/logs bootstrap/cache
-
-# Establecer permisos
 chmod -R 775 storage bootstrap/cache
 
-# Cachear configuraciones (con variables de entorno de Railway)
-echo "Cacheando configuraciones..."
+# Optimizaciones Laravel
+echo "Optimizando configuraciones..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Iniciar servidor
-echo "Iniciando servidor en puerto ${PORT:-8000}..."
-exec php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+# Iniciar servidor con puerto como número
+echo "Iniciando servidor Laravel en 0.0.0.0:$SERVER_PORT"
+exec php artisan serve --host=0.0.0.0 --port="$SERVER_PORT"

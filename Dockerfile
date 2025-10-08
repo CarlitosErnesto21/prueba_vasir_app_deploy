@@ -34,12 +34,12 @@ RUN mkdir -p storage/framework/{sessions,views,cache,testing} storage/logs boots
 # Generar clave de aplicación
 RUN php artisan key:generate --force
 
-# Copiar script de inicio
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
+# Copiar script de inicio mejorado
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Exponer puerto
 EXPOSE 8000
 
-# Usar script de inicio
-CMD ["/start.sh"]
+# Usar entrypoint robusto
+ENTRYPOINT ["/entrypoint.sh"]
