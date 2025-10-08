@@ -19,6 +19,7 @@ use App\Http\Controllers\TipoDocumentoController;
 use App\Http\Controllers\PaqueteController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\InventarioController;
+use App\Http\Controllers\DebugController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +33,10 @@ Route::post('/login', [ApiAuthController::class, 'login']);
 //Rutas de validación en tiempo real para el registro
 Route::post('/auth/check-name', [RegisteredUserController::class, 'checkName']);
 Route::post('/auth/check-email', [RegisteredUserController::class, 'checkEmail']);
+
+// RUTAS DE DEBUG TEMPORAL
+Route::get('/debug/database', [DebugController::class, 'testDatabase']);
+Route::post('/debug/categoria', [DebugController::class, 'testCreateCategoria']);
 
 // Rutas para la tienda
 Route::get('/productos', [ProductoController::class, 'index']);
