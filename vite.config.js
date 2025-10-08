@@ -18,11 +18,24 @@ export default defineConfig({
         }),
     ],
     // Configuración del servidor de desarrollo solo para pruebas en red local
-        server: {
+    server: {
         host: '0.0.0.0',
         port: 5173,
         hmr: {
             host: '192.168.1.34' // Reemplaza con tu IP local
+        }
+    },
+    // Optimizaciones para build en Railway
+    build: {
+        chunkSizeWarningLimit: 1000,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ['vue', '@inertiajs/vue3'],
+                    ui: ['primevue', '@fortawesome/vue-fontawesome'],
+                    charts: ['chart.js']
+                }
+            }
         }
     }
 });
