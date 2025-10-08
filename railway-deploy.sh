@@ -1,27 +1,19 @@
 #!/bin/sh
 
-# Generar clave de aplicación si no existe
-if [ -z "$APP_KEY" ]; then
-    echo "Generando APP_KEY..."
-    php artisan key:generate --force
-fi
+echo "Iniciando deploy..."
 
-# Ejecutar migraciones
-echo "Ejecutando migraciones..."
-php artisan migrate --force
+# Instalar dependencias PHP
+composer install --no-dev --optimize-autoloader
 
-# Ejecutar seeders (opcional)
-# php artisan db:seed --force
+# Generar clave si no existe
+php artisan key:generate --force
 
-# Limpiar y optimizar
-echo "Optimizando aplicación..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-
-# Compilar assets
-echo "Compilando assets..."
-npm ci
+# Compilar assets con límite de memoria
+export NODE_OPTIONS="--max-old-space-size=512"
+npm ci --production=false
 npm run build
 
-echo "Deploy completado!"
+# Limpiar node_modules para ahorrar espacio
+rm -rf node_modules
+
+echo "Build completado!"
