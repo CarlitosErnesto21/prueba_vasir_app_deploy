@@ -39,36 +39,48 @@ class DebugController extends Controller
     public function testCreateCategoria(Request $request)
     {
         try {
-            $testData = ['nombre' => 'Test Category ' . time()];
+            // Debug paso a paso
+            $debugInfo = [];
+            
+            // Paso 1: Verificar request
+            $debugInfo['step1_request'] = [
+                'all_data' => $request->all(),
+                'method' => $request->method()
+            ];
 
-            // Probar validación
-            $validated = $request->validate([
-                'nombre' => 'required|string|min:3|max:50|unique:categorias_productos,nombre',
+            // Paso 2: Probar inserción directa en BD
+            $nombre = 'Test_' . time();
+            $result = DB::table('categorias_productos')->insert([
+                'nombre' => $nombre,
+                'created_at' => now(),
+                'updated_at' => now()
             ]);
 
-            // Probar creación
-            $categoria = CategoriaProducto::create($validated);
+            $debugInfo['step2_direct_insert'] = [
+                'result' => $result,
+                'nombre_used' => $nombre
+            ];
+
+            // Paso 3: Verificar inserción
+            $count = DB::table('categorias_productos')->where('nombre', $nombre)->count();
+            $debugInfo['step3_verification'] = [
+                'count_after_insert' => $count
+            ];
 
             return response()->json([
                 'success' => true,
-                'message' => 'Test categoria created successfully',
-                'categoria' => $categoria
+                'message' => 'Direct database insert test completed',
+                'debug' => $debugInfo
             ]);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'type' => 'validation_error',
-                'errors' => $e->errors()
-            ], 422);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'type' => 'general_error',
+                'type' => 'exception',
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all()
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => explode("\n", $e->getTraceAsString())
             ], 500);
         }
     }

@@ -37,6 +37,9 @@ Route::post('/auth/check-email', [RegisteredUserController::class, 'checkEmail']
 // RUTAS DE DEBUG TEMPORAL
 Route::get('/debug/database', [DebugController::class, 'testDatabase']);
 Route::post('/debug/categoria', [DebugController::class, 'testCreateCategoria']);
+Route::get('/debug/simple', function() {
+    return response()->json(['message' => 'Simple test works', 'timestamp' => now()]);
+});
 
 // Rutas para la tienda
 Route::get('/productos', [ProductoController::class, 'index']);
