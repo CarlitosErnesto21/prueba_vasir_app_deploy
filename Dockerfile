@@ -24,20 +24,22 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts --ignore-platfo
 # Copiar el resto de la aplicación
 COPY . .
 
+# Crear archivo .env basado en .env.example
+RUN cp .env.example .env
+
 # Crear directorios necesarios y permisos
 RUN mkdir -p storage/framework/{sessions,views,cache,testing} storage/logs bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Generar clave de aplicación si no existe
+# Generar clave de aplicación
 RUN php artisan key:generate --force
 
-# Cachear configuraciones
-RUN php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
+# Copiar script de inicio
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
 # Exponer puerto
 EXPOSE 8000
 
-# Comando para iniciar la aplicación
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Usar script de inicio
+CMD ["/start.sh"]
