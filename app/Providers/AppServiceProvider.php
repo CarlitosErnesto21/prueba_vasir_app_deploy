@@ -26,5 +26,11 @@ class AppServiceProvider extends ServiceProvider
         if (app()->environment('production')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
+
+        // Configuración para PlanetScale
+        if (config('database.default') === 'mysql') {
+            // Deshabilitar foreign key constraints para PlanetScale
+            \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+        }
     }
 }
