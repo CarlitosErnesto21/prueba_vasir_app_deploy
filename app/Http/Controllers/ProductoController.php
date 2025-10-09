@@ -8,8 +8,8 @@ use App\Models\CategoriaProducto;
 use App\Models\Inventario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Exception;
 
@@ -56,13 +56,7 @@ class ProductoController extends Controller
                 'imagenes.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
             ]);
 
-            // 🗂️ Crear directorio si no existe
-            $directory = public_path('images/productos');
-            if (!file_exists($directory)) {
-                mkdir($directory, 0755, true);
-            }
-
-            // 🗃️ INICIAR TRANSACCIÓN
+            // ️ INICIAR TRANSACCIÓN
             DB::beginTransaction();
 
             // Crear producto
@@ -84,11 +78,12 @@ class ProductoController extends Controller
                 Log::info('Registro de inventario creado exitosamente');
             }
 
-            // 🖼️ Manejar imágenes
+            // 🖼️ Manejar imágenes usando Storage persistente
             if ($request->hasFile('imagenes')) {
                 foreach ($request->file('imagenes') as $imagen) {
-                    $nombreImagen = time() . '_' . uniqid() . '.' . $imagen->getClientOriginalExtension();
-                    $imagen->move($directory, $nombreImagen);
+                    // Usar Storage::disk('public') que es persistente en Render
+                    $path = $imagen->store('productos', 'public');
+                    $nombreImagen = basename($path);
 
                     $producto->imagenes()->create([
                         'nombre' => $nombreImagen,
@@ -202,25 +197,19 @@ class ProductoController extends Controller
                     $imagen = $producto->imagenes()->where('nombre', $removedImage)->first();
 
                     if ($imagen) {
-                        $imagePath = public_path('images/productos/' . $imagen->nombre);
-                        if (file_exists($imagePath)) {
-                            unlink($imagePath);
-                        }
+                        // Eliminar usando Storage Laravel
+                        Storage::disk('public')->delete('productos/' . $imagen->nombre);
                         $imagen->delete();
                     }
                 }
             }
 
-            // 🖼️ Manejar nuevas imágenes
+            // 🖼️ Manejar nuevas imágenes usando Storage persistente
             if ($request->hasFile('imagenes')) {
-                $directory = public_path('images/productos');
-                if (!file_exists($directory)) {
-                    mkdir($directory, 0755, true);
-                }
-
                 foreach ($request->file('imagenes') as $imagen) {
-                    $nombreImagen = time() . '_' . uniqid() . '.' . $imagen->getClientOriginalExtension();
-                    $imagen->move($directory, $nombreImagen);
+                    // Usar Storage::disk('public') que es persistente en Render
+                    $path = $imagen->store('productos', 'public');
+                    $nombreImagen = basename($path);
 
                     $producto->imagenes()->create([
                         'nombre' => $nombreImagen,
@@ -294,12 +283,9 @@ class ProductoController extends Controller
                 ]);
             }
 
-            // 🗑️ Eliminar imágenes del storage
+            // 🗑️ Eliminar imágenes del storage usando Storage Laravel
             foreach ($producto->imagenes as $imagen) {
-                $imagePath = public_path('images/productos/' . $imagen->nombre);
-                if (file_exists($imagePath)) {
-                    unlink($imagePath);
-                }
+                Storage::disk('public')->delete('productos/' . $imagen->nombre);
                 $imagen->delete();
             }
 

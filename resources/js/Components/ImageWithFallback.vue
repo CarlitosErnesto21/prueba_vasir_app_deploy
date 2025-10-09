@@ -122,21 +122,7 @@ const onError = () => {
   isLoading.value = false
   errorAttempts.value++
 
-  if (errorAttempts.value < maxRetries) {
-    // Retry with different fallback sources
-    const fallbacks = [
-      `https://picsum.photos/300/200?random=${Date.now()}`,
-      `https://via.placeholder.com/300x200/ef4444/ffffff?text=${encodeURIComponent(errorText.value.substring(0, 20))}`,
-      createFallbackImage(errorText.value)
-    ]
-
-    if (errorAttempts.value <= fallbacks.length) {
-      currentSrc.value = fallbacks[errorAttempts.value - 1]
-      return
-    }
-  }
-
-  // Final fallback
+  // Usar únicamente fallback local (Canvas)
   hasError.value = true
   currentSrc.value = createFallbackImage(errorText.value)
 }

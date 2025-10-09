@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Aerolinea;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AerolineaController extends Controller
 {
@@ -33,16 +34,13 @@ class AerolineaController extends Controller
         // Crear una nueva aerolínea
         $aerolinea = Aerolinea::create($validated);
 
-        // Guardar imágenes
+        // Guardar imágenes usando Storage persistente
         if ($request->hasFile('imagenes')) {
             foreach ($request->file('imagenes') as $imagen) {
                 if ($imagen instanceof \Illuminate\Http\UploadedFile && $imagen->isValid()) {
-                    $nombreArchivo = uniqid() . '_' . $imagen->getClientOriginalName();
-                    $destino = public_path('images/aerolinea');
-                    if (!file_exists($destino)) {
-                        mkdir($destino, 0755, true);
-                    }
-                    $imagen->move($destino, $nombreArchivo);
+                    // Usar Storage::disk('public') que es persistente en Render
+                    $path = $imagen->store('aerolinea', 'public');
+                    $nombreArchivo = basename($path);
                     $aerolinea->imagenes()->create([
                         'nombre' => $nombreArchivo
                     ]);
@@ -76,12 +74,9 @@ class AerolineaController extends Controller
         if ($request->hasFile('imagenes')) {
             foreach ($request->file('imagenes') as $imagen) {
                 if ($imagen instanceof \Illuminate\Http\UploadedFile && $imagen->isValid()) {
-                    $nombreArchivo = uniqid() . '_' . $imagen->getClientOriginalName();
-                    $destino = public_path('images/aerolinea');
-                    if (!file_exists($destino)) {
-                        mkdir($destino, 0755, true);
-                    }
-                    $imagen->move($destino, $nombreArchivo);
+                    // Usar Storage::disk('public') que es persistente en Render
+                    $path = $imagen->store('aerolinea', 'public');
+                    $nombreArchivo = basename($path);
                     $aerolinea->imagenes()->create([
                         'nombre' => $nombreArchivo
                     ]);
@@ -94,10 +89,8 @@ class AerolineaController extends Controller
             foreach ($request->input('removed_images') as $imageName) {
                 $imagen = $aerolinea->imagenes()->where('nombre', $imageName)->first();
                 if ($imagen) {
-                    $rutaImagen = public_path('images/aerolinea/' . $imagen->nombre);
-                    if (file_exists($rutaImagen)) {
-                        unlink($rutaImagen);
-                    }
+                    // Eliminar usando Storage Laravel
+                    Storage::disk('public')->delete('aerolinea/' . $imagen->nombre);
                     $imagen->forceDelete();
                 }
             }
@@ -126,10 +119,8 @@ class AerolineaController extends Controller
         $aerolinea = Aerolinea::with('imagenes')->findOrFail($id);
 
         foreach ($aerolinea->imagenes as $imagen) {
-            $rutaImagen = public_path('images/aerolinea/' . $imagen->nombre);
-            if (file_exists($rutaImagen)) {
-                unlink($rutaImagen);
-            }
+            // Eliminar usando Storage Laravel
+            Storage::disk('public')->delete('aerolinea/' . $imagen->nombre);
             $imagen->forceDelete();
         }
 

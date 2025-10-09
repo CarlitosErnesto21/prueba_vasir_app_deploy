@@ -40,7 +40,7 @@ const getImageUrl = (producto) => {
   }
 
   // Construir URL relativa
-  return `/images/productos/${producto.imagen}`
+  return `/storage/productos/${producto.imagen}`
 }
 </script>
 

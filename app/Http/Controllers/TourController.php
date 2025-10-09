@@ -6,6 +6,7 @@ use App\Models\Tour;
 use App\Models\Transporte;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class TourController extends Controller
 {
@@ -77,14 +78,13 @@ class TourController extends Controller
         // Crear tour
         $tour = Tour::create($tourData);
 
-        // Guardar imágenes nuevas
+        // Guardar imágenes nuevas usando Storage Laravel (persistente)
         if ($request->hasFile('imagenes')) {
             foreach ($request->file('imagenes') as $imagen) {
                 if ($imagen instanceof \Illuminate\Http\UploadedFile && $imagen->isValid()) {
-                    $nombreArchivo = uniqid() . '_' . $imagen->getClientOriginalName();
-                    $destino = public_path('images/tours');
-                    if (!file_exists($destino)) mkdir($destino, 0755, true);
-                    $imagen->move($destino, $nombreArchivo);
+                    // Usar Storage::disk('public') que es persistente en Render
+                    $path = $imagen->store('tours', 'public');
+                    $nombreArchivo = basename($path);
                     $tour->imagenes()->create(['nombre' => $nombreArchivo]);
                 }
             }
@@ -155,10 +155,9 @@ class TourController extends Controller
         if ($request->hasFile('imagenes')) {
             foreach ($request->file('imagenes') as $imagen) {
                 if ($imagen instanceof \Illuminate\Http\UploadedFile && $imagen->isValid()) {
-                    $nombreArchivo = uniqid() . '_' . $imagen->getClientOriginalName();
-                    $destino = public_path('images/tours');
-                    if (!file_exists($destino)) mkdir($destino, 0755, true);
-                    $imagen->move($destino, $nombreArchivo);
+                    // Usar Storage::disk('public') que es persistente en Render
+                    $path = $imagen->store('tours', 'public');
+                    $nombreArchivo = basename($path);
                     $tour->imagenes()->create(['nombre' => $nombreArchivo]);
                 }
             }
@@ -169,8 +168,8 @@ class TourController extends Controller
             foreach ($request->input('removed_images') as $imageName) {
                 $imagen = $tour->imagenes()->where('nombre', $imageName)->first();
                 if ($imagen) {
-                    $rutaImagen = public_path('images/tours/' . $imagen->nombre);
-                    if (file_exists($rutaImagen)) unlink($rutaImagen);
+                    // Eliminar usando Storage Laravel
+                    Storage::disk('public')->delete('tours/' . $imagen->nombre);
                     $imagen->forceDelete();
                 }
             }
@@ -190,10 +189,9 @@ class TourController extends Controller
         $tour = Tour::findOrFail($id);
         $tour->loadMissing(['imagenes', 'transporte']);
 
-        // Eliminar imágenes físicas y registros
+        // Eliminar imágenes físicas y registros usando Storage Laravel
         foreach ($tour->imagenes as $imagen) {
-            $rutaImagen = public_path('images/tours/' . $imagen->nombre);
-            if (file_exists($rutaImagen)) unlink($rutaImagen);
+            Storage::disk('public')->delete('tours/' . $imagen->nombre);
             $imagen->forceDelete();
         }
 
