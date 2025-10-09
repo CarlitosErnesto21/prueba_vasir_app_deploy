@@ -1,16 +1,16 @@
-# 🚀 Guía de Deployment: Render + PlanetScale
+# 🚀 Guía de Deployment: Render + JawsDB MySQL
 
-## Paso 1: Configurar PlanetScale
+## Paso 1: Configurar JawsDB MySQL
 
-1. **Crear cuenta**: Ve a https://planetscale.com y regístrate
+1. **Crear cuenta**: Ve a https://www.jawsdb.com y regístrate
 2. **Crear base de datos**:
-   - Nombre: `vasir-agency`
-   - Región: `us-east` (gratis)
+   - Plan: "Kitefin Shared" ($10/mes)
+   - Región: US East (recomendada)
+   - Nombre: `vasir_agency` (automático)
 3. **Obtener credenciales**:
-   - Ve a tu base de datos
-   - Clic en "Connect"
-   - Selecciona "Laravel"
-   - Copia las credenciales
+   - Ve a tu dashboard de JawsDB
+   - Copia las credenciales de conexión
+   - Se ven así: `mysql://username:password@hostname:port/database_name`
 
 ## Paso 2: Configurar Render
 
@@ -43,15 +43,14 @@ APP_URL=https://vasir-agency-app.onrender.com
 LOG_CHANNEL=stderr
 ```
 
-### Variables de PlanetScale (reemplazar con tus datos):
+### Variables de JawsDB (reemplazar con tus datos):
 ```
 DB_CONNECTION=mysql
-DB_HOST=[tu-host-planetscale].us-east-1.psdb.cloud
+DB_HOST=[tu-host-jawsdb].compute-1.amazonaws.com
 DB_PORT=3306
-DB_DATABASE=vasir-agency
-DB_USERNAME=[tu-usuario-planetscale]
-DB_PASSWORD=[tu-password-planetscale]
-MYSQL_ATTR_SSL_CA=/etc/ssl/certs/ca-certificates.crt
+DB_DATABASE=[tu-database-jawsdb]
+DB_USERNAME=[tu-usuario-jawsdb]
+DB_PASSWORD=[tu-password-jawsdb]
 ```
 
 ### Variables adicionales:
@@ -68,10 +67,11 @@ MAIL_MAILER=log
 3. **Migraciones** se ejecutarán automáticamente
 
 ## Costos:
-- **PlanetScale**: Gratis (hasta 1GB)
+- **JawsDB**: $10/mes (plan Kitefin Shared)
 - **Render**: Gratis (con limitaciones) o $7/mes
+- **Total**: $10-17/mes
 
 ## Notas importantes:
-- PlanetScale no soporta foreign keys
-- Las migraciones están configuradas para esto
-- SSL está habilitado automáticamente
+- JawsDB es MySQL tradicional (soporta foreign keys)
+- SSL habilitado automáticamente
+- Backups automáticos incluidos

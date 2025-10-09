@@ -11,32 +11,36 @@ services:
       php artisan migrate --force
       php artisan serve --host=0.0.0.0 --port=$PORT
     envVars:
+      - key: APP_NAME
+        value: "Vasir Agency"
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: false
       - key: APP_KEY
         generateValue: true
+      - key: APP_URL
+        value: https://vasir-agency-app.onrender.com
       - key: LOG_CHANNEL
         value: stderr
+      # Railway MySQL Configuration
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
-        value: aws.connect.psdb.cloud
+        sync: false
       - key: DB_PORT
         value: 3306
       - key: DB_DATABASE
-        value: vasir-agency
+        sync: false
       - key: DB_USERNAME
         sync: false
       - key: DB_PASSWORD
         sync: false
-      - key: MYSQL_ATTR_SSL_CA
-        value: /etc/ssl/certs/ca-certificates.crt
       - key: SESSION_DRIVER
         value: database
       - key: CACHE_DRIVER
         value: database
+      - key: MAIL_MAILER
+        value: log
 
-# No necesitamos databases section para PlanetScale
-# PlanetScale se configura externamente
+# MySQL externo configurado externamente (Railway, Aiven, etc.)
