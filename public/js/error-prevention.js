@@ -6,15 +6,28 @@
 (() => {
   'use strict';
 
-  // Prevenir errores de MutationObserver
+  // Prevenir errores de MutationObserver más robustamente
   if (typeof window.MutationObserver !== 'undefined') {
     const originalObserve = MutationObserver.prototype.observe;
+    const originalDisconnect = MutationObserver.prototype.disconnect;
 
     MutationObserver.prototype.observe = function(target, options) {
       try {
         // Verificar que el target sea un Node válido
-        if (!target || typeof target.nodeType === 'undefined') {
-          console.warn('MutationObserver: Invalid target node', target);
+        if (!target) {
+          console.warn('MutationObserver: Target is null or undefined');
+          return;
+        }
+
+        // Verificar que tenga las propiedades de un Node
+        if (typeof target.nodeType === 'undefined' || typeof target.nodeName === 'undefined') {
+          console.warn('MutationObserver: Target is not a valid DOM node', target);
+          return;
+        }
+
+        // Verificar que esté conectado al DOM
+        if (typeof target.isConnected !== 'undefined' && !target.isConnected) {
+          console.warn('MutationObserver: Target is not connected to DOM');
           return;
         }
 
@@ -26,9 +39,25 @@
           return;
         }
 
+        // Verificar options válidas
+        if (!options || typeof options !== 'object') {
+          console.warn('MutationObserver: Invalid options', options);
+          return;
+        }
+
         return originalObserve.call(this, target, options);
       } catch (error) {
-        console.error('MutationObserver error prevented:', error);
+        console.error('MutationObserver observe error prevented:', error);
+        return;
+      }
+    };
+
+    // También proteger disconnect
+    MutationObserver.prototype.disconnect = function() {
+      try {
+        return originalDisconnect.call(this);
+      } catch (error) {
+        console.error('MutationObserver disconnect error prevented:', error);
       }
     };
   }

@@ -34,7 +34,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 const props = defineProps({
   src: {
     type: String,
-    required: true
+    default: null
   },
   alt: {
     type: String,
@@ -142,6 +142,14 @@ const onError = () => {
 }
 
 const initializeImage = () => {
+  // Si no hay src, mostrar error inmediatamente
+  if (!props.src) {
+    isLoading.value = false
+    hasError.value = true
+    currentSrc.value = createFallbackImage(errorText.value)
+    return
+  }
+  
   isLoading.value = true
   hasError.value = false
   errorAttempts.value = 0
@@ -163,6 +171,7 @@ onMounted(initializeImage)
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
