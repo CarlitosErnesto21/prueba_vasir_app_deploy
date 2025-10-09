@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useCarritoStore } from '@/stores/carrito'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import ImageWithFallback from '@/Components/ImageWithFallback.vue'
 import { 
   faShoppingCart, 
   faTrash, 
@@ -30,6 +31,21 @@ const procederAlCheckout = () => {
   // Por ejemplo, redirigir a una página de checkout
   console.log('Procediendo al checkout con:', carritoStore.items)
   // router.visit('/checkout') o la ruta que uses
+}
+
+// Helper para construir URL de imagen
+const getImageUrl = (producto) => {
+  if (!producto.imagen) {
+    return null
+  }
+
+  // Si ya es una URL completa, usarla tal como está
+  if (producto.imagen.startsWith('http') || producto.imagen.startsWith('data:')) {
+    return producto.imagen
+  }
+
+  // Construir URL relativa
+  return `/images/productos/${producto.imagen}`
 }
 </script>
 
@@ -94,12 +110,13 @@ const procederAlCheckout = () => {
             >
               <!-- Imagen del producto -->
               <div class="flex-shrink-0 w-16 h-16 producto-imagen">
-                <img 
-                  :src="item.imagen" 
+                <ImageWithFallback
+                  :src="getImageUrl(item)"
                   :alt="item.nombre"
-                  class="w-full h-full object-cover rounded-md border border-gray-200"
-                  @error="$event.target.src = '/images/productos/default.jpg'"
-                >
+                  :fallback-text="item.nombre"
+                  container-class="w-full h-full"
+                  image-class="w-full h-full object-cover rounded-md border border-gray-200"
+                />
               </div>
 
               <!-- Información del producto -->

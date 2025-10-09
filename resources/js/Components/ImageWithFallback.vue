@@ -8,18 +8,18 @@
       @error="onError"
       loading="lazy"
     />
-    
+
     <!-- Loading state -->
-    <div 
-      v-if="isLoading" 
+    <div
+      v-if="isLoading"
       class="absolute inset-0 bg-gray-100 animate-pulse flex items-center justify-center"
     >
       <div class="text-gray-400 text-sm">Cargando...</div>
     </div>
-    
+
     <!-- Error state -->
-    <div 
-      v-if="hasError && !isLoading" 
+    <div
+      v-if="hasError && !isLoading"
       class="absolute inset-0 bg-gradient-to-br from-red-100 to-red-200 flex flex-col items-center justify-center text-red-600 text-xs p-2 text-center"
     >
       <i class="pi pi-image text-2xl mb-2 opacity-50"></i>
@@ -67,30 +67,30 @@ const errorText = computed(() => {
 const createFallbackImage = (text) => {
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
-  
+
   canvas.width = 300
   canvas.height = 200
-  
+
   // Gradient background
   const gradient = ctx.createLinearGradient(0, 0, 300, 200)
   gradient.addColorStop(0, '#ef4444')
   gradient.addColorStop(1, '#dc2626')
-  
+
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, 300, 200)
-  
+
   // Text
   ctx.fillStyle = 'white'
   ctx.font = 'bold 14px Arial'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  
+
   // Wrap text
   const maxWidth = 280
   const words = text.split(' ')
   let line = ''
   const lines = []
-  
+
   for (let n = 0; n < words.length; n++) {
     const testLine = line + words[n] + ' '
     const metrics = ctx.measureText(testLine)
@@ -103,13 +103,13 @@ const createFallbackImage = (text) => {
     }
   }
   lines.push(line)
-  
+
   // Draw lines
   const startY = 100 - (lines.length * 10)
   lines.forEach((line, index) => {
     ctx.fillText(line.trim(), 150, startY + (index * 20))
   })
-  
+
   return canvas.toDataURL()
 }
 
@@ -121,7 +121,7 @@ const onLoad = () => {
 const onError = () => {
   isLoading.value = false
   errorAttempts.value++
-  
+
   if (errorAttempts.value < maxRetries) {
     // Retry with different fallback sources
     const fallbacks = [
@@ -129,13 +129,13 @@ const onError = () => {
       `https://via.placeholder.com/300x200/ef4444/ffffff?text=${encodeURIComponent(errorText.value.substring(0, 20))}`,
       createFallbackImage(errorText.value)
     ]
-    
+
     if (errorAttempts.value <= fallbacks.length) {
       currentSrc.value = fallbacks[errorAttempts.value - 1]
       return
     }
   }
-  
+
   // Final fallback
   hasError.value = true
   currentSrc.value = createFallbackImage(errorText.value)
@@ -149,7 +149,7 @@ const initializeImage = () => {
     currentSrc.value = createFallbackImage(errorText.value)
     return
   }
-  
+
   isLoading.value = true
   hasError.value = false
   errorAttempts.value = 0

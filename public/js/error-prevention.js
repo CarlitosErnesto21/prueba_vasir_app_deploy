@@ -6,8 +6,11 @@
 (() => {
   'use strict';
 
+  // Variable para rastrear si ya se interceptó el error
+  let mutationObserverPatched = false;
+
   // Prevenir errores de MutationObserver más robustamente
-  if (typeof window.MutationObserver !== 'undefined') {
+  if (typeof window.MutationObserver !== 'undefined' && !mutationObserverPatched) {
     const originalObserve = MutationObserver.prototype.observe;
     const originalDisconnect = MutationObserver.prototype.disconnect;
 
@@ -60,6 +63,9 @@
         console.error('MutationObserver disconnect error prevented:', error);
       }
     };
+
+    mutationObserverPatched = true;
+    console.log('🛡️ MutationObserver patched successfully');
   }
 
   // Mejorar manejo de errores de imágenes globalmente
@@ -134,23 +140,45 @@
       });
   };
 
-  // Prevenir que errores de extensiones del navegador afecten la aplicación
-  window.addEventListener('error', (event) => {
-    // Filtrar errores comunes de extensiones de navegador
+  // Interceptor más específico para errores de MutationObserver en archivos TS compilados
+  const originalErrorHandler = window.onerror;
+  window.onerror = function(message, source, lineno, colno, error) {
+    // Interceptar específicamente errores de MutationObserver
+    if (message && message.includes("Failed to execute 'observe' on 'MutationObserver'")) {
+      console.warn('🛡️ MutationObserver error intercepted and suppressed:', message);
+      return true; // Prevenir que se muestre en consola
+    }
+
+    // Filtrar errores de extensiones y otros
     const ignoredErrors = [
       'Could not establish connection. Receiving end does not exist',
       'Extension context invalidated',
       'The message port closed before a response was received',
-      'Script error'
+      'Script error',
+      'parameter 1 is not of type \'Node\''
     ];
 
-    if (ignoredErrors.some(ignored => event.message.includes(ignored))) {
-      event.preventDefault();
-      return false;
+    if (ignoredErrors.some(ignored => message && message.includes(ignored))) {
+      console.warn('🛡️ Browser extension error suppressed:', message);
+      return true;
     }
-  });
 
-  // Optimizar carga de imágenes con lazy loading
+    // Llamar al handler original si existe
+    if (originalErrorHandler) {
+      return originalErrorHandler.call(this, message, source, lineno, colno, error);
+    }
+
+    return false;
+  };
+
+  // También interceptar errores no capturados en promesas
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = event.reason;
+    if (reason && reason.message && reason.message.includes('MutationObserver')) {
+      console.warn('🛡️ MutationObserver promise rejection suppressed:', reason);
+      event.preventDefault();
+    }
+  });  // Optimizar carga de imágenes con lazy loading
   if ('IntersectionObserver' in window) {
     const imageObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach(entry => {
