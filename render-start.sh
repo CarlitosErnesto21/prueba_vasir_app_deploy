@@ -18,6 +18,10 @@ echo "✅ Base de datos conectada!"
 echo "🔄 Ejecutando migraciones..."
 php artisan migrate --force
 
+# Ejecutar seeders (datos iniciales)
+echo "🌱 Ejecutando seeders..."
+php artisan db:seed --force
+
 # Limpiar y cachear configuraciones
 echo "🧹 Optimizando aplicación..."
 php artisan config:cache
