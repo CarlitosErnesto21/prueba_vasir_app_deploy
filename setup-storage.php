@@ -4,6 +4,10 @@
  * Se ejecuta automáticamente durante el deployment en Render
  */
 
+// Cargar Laravel
+require_once __DIR__ . '/vendor/autoload.php';
+$app = require_once __DIR__ . '/bootstrap/app.php';
+
 echo "🔧 Configurando sistema de almacenamiento...\n";
 
 // Crear directorios de almacenamiento
