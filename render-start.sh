@@ -22,6 +22,10 @@ php artisan migrate --force
 echo "🌱 Ejecutando seeders..."
 php artisan db:seed --force
 
+# Configurar sistema de almacenamiento
+echo "📁 Configurando almacenamiento..."
+php setup-storage.php
+
 # Limpiar y cachear configuraciones
 echo "🧹 Optimizando aplicación..."
 php artisan config:cache
