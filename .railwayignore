@@ -1,9 +1,0 @@
-node_modules/
-.env.local
-.env.development
-*.log
-.DS_Store
-tests/
-.phpunit.cache
-storage/logs/*
-!storage/logs/.gitkeep

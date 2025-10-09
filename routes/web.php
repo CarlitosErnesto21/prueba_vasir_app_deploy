@@ -87,24 +87,4 @@ Route::post('/reservas/tour', [ReservaController::class, 'crearReservaTour'])->m
 // Ruta para obtener datos del cliente autenticado
 Route::get('/api/cliente-datos', [ClienteController::class, 'obtenerDatosAutenticado'])->middleware('auth')->name('cliente.datos');
 
-// Ruta de prueba para emails (solo en desarrollo/testing)
-Route::get('/test-email', function () {
-    $user = \App\Models\User::first();
-    if (!$user) {
-        return 'No hay usuarios en la base de datos';
-    }
-
-    $verificationUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(60),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
-
-    \Illuminate\Support\Facades\Mail::to($user->email)->send(
-        new \App\Mail\WelcomeUserMail($user, $verificationUrl)
-    );
-
-    return 'Email de prueba enviado a: ' . $user->email;
-})->middleware('auth')->name('test.email');
-
 require __DIR__.'/auth.php';
