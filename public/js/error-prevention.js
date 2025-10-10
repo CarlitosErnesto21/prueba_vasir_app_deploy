@@ -65,7 +65,6 @@
     };
 
     mutationObserverPatched = true;
-    console.log('🛡️ MutationObserver patched successfully');
   }
 
   // Mejorar manejo de errores de imágenes globalmente
@@ -200,6 +199,4 @@
       });
     });
   }
-
-  console.log('🛡️ Error prevention script loaded successfully');
 })();

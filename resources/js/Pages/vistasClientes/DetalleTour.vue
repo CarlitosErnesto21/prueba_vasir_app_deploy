@@ -406,7 +406,6 @@ const obtenerTour = async () => {
 
     // Asegurar que el tour tenga cupos_disponibles
     if (data.cupos_disponibles === undefined || data.cupos_disponibles === null) {
-      console.warn(`Tour ${data.id} sin cupos_disponibles, usando cupo_max como fallback`)
       data.cupos_disponibles = data.cupo_max || 0
     }
 

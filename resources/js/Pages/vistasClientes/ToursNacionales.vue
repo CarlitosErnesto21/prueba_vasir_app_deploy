@@ -232,7 +232,6 @@ const obtenerTours = async () => {
     const toursConCupos = (data.data || data || []).map(tour => {
       // Si no tiene cupos_disponibles, usar cupo_max como fallback temporal
       if (tour.cupos_disponibles === undefined || tour.cupos_disponibles === null) {
-        console.warn(`Tour ${tour.id} sin cupos_disponibles, usando cupo_max como fallback`)
         tour.cupos_disponibles = tour.cupo_max || 0
       }
       return tour

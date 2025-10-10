@@ -29,7 +29,6 @@ const formatPrice = (price) => {
 const procederAlCheckout = () => {
   // Aquí puedes implementar la lógica de checkout
   // Por ejemplo, redirigir a una página de checkout
-  console.log('Procediendo al checkout con:', carritoStore.items)
   // router.visit('/checkout') o la ruta que uses
 }
 

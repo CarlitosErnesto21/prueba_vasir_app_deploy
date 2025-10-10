@@ -20,12 +20,6 @@ class SobreNosotrosController extends Controller
         // Obtener valores corporativos desde la base de datos
         $companyValues = CompanyValue::getAllValues();
         
-        // Debug: Log los valores para verificar
-        Log::info('SobreNosotros - Mission: ' . ($mission ? $mission->value : 'NULL'));
-        Log::info('SobreNosotros - Vision: ' . ($vision ? $vision->value : 'NULL'));
-        Log::info('SobreNosotros - Description: ' . ($description ? $description->value : 'NULL'));
-        Log::info('SobreNosotros - Company Values Count: ' . $companyValues->count());
-        
         $siteSettings = [
             'mission' => $mission ? $mission->value : '',
             'vision' => $vision ? $vision->value : '',

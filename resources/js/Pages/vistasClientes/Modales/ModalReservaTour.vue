@@ -127,7 +127,7 @@ const resetFormularioReserva = async () => {
         try {
           fechaNacimientoFormateada = new Date(clienteExistente.fecha_nacimiento)
         } catch (error) {
-          console.warn('Error al formatear fecha de nacimiento:', error)
+          // Ignorar error de formato de fecha
         }
       }
 

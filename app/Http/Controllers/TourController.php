@@ -40,9 +40,6 @@ class TourController extends Controller
 
             $cuposDisponibles = max(0, $tour->cupo_max - $cuposReservados);
 
-            // Debug log
-            Log::info("Tour {$tour->id}: cupo_max={$tour->cupo_max}, reservados={$cuposReservados}, disponibles={$cuposDisponibles}");
-
             $tour->cupos_disponibles = $cuposDisponibles;
         });
 
@@ -82,31 +79,12 @@ class TourController extends Controller
         if ($request->hasFile('imagenes')) {
             foreach ($request->file('imagenes') as $imagen) {
                 if ($imagen instanceof \Illuminate\Http\UploadedFile && $imagen->isValid()) {
-                    // Debug: Información del archivo
-                    Log::info('DEBUG: Archivo recibido', [
-                        'nombre_original' => $imagen->getClientOriginalName(),
-                        'tamaño' => $imagen->getSize(),
-                        'tipo' => $imagen->getMimeType(),
-                        'es_valido' => $imagen->isValid()
-                    ]);
-
-                    // Verificar permisos antes de guardar
-                    $storageDir = storage_path('app/public/tours');
-                    Log::info('DEBUG: Directorio storage', [
-                        'path' => $storageDir,
-                        'existe' => file_exists($storageDir),
-                        'escribible' => is_writable($storageDir)
-                    ]);
-
                     // Usar Storage::disk('public') que es persistente en Render
                     $path = $imagen->store('tours', 'public');
                     $nombreArchivo = basename($path);
 
-                    // Debug: Log para verificar qué se está guardando
-                    Log::info("Guardando imagen: path=$path, nombre=$nombreArchivo");
-
                     if (empty($path)) {
-                        Log::error('ERROR: Storage::store devolvió path vacío');
+                        Log::error('ERROR: No se pudo guardar la imagen');
                         continue;
                     }
 
@@ -137,9 +115,6 @@ class TourController extends Controller
             ->sum('cupos_reservados');
 
         $cuposDisponibles = max(0, $tour->cupo_max - $cuposReservados);
-
-        // Debug log
-        Log::info("Tour show {$tour->id}: cupo_max={$tour->cupo_max}, reservados={$cuposReservados}, disponibles={$cuposDisponibles}");
 
         $tour->cupos_disponibles = $cuposDisponibles;
 
@@ -180,31 +155,12 @@ class TourController extends Controller
         if ($request->hasFile('imagenes')) {
             foreach ($request->file('imagenes') as $imagen) {
                 if ($imagen instanceof \Illuminate\Http\UploadedFile && $imagen->isValid()) {
-                    // Debug: Información del archivo
-                    Log::info('DEBUG UPDATE: Archivo recibido', [
-                        'nombre_original' => $imagen->getClientOriginalName(),
-                        'tamaño' => $imagen->getSize(),
-                        'tipo' => $imagen->getMimeType(),
-                        'es_valido' => $imagen->isValid()
-                    ]);
-
-                    // Verificar permisos antes de guardar
-                    $storageDir = storage_path('app/public/tours');
-                    Log::info('DEBUG UPDATE: Directorio storage', [
-                        'path' => $storageDir,
-                        'existe' => file_exists($storageDir),
-                        'escribible' => is_writable($storageDir)
-                    ]);
-
                     // Usar Storage::disk('public') que es persistente en Render
                     $path = $imagen->store('tours', 'public');
                     $nombreArchivo = basename($path);
 
-                    // Debug: Log para verificar qué se está guardando
-                    Log::info("Actualizando imagen: path=$path, nombre=$nombreArchivo");
-
                     if (empty($path)) {
-                        Log::error('ERROR UPDATE: Storage::store devolvió path vacío');
+                        Log::error('ERROR: No se pudo actualizar la imagen');
                         continue;
                     }
 
