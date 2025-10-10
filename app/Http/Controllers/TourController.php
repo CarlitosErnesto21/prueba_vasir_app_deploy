@@ -18,18 +18,18 @@ class TourController extends Controller
     {
         $query = Tour::with(['transporte', 'imagenes'])
             ->orderBy('fecha_salida', 'asc');
-        
+
         // Filtrar por categoría si se especifica
         if ($request->has('categoria')) {
             $categoria = strtoupper($request->input('categoria'));
-            
+
             if (in_array($categoria, ['NACIONAL', 'INTERNACIONAL'])) {
                 $query->where('categoria', $categoria);
             }
         }
-        
+
         $tours = $query->get();
-        
+
         // Agregar cupos_disponibles a cada tour
         $tours->each(function ($tour) {
             $cuposReservados = $tour->detalleReservas()
@@ -37,15 +37,15 @@ class TourController extends Controller
                     $query->where('estado', '!=', 'cancelada');
                 })
                 ->sum('cupos_reservados');
-            
+
             $cuposDisponibles = max(0, $tour->cupo_max - $cuposReservados);
-            
+
             // Debug log
             Log::info("Tour {$tour->id}: cupo_max={$tour->cupo_max}, reservados={$cuposReservados}, disponibles={$cuposDisponibles}");
-            
+
             $tour->cupos_disponibles = $cuposDisponibles;
         });
-        
+
         // Siempre devolver JSON para API
         return response()->json($tours);
     }
@@ -82,13 +82,34 @@ class TourController extends Controller
         if ($request->hasFile('imagenes')) {
             foreach ($request->file('imagenes') as $imagen) {
                 if ($imagen instanceof \Illuminate\Http\UploadedFile && $imagen->isValid()) {
+                    // Debug: Información del archivo
+                    Log::info('DEBUG: Archivo recibido', [
+                        'nombre_original' => $imagen->getClientOriginalName(),
+                        'tamaño' => $imagen->getSize(),
+                        'tipo' => $imagen->getMimeType(),
+                        'es_valido' => $imagen->isValid()
+                    ]);
+
+                    // Verificar permisos antes de guardar
+                    $storageDir = storage_path('app/public/tours');
+                    Log::info('DEBUG: Directorio storage', [
+                        'path' => $storageDir,
+                        'existe' => file_exists($storageDir),
+                        'escribible' => is_writable($storageDir)
+                    ]);
+
                     // Usar Storage::disk('public') que es persistente en Render
                     $path = $imagen->store('tours', 'public');
                     $nombreArchivo = basename($path);
-                    
+
                     // Debug: Log para verificar qué se está guardando
                     Log::info("Guardando imagen: path=$path, nombre=$nombreArchivo");
-                    
+
+                    if (empty($path)) {
+                        Log::error('ERROR: Storage::store devolvió path vacío');
+                        continue;
+                    }
+
                     $tour->imagenes()->create(['nombre' => $nombreArchivo]);
                 }
             }
@@ -107,21 +128,21 @@ class TourController extends Controller
     {
         $tour = Tour::with(['transporte', 'imagenes'])
             ->findOrFail($id);
-        
+
         // Agregar cupos_disponibles
         $cuposReservados = $tour->detalleReservas()
             ->whereHas('reserva', function($query) {
                 $query->where('estado', '!=', 'cancelada');
             })
             ->sum('cupos_reservados');
-        
+
         $cuposDisponibles = max(0, $tour->cupo_max - $cuposReservados);
-        
+
         // Debug log
         Log::info("Tour show {$tour->id}: cupo_max={$tour->cupo_max}, reservados={$cuposReservados}, disponibles={$cuposDisponibles}");
-        
+
         $tour->cupos_disponibles = $cuposDisponibles;
-        
+
         return response()->json($tour);
     }
 
@@ -159,13 +180,34 @@ class TourController extends Controller
         if ($request->hasFile('imagenes')) {
             foreach ($request->file('imagenes') as $imagen) {
                 if ($imagen instanceof \Illuminate\Http\UploadedFile && $imagen->isValid()) {
+                    // Debug: Información del archivo
+                    Log::info('DEBUG UPDATE: Archivo recibido', [
+                        'nombre_original' => $imagen->getClientOriginalName(),
+                        'tamaño' => $imagen->getSize(),
+                        'tipo' => $imagen->getMimeType(),
+                        'es_valido' => $imagen->isValid()
+                    ]);
+
+                    // Verificar permisos antes de guardar
+                    $storageDir = storage_path('app/public/tours');
+                    Log::info('DEBUG UPDATE: Directorio storage', [
+                        'path' => $storageDir,
+                        'existe' => file_exists($storageDir),
+                        'escribible' => is_writable($storageDir)
+                    ]);
+
                     // Usar Storage::disk('public') que es persistente en Render
                     $path = $imagen->store('tours', 'public');
                     $nombreArchivo = basename($path);
-                    
+
                     // Debug: Log para verificar qué se está guardando
                     Log::info("Actualizando imagen: path=$path, nombre=$nombreArchivo");
-                    
+
+                    if (empty($path)) {
+                        Log::error('ERROR UPDATE: Storage::store devolvió path vacío');
+                        continue;
+                    }
+
                     $tour->imagenes()->create(['nombre' => $nombreArchivo]);
                 }
             }
