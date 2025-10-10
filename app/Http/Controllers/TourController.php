@@ -85,6 +85,10 @@ class TourController extends Controller
                     // Usar Storage::disk('public') que es persistente en Render
                     $path = $imagen->store('tours', 'public');
                     $nombreArchivo = basename($path);
+                    
+                    // Debug: Log para verificar qué se está guardando
+                    Log::info("Guardando imagen: path=$path, nombre=$nombreArchivo");
+                    
                     $tour->imagenes()->create(['nombre' => $nombreArchivo]);
                 }
             }
@@ -158,6 +162,10 @@ class TourController extends Controller
                     // Usar Storage::disk('public') que es persistente en Render
                     $path = $imagen->store('tours', 'public');
                     $nombreArchivo = basename($path);
+                    
+                    // Debug: Log para verificar qué se está guardando
+                    Log::info("Actualizando imagen: path=$path, nombre=$nombreArchivo");
+                    
                     $tour->imagenes()->create(['nombre' => $nombreArchivo]);
                 }
             }

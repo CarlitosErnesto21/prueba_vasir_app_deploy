@@ -26,6 +26,10 @@ php artisan db:seed --force
 echo "📁 Configurando almacenamiento..."
 php setup-storage.php
 
+# Asegurar que el symlink funcione
+echo "🔗 Creando enlace simbólico de storage..."
+php artisan storage:link || echo "⚠️ Error creando symlink con artisan, usando script personalizado"
+
 # Limpiar y cachear configuraciones
 echo "🧹 Optimizando aplicación..."
 php artisan config:cache

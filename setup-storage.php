@@ -28,14 +28,22 @@ foreach ($directories as $dir) {
     }
 }
 
-// Verificar el enlace simbólico
+// Crear el enlace simbólico
 $link = public_path('storage');
 $target = storage_path('app/public');
 
 if (is_link($link)) {
     echo "🔗 Enlace simbólico existe: $link -> " . readlink($link) . "\n";
 } else {
-    echo "⚠️  Enlace simbólico no existe. Ejecutar: php artisan storage:link\n";
+    echo "🔧 Creando enlace simbólico...\n";
+    // Crear el enlace simbólico manualmente si no existe
+    if (symlink($target, $link)) {
+        echo "✅ Enlace simbólico creado: $link -> $target\n";
+    } else {
+        echo "❌ Error creando enlace simbólico. Intentando con Artisan...\n";
+        $output = shell_exec('php artisan storage:link 2>&1');
+        echo "Artisan output: " . $output . "\n";
+    }
 }
 
 // Verificar permisos
